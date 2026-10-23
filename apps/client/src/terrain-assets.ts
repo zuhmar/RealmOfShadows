@@ -1,6 +1,6 @@
-import terrainUrl from '../../../assets/tilesets/elderwood/Cartoon Terrain Tileset Sprite Sheet.png';
+import terrainUrl from '../../../assets/tilesets/elderwood/Glossy Cartoon Terrain Tileset.png';
 
-// The supplied sheet is illustrated swatches, not a uniform, seamless atlas.
+// The glossy sheet is illustrated swatches, not a uniform, seamless atlas.
 // Sample inside each painted border to exclude the background and gutters.
 // Keep the original PNG unchanged; these rectangles are Phaser texture frames.
 export const elderwoodTerrain={key:'elderwood-terrain',url:terrainUrl,
