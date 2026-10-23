@@ -1,6 +1,6 @@
 # Realm of Shadows
 
-Phase 1: Elderwood movement foundation. Original flat glossy cartoon art is intended; all current world and character graphics are temporary geometric placeholders. No final artwork is generated or replaced.
+Phase 1: Elderwood movement foundation. Original flat glossy cartoon art is intended; world graphics are temporary geometric placeholders; the main character uses the supplied idle and walk artwork. No final artwork is generated or replaced.
 
 ## Local development
 
@@ -37,7 +37,7 @@ Positions are logical tile coordinates, with 64 px tiles. Velocity is normalized
 
 No accounts, database persistence, chat, combat, inventory, region travel, or implemented banking/crafting. Landmarks are interactive previews of future systems. Fresh joins start at the square. Phase 2 will implement authentication, persistence and reconnection. Current networking is a foundation with approximate snapshot reconciliation rather than timestamped rollback; latency/loss can cause visible corrections. It needs network-condition and load testing before production. Movement input has no economy authority. No production deployment is claimed.
 
-Maps use configuration-defined building rectangles; client world graphics are geometric placeholders. Four-direction sprite animation manifests are supported; eight-direction input currently maps to the nearest primary facing. Only idle/walk/run animations are needed in Phase 1; combat/equipment animation layers remain later work. Real device touch testing and final sprite-sheet validation require supplied assets/devices. Backend TLS, origin policy and account authorization belong to later deployment/hardening work.
+Maps use configuration-defined building rectangles; client world graphics are geometric placeholders. Four-direction idle/walk animation manifests are supported; eight-direction input maps to the nearest primary facing. Sprint reuses walk. Future attacks use projectiles and area spells; character attack and run sheets are not required. Real device touch testing remains outstanding. Backend TLS, origin policy and account authorization belong to later deployment/hardening work.
 
 ## Next phase
 
@@ -49,4 +49,4 @@ A deployed frontend with no `VITE_SERVER_URL` runs **Local preview · No multipl
 
 For multiplayer on Vercel, deploy `apps/server` to a WebSocket-capable Node host, then set `VITE_SERVER_URL=wss://your-backend-host` in the Vercel project and redeploy. Vercel serves the client; it does not run the long-lived Colyseus process on port 2567. Local development still attempts the server at the browser hostname on port 2567. Walk animations now depend on simulated displacement, so disconnected or collision-blocked characters stay idle.
 
-Movement browser regression: with Vite and the game server running, run `npm run test:browser`. It uses a synthetic sprite-sheet fixture and checks world displacement, camera follow, walk/idle state and collision in local-preview and server-connected modes. Install a Playwright Chromium browser first (`npx playwright install chromium`) or set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to an existing Chromium binary. `TEST_CLIENT_URL` overrides the Vite URL (default port 5173). This check imports the Vite entry module to inspect actual world positions; run it against the development server.
+Movement browser regression: with Vite and the game server running, run `npm run test:browser`. It uses the committed Citizen sheets and checks automatic loading, world displacement, camera follow, walk/idle state and collision in local-preview and server-connected modes. Install a Playwright Chromium browser first (`npx playwright install chromium`) or set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to an existing Chromium binary. `TEST_CLIENT_URL` overrides the Vite URL (default port 5173). This check imports the Vite entry module to inspect actual world positions; run it against the development server.

@@ -9,6 +9,6 @@ export function blocked(x:number,y:number):boolean {
  return x<1||y<1||x>=WORLD.width-1||y>=WORLD.height-1||landmarks.some(b=>x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h)||(x===16&&y===10);
 }
 export type Facing='down'|'left'|'right'|'up';
-export interface SpriteManifest {key:string;url:string;frameWidth:number;frameHeight:number;anchor:{x:number;y:number};scale:number;animations:Partial<Record<'idle'|'walk'|'run',Record<Facing,{frames:number[];fps:number}>>>}
+export interface SpriteManifest {key:string;url:string;frameWidth:number;frameHeight:number;anchor:{x:number;y:number};scale:number;animations:Partial<Record<'idle'|'walk',Record<Facing,{frames:number[];fps:number}>>>}
 // Add a supplied sprite sheet here. Empty means explicit geometric placeholders.
 export const characterSprite:SpriteManifest|null=null;

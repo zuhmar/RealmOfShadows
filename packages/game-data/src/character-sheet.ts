@@ -6,7 +6,6 @@ export const suppliedCharacterSheet = {
  groups:[
   {action:'idle',fps:5,columns:[[88,195],[195,307],[307,418],[418,535]]},
   {action:'walk',fps:8,columns:[[541,659],[659,781],[781,902],[902,1022]]},
-  {action:'attack',fps:8,columns:[[1028,1152],[1152,1280],[1280,1408],[1408,1534]]},
  ],
 } as const;
 

@@ -3,14 +3,25 @@ import {Client,type Room} from 'colyseus.js';
 import {WORLD,landmarks,characterSprite,type Facing} from '@realm/game-data';
 import {move,pathfind,type Point,type Motion,type Input} from '@realm/shared';
 import './style.css';
+import {characterAssets} from './character-assets';
 import {suppliedCharacterSheet,idleCharacterSheet} from '../../../packages/game-data/src/character-sheet';
 const notice=(s:string)=>{document.querySelector('#notice')!.textContent=s;};
 class Elderwood extends Phaser.Scene {
  room?:Room; avatar!:Phaser.GameObjects.Container; bodySprite?:Phaser.GameObjects.Sprite;
  local:Motion={...WORLD.spawn,stamina:100}; keys!:Record<string,Phaser.Input.Keyboard.Key>;
  peers=new Map<string,Phaser.GameObjects.Container>();route:Point[]=[];seq=0;acc=0;online=false;preview=false;touch={x:0,y:0};sprinting=false;pending:Input[]=[];facing:Facing='down';walking=false;animationStyle=new Map<string,{scale:number;origin:number}>();
- preload(){if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
+ preload(){for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
  create(){
+ for(const asset of characterAssets){
+ if(!this.textures.exists(asset.key))continue;
+ const texture=this.textures.get(asset.key);
+ for(const row of asset.layout.rows)for(const group of asset.layout.groups){
+ const frames=group.columns.map(([left,right],i)=>{const name=`${group.action}-${row.direction}-${i}`;texture.add(name,0,left+2,row.top+2,right-left-4,row.bottom-row.top-4);return {key:asset.key,frame:name};});
+ const animation=`${group.action}-${row.direction}`;
+ this.anims.create({key:animation,frames,frameRate:group.fps,repeat:-1});
+ this.animationStyle.set(animation,{scale:asset.scale,origin:asset.origin});
+ }
+ }
  this.cameras.main.setBackgroundColor('#233c38');const g=this.add.graphics();
  for(let y=0;y<WORLD.height;y++)for(let x=0;x<WORLD.width;x++){const road=Math.abs(x-16)<2||Math.abs(y-13)<2;g.fillStyle(road?((x+y)%2?0xb4aa84:0xbab18d):((x+y)%2?0x426a50:0x456e52));g.fillRoundedRect(x*64+1,y*64+1,62,62,8);if(!road&&(x*7+y*11)%9===0){g.fillStyle(0x749462,.6);g.fillCircle(x*64+22,y*64+25,4);}}
  for(let x=0;x<WORLD.width;x++)for(const y of [0,23])this.tree(x*64+32,y*64+32);
@@ -18,7 +29,7 @@ class Elderwood extends Phaser.Scene {
  for(const b of landmarks){const x=b.x*64,y=b.y*64,w=b.w*64,h=b.h*64;const panel=this.add.graphics();panel.fillStyle(0x172f2d,.35);panel.fillRoundedRect(x+8,y+12,w,h,18);panel.fillStyle(b.color);panel.fillRoundedRect(x,y,w,h,18);panel.fillStyle(0xffffff,.12);panel.fillRoundedRect(x+8,y+8,w-16,26,10);panel.fillStyle(0x374b45);panel.fillRoundedRect(x+w/2-22,y+h-55,44,55,10);panel.setDepth((b.y+b.h)*64);this.add.text(x+w/2,y+40,b.name,{fontFamily:'Georgia',fontSize:'20px',color:'#fff4d6'}).setOrigin(.5).setDepth(panel.depth+1);}
  const fountain=this.add.graphics();fountain.fillStyle(0x97b4aa);fountain.fillEllipse(16.5*64,10.5*64,64,40);fountain.fillStyle(0x76d6d3);fountain.fillEllipse(16.5*64,10.5*64-5,48,24);fountain.setDepth(10.5*64);
  this.add.text(16.5*64,12.2*64,'ELDERWOOD SQUARE',{fontFamily:'Georgia',fontSize:'18px',color:'#535d42',letterSpacing:3}).setOrigin(.5);
- this.avatar=this.makeAvatar(0xf0cc80,'You');this.avatar.setPosition(this.local.x*64,this.local.y*64);
+ this.avatar=this.makeAvatar(0xf0cc80,'You');this.bodySprite=this.avatar.getData('sprite');this.avatar.setPosition(this.local.x*64,this.local.y*64);
  if(characterSprite&&this.textures.exists(characterSprite.key)){this.avatar.removeAll(true);this.bodySprite=this.add.sprite(0,0,characterSprite.key).setOrigin(characterSprite.anchor.x,characterSprite.anchor.y).setScale(characterSprite.scale);this.avatar.add(this.bodySprite);for(const [action,directions] of Object.entries(characterSprite.animations))for(const [direction,a] of Object.entries(directions!)){this.anims.create({key:`${action}-${direction}`,frames:a.frames.map(frame=>({key:characterSprite!.key,frame})),frameRate:a.fps,repeat:-1});}}
  this.cameras.main.setBounds(0,0,WORLD.width*64,WORLD.height*64).startFollow(this.avatar,true,.12,.12).setZoom(.85);
  this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,LEFT,DOWN,RIGHT,SHIFT,SPACE') as typeof this.keys;
@@ -55,7 +66,7 @@ class Elderwood extends Phaser.Scene {
  });
  const animation=`${group.action}-${row.direction}`;
  if(this.anims.exists(animation))this.anims.remove(animation);
- this.anims.create({key:animation,frames,frameRate:group.fps,repeat:group.action==='attack'?0:-1});
+ this.anims.create({key:animation,frames,frameRate:group.fps,repeat:-1});
  this.animationStyle.set(animation,{scale:idleOnly?.30:.36,origin:idleOnly?.97:.92});
  }
  this.avatar.removeAll(true);
@@ -66,7 +77,7 @@ class Elderwood extends Phaser.Scene {
  finally{URL.revokeObjectURL(url);}
  }
  tree(x:number,y:number){const g=this.add.graphics();g.fillStyle(0x675a40);g.fillRoundedRect(x-9,y-20,18,30,5);g.fillStyle(0x284f3b);g.fillCircle(x,y-32,34);g.fillStyle(0x5a8555);g.fillEllipse(x-6,y-42,46,30);g.setDepth(y);}
- makeAvatar(color:number,label:string){const g=this.add.graphics();g.fillStyle(0x102823,.3);g.fillEllipse(0,0,30,13);g.fillStyle(0x446d82);g.fillRoundedRect(-13,-32,26,30,8);g.fillStyle(color);g.fillCircle(0,-40,13);g.fillStyle(0xffffff,.35);g.fillEllipse(-4,-44,12,7);const text=this.add.text(0,-65,label,{fontFamily:'sans-serif',fontSize:'12px',color:'#fff5d7',backgroundColor:'#203b36'}).setOrigin(.5);return this.add.container(0,0,[g,text]);}
+ makeAvatar(color:number,label:string){const g=this.add.graphics();g.fillStyle(0x102823,.3);g.fillEllipse(0,0,30,13);g.fillStyle(0x446d82);g.fillRoundedRect(-13,-32,26,30,8);g.fillStyle(color);g.fillCircle(0,-40,13);g.fillStyle(0xffffff,.35);g.fillEllipse(-4,-44,12,7);const text=this.add.text(0,-65,label,{fontFamily:'sans-serif',fontSize:'12px',color:'#fff5d7',backgroundColor:'#203b36'}).setOrigin(.5);if(this.textures.exists('citizen-idle')){g.clear();g.fillStyle(0x102823,.3);g.fillEllipse(0,0,30,13);const sprite=this.add.sprite(0,0,'citizen-idle','idle-down-0').setOrigin(.5,.97).setScale(.30);sprite.play('idle-down');return this.add.container(0,0,[g,sprite,text]).setData('sprite',sprite);}return this.add.container(0,0,[g,text]);}
  startPreview(message:string){this.online=false;this.preview=true;this.pending=[];document.querySelector('#connection')!.textContent='Local preview · No multiplayer';notice(message);}
  async connect(){
  const configured=(import.meta as ImportMeta & {env:Record<string,string>}).env.VITE_SERVER_URL;
@@ -82,8 +93,8 @@ class Elderwood extends Phaser.Scene {
  const blend=1-Math.exp(-delta/55);this.avatar.x+=(this.local.x*64-this.avatar.x)*blend;this.avatar.y+=(this.local.y*64-this.avatar.y)*blend;this.avatar.setDepth(this.avatar.y);
  if(simulated)this.walking=(this.online||this.preview)&&Math.hypot(this.local.x-previous.x,this.local.y-previous.y)>.00001;
  const moving=this.walking&&(this.online||this.preview);
- if(moving&&(x||y))this.facing=Math.abs(x)>Math.abs(y)?(x>0?'right':'left'):(y>0?'down':'up');if(this.bodySprite){const action=moving?((this.keys.SHIFT.isDown||this.sprinting)&&this.anims.exists(`run-${this.facing}`)?'run':'walk'):'idle',key=`${action}-${this.facing}`;const selected=this.anims.exists(key)?key:`idle-${this.facing}`;if(this.anims.exists(selected)){const style=this.animationStyle.get(selected);if(style)this.bodySprite.setScale(style.scale).setOrigin(.5,style.origin);this.bodySprite.play(selected,true);}}
- for(const obj of this.peers.values()){const p=obj.getData('target');if(p){obj.x+=(p.x-obj.x)*blend;obj.y+=(p.y-obj.y)*blend;obj.setDepth(obj.y);}}
+ if(moving&&(x||y))this.facing=Math.abs(x)>Math.abs(y)?(x>0?'right':'left'):(y>0?'down':'up');if(this.bodySprite){const action=moving?'walk':'idle',key=`${action}-${this.facing}`;const selected=this.anims.exists(key)?key:`idle-${this.facing}`;if(this.anims.exists(selected)){const style=this.animationStyle.get(selected);if(style)this.bodySprite.setScale(style.scale).setOrigin(.5,style.origin);this.bodySprite.play(selected,true);}}
+ for(const obj of this.peers.values()){const p=obj.getData('target');if(p){const dx=p.x-obj.x,dy=p.y-obj.y;const moving=Math.hypot(dx,dy)>1;const facing=moving?(Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up')):(obj.getData('facing')??'down');obj.setData('facing',facing);const sprite=obj.getData('sprite') as Phaser.GameObjects.Sprite|undefined;if(sprite){const key=`${moving?'walk':'idle'}-${facing}`,style=this.animationStyle.get(key);if(style)sprite.setScale(style.scale).setOrigin(.5,style.origin);if(this.anims.exists(key))sprite.play(key,true);}obj.x+=dx*blend;obj.y+=dy*blend;obj.setDepth(obj.y);}}
  (document.querySelector('#stamina') as HTMLMeterElement).value=this.local.stamina;
  }
 }
