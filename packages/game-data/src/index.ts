@@ -26,3 +26,5 @@ export function canTravel(position:{x:number;y:number},from:RegionId,to:unknown)
 export {combat,wolfSpawns} from './combat';
 export {items,rewards,merchant,totalXp,levelForXp,type ItemId} from './economy';
 export * from './classes';
+
+export * from './spells';

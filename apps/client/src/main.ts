@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import {Client,type Room} from 'colyseus.js';
-import {WORLD,landmarks,characterSprite,regions,PORTAL,canTravel,combat as C,items,merchant,rewards,weapons,classes,classRules,skillRequirement,type RegionId,type Facing} from '@realm/game-data';
+import {WORLD,landmarks,characterSprite,regions,PORTAL,canTravel,combat as C,items,merchant,rewards,weapons,classes,classRules,skillRequirement,spells,canLearnSpell,isSpell,type RegionId,type Facing} from '@realm/game-data';
 import {move,pathfind,CombatSimulation,newFighter,Economy,type EconomySnapshot,type Fighter,type Wolf,type CombatEvent,type Point,type Motion,type Input} from '@realm/shared';
 import './style.css';
 import {wolfAssets} from './wolf-assets';
@@ -29,6 +29,7 @@ class Elderwood extends Phaser.Scene {
  this.animationStyle.set(animation,{scale:asset.scale,origin:asset.origin});
  }
  }
+ for(const [id,s] of Object.entries(spells)){const button=document.createElement('button');button.dataset.spell=id;button.addEventListener('click',()=>this.economyAction({kind:'learn',spell:id}));document.querySelector('#spell-shop')!.append(button);}
  this.drawMap();
  this.avatar=this.makeAvatar(0xf0cc80,'You');this.bodySprite=this.avatar.getData('sprite');this.avatar.setPosition(this.local.x*64,this.local.y*64);
  if(characterSprite&&this.textures.exists(characterSprite.key)){this.avatar.removeAll(true);this.bodySprite=this.add.sprite(0,0,characterSprite.key).setOrigin(characterSprite.anchor.x,characterSprite.anchor.y).setScale(characterSprite.scale);this.avatar.add(this.bodySprite);for(const [action,directions] of Object.entries(characterSprite.animations))for(const [direction,a] of Object.entries(directions!)){this.anims.create({key:`${action}-${direction}`,frames:a.frames.map(frame=>({key:characterSprite!.key,frame})),frameRate:a.fps,repeat:-1});}}
@@ -61,7 +62,7 @@ class Elderwood extends Phaser.Scene {
  const list=document.querySelector('#class-options')!;list.replaceChildren();for(const [id,definition] of Object.entries(classes)){const button=document.createElement('button');button.type='button';const name=document.createElement('strong');name.textContent=definition.name;const text=document.createElement('span');text.textContent=definition.description;button.append(name,text);button.addEventListener('click',()=>this.economyAction({kind:'class',classId:id}));list.append(button);}
  document.querySelector<HTMLDialogElement>('#class-dialog')!.showModal();this.route=[];this.input.keyboard?.resetKeys();
  }
- economyAction(request:{kind:string;drop?:string;weapon?:string;classId?:string}){
+ economyAction(request:{kind:string;drop?:string;weapon?:string;classId?:string;spell?:string}){
  if(this.preview){Object.assign(this.fighter,{x:this.local.x,y:this.local.y,region:this.region});const message=this.economy.act('local',this.fighter,request,this.sim.time);this.bag=this.economy.snapshot('local',this.sim.time);document.querySelector<HTMLSelectElement>('#weapon-select')!.value=this.bag.weapon;notice(message);document.querySelector('#inventory-feedback')!.textContent=message;this.renderInventory();}
  else if(this.online)this.room?.send('economy',request);
  }
@@ -77,7 +78,8 @@ class Elderwood extends Phaser.Scene {
  renderRewards(){
  const bag=this.bag;if(!bag)return;
  document.querySelector('#level-label')!.textContent=`Level ${bag.level} · ${bag.classId==='citizen'?'Citizen':classes[bag.classId].name}`;document.querySelector('#gold-label')!.textContent=`${bag.gold} gold`;
- const weapon=weapons[bag.weapon];document.querySelector('#attack-name')!.textContent=weapon.kind==='melee'?'Melee attack':weapon.kind==='arrow'?'Shoot arrow':'Arc Bolt';(document.querySelector('#nova') as HTMLButtonElement).disabled=weapon.skill!=='magic';document.querySelector('#nova')!.setAttribute('title',weapon.skill==='magic'?'Cast Moon Nova':'Equip a magic weapon to cast Moon Nova');
+ const weapon=weapons[bag.weapon];document.querySelector('#attack-name')!.textContent=weapon.kind==='melee'?'Melee attack':weapon.kind==='arrow'?'Shoot arrow':'Arc Bolt';const spellSelect=document.querySelector<HTMLSelectElement>('#spell-select')!;if(spellSelect.dataset.known!==bag.learnedSpells.join(',')){const previous=spellSelect.value;spellSelect.replaceChildren();for(const id of bag.learnedSpells){const option=document.createElement('option');option.value=id;option.textContent=`${spells[id].name} · ${spells[id].cost} mana`;spellSelect.append(option);}if(bag.learnedSpells.includes(previous as typeof bag.learnedSpells[number]))spellSelect.value=previous;spellSelect.dataset.known=bag.learnedSpells.join(',');}spellSelect.hidden=bag.learnedSpells.length===0;document.querySelector<HTMLElement>('#nova')!.hidden=spellSelect.hidden;document.querySelector<HTMLElement>('#no-spells')!.hidden=!spellSelect.hidden;
+ for(const button of Array.from(document.querySelectorAll<HTMLButtonElement>('#spell-shop button'))){const id=button.dataset.spell;if(!isSpell(id))continue;const s=spells[id],known=bag.learnedSpells.includes(id);button.hidden=s.classId!=='shared'&&s.classId!==bag.classId;button.disabled=known||!canLearnSpell(id,bag)||bag.gold<s.price;button.textContent=`${s.name} · ${known?'Learned':`${s.price} gold · Level ${s.level} · ${s.cost} mana · ${s.cooldown}s cooldown`}`;}
  const selector=document.querySelector<HTMLSelectElement>('#weapon-select')!;if(selector.dataset.weapons!==bag.ownedWeapons.join(',')){selector.replaceChildren();for(const id of bag.ownedWeapons){const option=document.createElement('option');option.value=id;option.textContent=weapons[id].name;selector.append(option);}selector.dataset.weapons=bag.ownedWeapons.join(',');}if(document.activeElement!==selector)selector.value=bag.weapon;
  const choose=document.querySelector<HTMLButtonElement>('#choose-class')!;choose.hidden=bag.classId!=='citizen';choose.disabled=bag.level<classRules.unlockLevel;choose.textContent=bag.level>=classRules.unlockLevel?'Choose your class':'Choose class at level 5';
  for(const skill of ['melee','distance','magic'] as const){const level=bag.skills[skill];document.querySelector(`#skill-${skill}`)!.textContent=`${skill[0].toUpperCase()+skill.slice(1)} ${level} · ${level>=100?'Max':`${bag.skillXp[skill]-skillRequirement(level)} / ${skillRequirement(level+1)-skillRequirement(level)} EXP`}`;}
@@ -89,24 +91,25 @@ class Elderwood extends Phaser.Scene {
  }
  cast(kind:'bolt'|'nova'|'stop'){
  if(document.querySelector('dialog[open]')!==null||this.traveling||this.fighter.hp<=0)return;
- if(kind!=='stop'&&!this.selected){notice('Click or tap a wolf to select it.');return;}
- if(this.preview){Object.assign(this.fighter,{x:this.local.x,y:this.local.y,region:this.region});if(!this.sim.action('local',this.fighter,kind,this.selected)&&kind!=='stop')notice('Move out of the portal sanctuary and into range. Check mana and cooldown.');}
- else if(this.online)this.room?.send('combat',{kind,target:this.selected});
+ const spell=document.querySelector<HTMLSelectElement>('#spell-select')!.value;if(kind==='nova'&&!isSpell(spell)){notice('Learn a spell from Mara first.');return;}
+ if(kind!=='stop'&&!(kind==='nova'&&spell==='mend')&&!this.selected){notice('Click or tap a wolf to select it.');return;}
+ if(this.preview){Object.assign(this.fighter,{x:this.local.x,y:this.local.y,region:this.region});if(!(kind==='nova'?this.sim.castSpell('local',this.fighter,spell,this.selected,this.economy.profiles.get('local')):this.sim.action('local',this.fighter,kind,this.selected))&&kind!=='stop')notice('Spell unavailable. Check learned spells, target range, mana, cooldown and sanctuary.');}
+ else if(this.online)this.room?.send('combat',{kind:kind==='nova'?'spell':kind,spell,target:this.selected});
  this.autoAttack=kind==='bolt';if(kind==='stop')this.autoAttack=false;
  }
  effect(event:CombatEvent){
  if(event.region!==this.region)return;
  if(event.kind==='bolt'||event.kind==='arrow'){const orb=this.add.circle(event.x*64,event.y*64-25,event.kind==='arrow'?4:6,event.kind==='arrow'?0xe0c18a:0x91deff).setDepth(9999);this.fxObjects.add(orb);this.tweens.add({targets:orb,x:(event.toX??event.x)*64,y:(event.toY??event.y)*64-25,duration:Math.hypot((event.toX??event.x)-event.x,(event.toY??event.y)-event.y)/(event.speed??C.bolt.speed)*1000,onComplete:()=>{this.fxObjects.delete(orb);orb.destroy();}});}
  if(event.kind==='melee'){const slash=this.add.circle(event.x*64,event.y*64-20,22,0xf1ddac,.2).setStrokeStyle(3,0xf6e8bf).setDepth(9999);this.fxObjects.add(slash);this.tweens.add({targets:slash,alpha:0,scale:1.5,duration:200,onComplete:()=>{this.fxObjects.delete(slash);slash.destroy();}});}
- if(event.kind==='nova'){const ring=this.add.circle(event.x*64,event.y*64,C.nova.radius*64,0x9f95ff,.22).setStrokeStyle(4,0xd1beff).setDepth(9998);this.fxObjects.add(ring);this.tweens.add({targets:ring,alpha:0,scale:1.15,duration:650,onComplete:()=>{this.fxObjects.delete(ring);ring.destroy();}});}
- if(event.kind==='hit'){const number=this.add.text(event.x*64,event.y*64-65,`−${event.damage}`,{fontSize:'20px',color:'#ffd19c',stroke:'#1b292b',strokeThickness:3}).setDepth(10000);this.fxObjects.add(number);this.tweens.add({targets:number,y:number.y-30,alpha:0,duration:800,onComplete:()=>{this.fxObjects.delete(number);number.destroy();}});}
+ if(event.kind==='nova'){const ring=this.add.circle(event.x*64,event.y*64,(event.radius??C.nova.radius)*64,0x9f95ff,.22).setStrokeStyle(4,0xd1beff).setDepth(9998);this.fxObjects.add(ring);this.tweens.add({targets:ring,alpha:0,scale:1.15,duration:650,onComplete:()=>{this.fxObjects.delete(ring);ring.destroy();}});}
+ if(event.kind==='hit'||event.kind==='heal'){const number=this.add.text(event.x*64,event.y*64-65,`${event.kind==='heal'?'+':'−'}${event.damage}`,{fontSize:'20px',color:event.kind==='heal'?'#a9edaa':'#ffd19c',stroke:'#1b292b',strokeThickness:3}).setDepth(10000);this.fxObjects.add(number);this.tweens.add({targets:number,y:number.y-30,alpha:0,duration:800,onComplete:()=>{this.fxObjects.delete(number);number.destroy();}});}
  }
  renderCombat(delta:number){
  const wolves=this.preview?this.sim.wolves:this.room?.state?.wolves;
  const visible=new Set<string>();
  if(this.region==='woods'&&wolves)wolves.forEach((w:Wolf,id:string)=>{
  if(w.hp<=0)return;visible.add(id);let view=this.wolfViews.get(id);
- if(!view){const sprite=this.add.sprite(0,0,'wolf-idle','down-0').setOrigin(.5,.95).setScale(.2);const health=this.add.graphics();const label=this.add.text(0,-82,'Forest Wolf',{fontSize:'12px',color:'#f5dfbd',backgroundColor:'#203a31'}).setOrigin(.5);view=this.add.container(w.x*64,w.y*64,[sprite,health,label]).setData('sprite',sprite).setData('health',health);const zone=this.add.zone(0,-30,110,100).setInteractive({useHandCursor:true});zone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target!==this.game.canvas||pointer.rightButtonDown())return;this.selected=id;this.route=[];document.querySelector<HTMLDetailsElement>('#combat-panel')!.open=true;notice('Wolf selected · 1: Equipped weapon · 2: Magic area spell · Esc: Stop');});view.add(zone);this.wolfViews.set(id,view);}
+ if(!view){const sprite=this.add.sprite(0,0,'wolf-idle','down-0').setOrigin(.5,.95).setScale(.2);const health=this.add.graphics();const label=this.add.text(0,-82,'Forest Wolf',{fontSize:'12px',color:'#f5dfbd',backgroundColor:'#203a31'}).setOrigin(.5);view=this.add.container(w.x*64,w.y*64,[sprite,health,label]).setData('sprite',sprite).setData('health',health);const zone=this.add.zone(0,-30,110,100).setInteractive({useHandCursor:true});zone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target!==this.game.canvas||pointer.rightButtonDown())return;this.selected=id;this.route=[];document.querySelector<HTMLDetailsElement>('#combat-panel')!.open=true;this.cast('bolt');notice('Auto-attack enabled · Fires in range · Esc: Stop');});view.add(zone);this.wolfViews.set(id,view);}
  const moving=w.mode==='chase'||w.mode==='return',sprite=view.getData('sprite') as Phaser.GameObjects.Sprite;sprite.play(`wolf-${moving?'walk':'idle'}-${w.facing}`,true);view.x+=(w.x*64-view.x)*(1-Math.exp(-delta/70));view.y+=(w.y*64-view.y)*(1-Math.exp(-delta/70));view.setDepth(view.y);sprite.setTint(this.selected===id?0xffe4aa:0xffffff);const bar=view.getData('health') as Phaser.GameObjects.Graphics;bar.clear();bar.fillStyle(0x162727);bar.fillRoundedRect(-30,-73,60,6,3);bar.fillStyle(0xbacb85);bar.fillRoundedRect(-30,-73,60*w.hp/C.wolf.hp,6,3);
  });
  for(const [id,view] of this.wolfViews)if(!visible.has(id)){view.destroy();this.wolfViews.delete(id);if(this.selected===id)this.selected='';}

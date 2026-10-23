@@ -11,8 +11,8 @@ try{
  for(let seq=1;seq<=40&&a.state.players.get(a.sessionId).x<19.7;seq++){a.send('input',{x:1,y:0,sprint:false,seq});await wait(55);}await wait(100);
  const mana=a.state.players.get(a.sessionId).mana;
  for(let i=0;i<20;i++)a.send('combat',{kind:'nova',target:'wolf-1',damage:99999});await wait(250);
- const caster=a.state.players.get(a.sessionId);assert.ok(caster.hp>0);assert.ok(caster.mana<mana);assert.ok(caster.mana>=mana-25);assert.equal(a.state.wolves.get('wolf-1').hp,37);
- a.send('combat',{kind:'bolt',target:'wolf-1',damage:99999});await wait(400);assert.ok(a.state.wolves.get('wolf-1').hp<37);assert.ok(a.state.wolves.get('wolf-1').hp>0);
+ const caster=a.state.players.get(a.sessionId);assert.ok(caster.hp>0);assert.equal(caster.mana,mana);assert.deepEqual(bag.learnedSpells,[]);
+ a.send('combat',{kind:'spell',spell:'moonNova',target:'wolf-1',learnedSpells:['moonNova'],classId:'mage'});await wait(200);assert.equal(a.state.players.get(a.sessionId).mana,mana);a.send('combat',{kind:'bolt',target:'wolf-1',damage:99999});await wait(400);assert.ok(a.state.wolves.get('wolf-1').hp<65);
  for(let i=0;i<60&&a.state.wolves.get('wolf-1').hp>0;i++)await wait(100);
  assert.equal(a.state.wolves.get('wolf-1').hp,0);assert.equal(b.state.wolves.get('wolf-1').hp,0);const player=a.state.players.get(a.sessionId);assert.ok(player.hp>0&&player.hp<100);assert.equal(b.state.players.get(b.sessionId).hp,100);assert.equal(b.state.players.get(a.sessionId).hp,player.hp);
  await wait(250);assert.equal(bag.xp,35);assert.equal(bag.drops.length,1);assert.equal(observerBag.xp,0);assert.equal(observerBag.drops.length,0);
@@ -26,5 +26,5 @@ try{
  a.send('economy',{kind:'sell',quantity:99999,price:99999});await wait(200);assert.equal(bag.gold,20);assert.equal(bag.inventory.length,0);
  a.send('economy',{kind:'buy',quantity:99999,price:0});await wait(200);a.send('economy',{kind:'buy',quantity:99999,price:0});await wait(200);assert.equal(bag.gold,8);assert.equal(bag.inventory[0].item,'potion');assert.equal(bag.inventory[0].quantity,1);assert.equal(observerBag.gold,0);
  console.log('PASS: EXP and private loot, duplicate/foreign pickup rejection, forged rewards rejected, second kill, merchant sale/purchase, insufficient funds');
- console.log('PASS: shared wolves, safe arrival, client damage ignored, projectile kill replicated, wolf bite damage, safe observer, nova cooldown and mana validated');
+ console.log('PASS: shared wolves, safe arrival, client damage ignored, projectile kill replicated, wolf bite damage, safe observer, unlearned/forged spells rejected');
 }finally{await a.leave();await b.leave();}

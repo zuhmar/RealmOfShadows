@@ -21,7 +21,7 @@ class Elderwood extends Room<State>{
  client.send('travel-complete',{region:p.region,x:p.x,y:p.y,stamina:p.stamina,seq:p.seq});
  });
  this.onMessage('economy',(client:Client,request:unknown)=>{const now=this.simulation.time;const budget=this.economyReceived.get(client.sessionId)??{tokens:4,time:now};budget.tokens=Math.min(4,budget.tokens+(now-budget.time)*10);budget.time=now;this.economyReceived.set(client.sessionId,budget);if(budget.tokens<1)return;budget.tokens--; const p=this.state.players.get(client.sessionId);if(!p)return;const message=this.economy.act(client.sessionId,p,request,now);client.send('economy-result',message);client.send('economy-state',this.economy.snapshot(client.sessionId,now));});
- this.onMessage('combat',(client:Client,data:unknown)=>{if(!data||typeof data!=='object')return;const now=this.simulation.time;if(now-(this.combatReceived.get(client.sessionId)??-Infinity)<.1)return;this.combatReceived.set(client.sessionId,now);const p=this.state.players.get(client.sessionId);if(p){const {kind,target}=data as {kind:unknown;target:unknown};if(!this.simulation.action(client.sessionId,p,kind,target))client.send('combat-error','Attack unavailable: check your target, range, mana, cooldown, and portal sanctuary.');}});
+ this.onMessage('combat',(client:Client,data:unknown)=>{if(!data||typeof data!=='object')return;const now=this.simulation.time;if(now-(this.combatReceived.get(client.sessionId)??-Infinity)<.1)return;this.combatReceived.set(client.sessionId,now);const p=this.state.players.get(client.sessionId);if(p){const {kind,target,spell}=data as {kind:unknown;target:unknown;spell:unknown};if(!(kind==='spell'?this.simulation.castSpell(client.sessionId,p,spell,target,this.economy.profiles.get(client.sessionId)):this.simulation.action(client.sessionId,p,kind,target)))client.send('combat-error','Attack unavailable: check your target, range, mana, cooldown, and portal sanctuary.');}});
  this.onMessage('input',(client:Client,data:unknown)=>{const d=data as Input;if(!d||!Number.isFinite(d.x)||!Number.isFinite(d.y)||Math.abs(d.x)>1||Math.abs(d.y)>1||typeof d.sprint!=='boolean'||!Number.isSafeInteger(d.seq)||d.seq<0||d.seq<=(this.received.get(client.sessionId)??-1))return;this.received.set(client.sessionId,d.seq);this.inputs.set(client.sessionId,{x:d.x,y:d.y,sprint:d.sprint,seq:d.seq});});
  // One input is consumed per server tick; flooding cannot increase speed.
  this.setSimulationInterval(()=>{
@@ -34,7 +34,7 @@ class Elderwood extends Room<State>{
  },50);
  }
  onJoin(client:Client){this.state.players.set(client.sessionId,new Player());this.economy.join(client.sessionId);}
- onLeave(client:Client){this.state.players.delete(client.sessionId);this.economy.leave(client.sessionId);this.economyReceived.delete(client.sessionId);this.inputs.delete(client.sessionId);this.received.delete(client.sessionId);this.combatReceived.delete(client.sessionId);}
+ onLeave(client:Client){this.state.players.delete(client.sessionId);this.economy.leave(client.sessionId);this.simulation.spellCooldowns.delete(client.sessionId);this.economyReceived.delete(client.sessionId);this.inputs.delete(client.sessionId);this.received.delete(client.sessionId);this.combatReceived.delete(client.sessionId);}
 }
 const http=createServer((req,res)=>{res.setHeader('Content-Type','application/json');res.end(JSON.stringify({status:'ok',world:'Elderwood',phase:1}));});
 const server=new Server({transport:new WebSocketTransport({server:http})});server.define('elderwood',Elderwood);
