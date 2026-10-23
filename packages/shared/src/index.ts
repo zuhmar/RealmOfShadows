@@ -21,3 +21,4 @@ export function pathfind(start:Point,end:Point,region:RegionId='elderwood'):Poin
  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){if(!dx&&!dy)continue;const n={x:p.x+dx,y:p.y+dy};if(blocked(n.x,n.y,region)||blocked(p.x+dx,p.y,region)||blocked(p.x,p.y+dy,region))continue;const cost=g.get(key(p))!+Math.hypot(dx,dy);if(cost<(g.get(key(n))??Infinity)){g.set(key(n),cost);prev.set(key(n),p);if(!open.some(q=>key(q)===key(n)))open.push(n);}}
  }return [];
 }
+export {CombatSimulation,newFighter,type Fighter,type Wolf,type CombatEvent} from './combat';
