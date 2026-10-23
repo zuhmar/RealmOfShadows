@@ -11,7 +11,7 @@
     "dev": "concurrently -k -n server,client \"npm run dev -w @realm/server\" \"npm run dev -w @realm/client\"",
     "build": "tsc --noEmit && npm run build -w @realm/client",
     "test": "tsx --test tests/*.test.ts",
-    "test:integration": "tsx tests/multiplayer.ts && tsx tests/combat.integration.ts && tsx tests/classes.integration.ts",
+    "test:integration": "tsx tests/multiplayer.ts && tsx tests/combat.integration.ts && tsx tests/classes.integration.ts && tsx tests/water.integration.ts",
     "test:browser": "node tests/browser-movement.cjs && node tests/browser-combat.cjs && node tests/browser-classes.cjs && node tests/browser-spells.cjs"
   },
   "devDependencies": {
