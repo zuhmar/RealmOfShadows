@@ -82,3 +82,7 @@ New characters are Citizens. At character level 5, expand **Adventurer** and cho
 ## Elderwood terrain
 
 `assets/tilesets/elderwood/Glossy Cartoon Terrain Tileset.png` supplies Elderwood's grass, dirt roads and central cobblestone plaza. The original artwork is unchanged. `apps/client/src/terrain-assets.ts` defines interior crop rectangles that exclude the sheet's painted borders and colored gutters, plus deterministic tile variation. This illustrated sheet is not a seamless autotile set; transitions currently use straight tile edges. Two ponds sit off the paths, between the bank and north road and southeast of the plaza. `packages/game-data/src/elderwood.ts` supplies the shared terrain layout: water blocks keyboard/joystick movement and pathfinding on both client and server. Paths, the plaza, buildings, portal and merchant remain accessible; other regions are unchanged. Adjust the crop configuration when replacing this sheet; the empty `Terrain.png` placeholder is not loaded.
+
+## Elderwood portal artwork
+
+`assets/portals/elderwood/Magical Blue Portal Gate.png` replaces the geometric portal in Elderwood. The transparent original is loaded unchanged and scaled proportionally, with its entrance aligned to the existing portal location. A separate ground glow pulses; the artwork stays fully visible. Click/tap the gate or use Interact/Space within the existing range to travel. Other regions retain their existing portals.
