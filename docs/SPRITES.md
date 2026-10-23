@@ -13,9 +13,9 @@ Both are 1536×1024 PNGs with alpha channels. Both contain two frames per direct
 
 `apps/client/src/character-assets.ts` imports both files as Vite asset URLs, so they are included in production builds and loaded automatically. It defines the walk regions and references `idleCharacterSheet` from `packages/game-data/src/character-sheet.ts`. No source pixels are changed. Rectangles, frame rates, scale and feet origins are configurable. Idle loops at 3 fps and walk at 6 fps. The same default artwork renders the local character and remote players.
 
-## Optional local overrides
+## Updating artwork
 
-The original **Import character sheet** control still accepts the older labeled four-frame idle/walk layout; its attack column is ignored. **Import idle sheet** accepts the two-frame idle image and updates only idle, preserving walk. These overrides are for the current browser session. The committed PNGs remain the default after reload. Alpha is preserved; no background removal or repainting occurs.
+Upload the idle and walk PNGs to `assets/characters/` using the existing filenames to replace the default artwork. Changes are bundled on the next build and deployment. If dimensions or frame layout change, update `apps/client/src/character-assets.ts` and the referenced idle layout. New filenames also need their imports updated there. There are no in-game file pickers or session-only sprite overrides. Original images and alpha are preserved.
 
 For future supplied uniform sheets, `SpriteManifest` in `packages/game-data/src/index.ts` supports configurable idle/walk frame arrays, frame dimensions, rates and anchors. No final artwork is generated automatically.
 

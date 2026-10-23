@@ -4,7 +4,6 @@ import {WORLD,landmarks,characterSprite,type Facing} from '@realm/game-data';
 import {move,pathfind,type Point,type Motion,type Input} from '@realm/shared';
 import './style.css';
 import {characterAssets} from './character-assets';
-import {suppliedCharacterSheet,idleCharacterSheet} from '../../../packages/game-data/src/character-sheet';
 const notice=(s:string)=>{document.querySelector('#notice')!.textContent=s;};
 class Elderwood extends Phaser.Scene {
  room?:Room; avatar!:Phaser.GameObjects.Container; bodySprite?:Phaser.GameObjects.Sprite;
@@ -35,10 +34,6 @@ class Elderwood extends Phaser.Scene {
  this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,LEFT,DOWN,RIGHT,SHIFT,SPACE') as typeof this.keys;
  this.input.mouse?.disableContextMenu();this.input.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.rightButtonDown()||p.wasTouch){this.route=pathfind(this.local,{x:p.worldX/64,y:p.worldY/64});if(!this.route.length)notice('Choose a clear path through town.');}});
  this.keys.SPACE.on('down',()=>this.interact());
- const fileInput=document.querySelector<HTMLInputElement>('#character-sheet')!;
- fileInput.addEventListener('change',()=>{const file=fileInput.files?.[0];if(file)void this.importCharacterSheet(file);});
- const idleInput=document.querySelector<HTMLInputElement>('#idle-sheet')!;
- idleInput.addEventListener('change',()=>{const file=idleInput.files?.[0];if(file)void this.importCharacterSheet(file,true);});
  document.querySelector('#interact')!.addEventListener('click',()=>this.interact());
  const sprint=document.querySelector('#sprint')!;sprint.addEventListener('pointerdown',()=>{this.sprinting=true;});window.addEventListener('pointerup',()=>{this.sprinting=false;});
  for(const [id,delta] of [['zoom-in',.1],['zoom-out',-.1]] as const)document.querySelector(`#${id}`)!.addEventListener('click',()=>this.cameras.main.setZoom(Phaser.Math.Clamp(this.cameras.main.zoom+delta,.5,1.5)));
@@ -48,33 +43,6 @@ class Elderwood extends Phaser.Scene {
  const release=()=>{active=undefined;this.touch={x:0,y:0};stick.style.transform='';};joy.addEventListener('pointerup',release);joy.addEventListener('pointercancel',release);
  window.addEventListener('blur',()=>{release();this.sprinting=false;this.route=[];this.input.keyboard?.resetKeys();});
  void this.connect();
- }
- async importCharacterSheet(file:File,idleOnly=false){
- const url=URL.createObjectURL(file);
- try{
- const img=new Image();img.src=url;await img.decode();
- const layout=idleOnly?idleCharacterSheet:suppliedCharacterSheet;
- if(img.naturalWidth!==layout.width||img.naturalHeight!==layout.height){notice('This sheet layout expects the original 1536 × 1024 image.');return;}
- // Register source rectangles, rather than rewriting or resampling the artwork.
- const key=`supplied-character-${Date.now()}`;
- const texture=this.textures.addImage(key,img);if(!texture)throw new Error('Texture registration failed');
- for(const row of layout.rows)for(const group of layout.groups){
- const frames=group.columns.map(([left,right],i)=>{
- const name=`${group.action}-${row.direction}-${i}`;
- texture.add(name,0,left+2,row.top+2,right-left-4,row.bottom-row.top-4);
- return {key,frame:name};
- });
- const animation=`${group.action}-${row.direction}`;
- if(this.anims.exists(animation))this.anims.remove(animation);
- this.anims.create({key:animation,frames,frameRate:group.fps,repeat:-1});
- this.animationStyle.set(animation,{scale:idleOnly?.30:.36,origin:idleOnly?.97:.92});
- }
- this.avatar.removeAll(true);
- this.bodySprite=this.add.sprite(0,0,key,'idle-down-0').setOrigin(.5,.97).setScale(idleOnly?.30:.36);
- this.avatar.add(this.bodySprite);
- notice(idleOnly?'Idle sheet imported · Two frames per direction · Existing walk animations preserved':'Character sheet imported · Idle and walk ready in all four directions');
- }catch{notice('Could not read this image. Choose the original PNG character sheet.');}
- finally{URL.revokeObjectURL(url);}
  }
  tree(x:number,y:number){const g=this.add.graphics();g.fillStyle(0x675a40);g.fillRoundedRect(x-9,y-20,18,30,5);g.fillStyle(0x284f3b);g.fillCircle(x,y-32,34);g.fillStyle(0x5a8555);g.fillEllipse(x-6,y-42,46,30);g.setDepth(y);}
  makeAvatar(color:number,label:string){const g=this.add.graphics();g.fillStyle(0x102823,.3);g.fillEllipse(0,0,30,13);g.fillStyle(0x446d82);g.fillRoundedRect(-13,-32,26,30,8);g.fillStyle(color);g.fillCircle(0,-40,13);g.fillStyle(0xffffff,.35);g.fillEllipse(-4,-44,12,7);const text=this.add.text(0,-65,label,{fontFamily:'sans-serif',fontSize:'12px',color:'#fff5d7',backgroundColor:'#203b36'}).setOrigin(.5);if(this.textures.exists('citizen-idle')){g.clear();g.fillStyle(0x102823,.3);g.fillEllipse(0,0,30,13);const sprite=this.add.sprite(0,0,'citizen-idle','idle-down-0').setOrigin(.5,.97).setScale(.30);sprite.play('idle-down');return this.add.container(0,0,[g,sprite,text]).setData('sprite',sprite);}return this.add.container(0,0,[g,text]);}
