@@ -13,7 +13,7 @@ Two wolf kills provide 12 gold and two pelts. Selling those pelts gives 20 gold,
 
 ## Progression
 
-Character EXP is separate from future combat/profession skills. Level L requires cumulative `100 × (L − 1)²` EXP: level 1 starts at 0, level 2 at 100, level 3 at 400. The cap is 100. The HUD shows level, gold and EXP progress. This slice tracks character levels; attribute growth and skill progression are later work.
+Character EXP is separate from Melee, Distance and Magic skill EXP and future profession skills. Level L requires cumulative `100 × (L − 1)²` EXP: level 1 starts at 0, level 2 at 100, level 3 at 400. The cap is 100. The HUD shows level, gold and EXP progress. This slice tracks character levels; class choice unlocks at level 5, combat skill progression is implemented, and attribute growth remains later work (see `docs/CLASSES.md`).
 
 `packages/game-data/src/economy.ts` defines item stacks, prices, healing, drop contents, inventory capacity and progression constants.
 

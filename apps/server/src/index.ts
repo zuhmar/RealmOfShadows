@@ -2,10 +2,10 @@ import {createServer} from 'node:http';
 import {Server,Room,Client} from '@colyseus/core';
 import {WebSocketTransport} from '@colyseus/ws-transport';
 import {Schema,MapSchema,defineTypes} from '@colyseus/schema';
-import {WORLD,PORTAL,canTravel,type RegionId} from '@realm/game-data';
+import {WORLD,PORTAL,canTravel,type RegionId,type WeaponId} from '@realm/game-data';
 import {move,CombatSimulation,Economy,type Input,type Fighter} from '@realm/shared';
-class Player extends Schema {x=WORLD.spawn.x;y=WORLD.spawn.y;stamina=100;seq=0;region:RegionId='elderwood';hp=100;mana=100;deadUntil=0;shotAt=0;spellAt=0;target='';auto=false;}
-defineTypes(Player,{x:'number',y:'number',stamina:'number',seq:'number',region:'string',hp:'number',mana:'number',deadUntil:'number',shotAt:'number',spellAt:'number',target:'string',auto:'boolean'});
+class Player extends Schema {weapon:WeaponId='wand';meleeXp=0;distanceXp=0;magicXp=0;x=WORLD.spawn.x;y=WORLD.spawn.y;stamina=100;seq=0;region:RegionId='elderwood';hp=100;mana=100;deadUntil=0;shotAt=0;spellAt=0;target='';auto=false;}
+defineTypes(Player,{weapon:'string',meleeXp:'number',distanceXp:'number',magicXp:'number',x:'number',y:'number',stamina:'number',seq:'number',region:'string',hp:'number',mana:'number',deadUntil:'number',shotAt:'number',spellAt:'number',target:'string',auto:'boolean'});
 class WolfState extends Schema{x=0;y=0;hp=65;mode='idle';facing='down';}
 defineTypes(WolfState,{x:'number',y:'number',hp:'number',mode:'string',facing:'string'});
 class State extends Schema {players=new MapSchema<Player>();wolves=new MapSchema<WolfState>();}
@@ -27,6 +27,7 @@ class Elderwood extends Room<State>{
  this.setSimulationInterval(()=>{
  for(const [id,p] of this.state.players){const input=this.inputs.get(id)??{x:0,y:0,sprint:false,seq:p.seq};if(p.hp>0)Object.assign(p,move(p,input,1/20,p.region));p.seq=input.seq;this.inputs.delete(id);}
  this.simulation.tick(.05,this.state.players as Iterable<[string,Fighter]>);
+ for(const [id,p] of this.state.players)this.economy.sync(id,p);
  this.economy.process(this.simulation.kills.splice(0),this.state.players,this.simulation.time);if(++this.rewardTicks%4===0)for(const client of this.clients)client.send('economy-state',this.economy.snapshot(client.sessionId,this.simulation.time));
  for(const [id,w] of this.simulation.wolves){if(!this.state.wolves.has(id))this.state.wolves.set(id,new WolfState());const state=this.state.wolves.get(id)!;state.x=w.x;state.y=w.y;state.hp=w.hp;state.mode=w.mode;state.facing=w.facing;}
  for(const event of this.simulation.events.splice(0))for(const client of this.clients)if(this.state.players.get(client.sessionId)?.region===event.region)client.send('combat-event',event);

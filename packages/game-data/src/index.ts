@@ -25,3 +25,4 @@ export function isRegion(value:unknown):value is RegionId{return typeof value===
 export function canTravel(position:{x:number;y:number},from:RegionId,to:unknown):to is RegionId{return isRegion(to)&&from!==to&&Math.hypot(position.x-PORTAL.x,position.y-PORTAL.y)<=PORTAL.radius;}
 export {combat,wolfSpawns} from './combat';
 export {items,rewards,merchant,totalXp,levelForXp,type ItemId} from './economy';
+export * from './classes';

@@ -1,12 +1,13 @@
-import {items,rewards,merchant,combat as C,totalXp,levelForXp,type ItemId} from '@realm/game-data';
+import {items,rewards,merchant,combat as C,totalXp,levelForXp,type ItemId,classes,weapons,classRules,isClassChoice,isWeapon,skillLevel,type ClassId,type WeaponId} from '@realm/game-data';
 import {sight,type Fighter,type Kill} from './combat';
 export interface Stack{id:number;item:ItemId;quantity:number}
-export interface Profile{gold:number;xp:number;level:number;inventory:Stack[];potionReadyAt:number}
+export interface Profile{classId:ClassId;weapon:WeaponId;ownedWeapons:WeaponId[];skills:{melee:number;distance:number;magic:number};skillXp:{melee:number;distance:number;magic:number};gold:number;xp:number;level:number;inventory:Stack[];potionReadyAt:number}
 export interface Drop{id:string;owner:string;x:number;y:number;gold:number;pelts:number;expires:number}
 export interface EconomySnapshot extends Profile{drops:Drop[];capacity:number;nextXp:number;levelXp:number;time:number}
 export class Economy{
  profiles=new Map<string,Profile>();drops=new Map<string,Drop>();lastKill=0;serial=0;
- join(id:string){if(!this.profiles.has(id))this.profiles.set(id,{gold:0,xp:0,level:1,inventory:[],potionReadyAt:0});}
+ join(id:string){if(!this.profiles.has(id))this.profiles.set(id,{classId:'citizen',weapon:'wand',ownedWeapons:[...classRules.starterWeapons],skills:{melee:1,distance:1,magic:1},skillXp:{melee:0,distance:0,magic:0},gold:0,xp:0,level:1,inventory:[],potionReadyAt:0});}
+ sync(id:string,p:Fighter){const profile=this.profiles.get(id);if(!profile)return;profile.skillXp={melee:p.meleeXp,distance:p.distanceXp,magic:p.magicXp};profile.skills={melee:skillLevel(p.meleeXp),distance:skillLevel(p.distanceXp),magic:skillLevel(p.magicXp)};}
  leave(id:string){this.profiles.delete(id);for(const [key,d] of this.drops)if(d.owner===id)this.drops.delete(key);}
  process(kills:Kill[],players:Map<string,Fighter>|{get(id:string):Fighter|undefined},time:number){
  for(const kill of kills){if(kill.id<=this.lastKill)continue;this.lastKill=kill.id;const p=players.get(kill.owner),profile=this.profiles.get(kill.owner);if(!p||!profile)continue;profile.xp=Math.min(totalXp(rewards.levelCap),profile.xp+rewards.wolfXp);profile.level=levelForXp(profile.xp);const id=`spoils-${kill.id}`;this.drops.set(id,{id,owner:kill.owner,x:kill.x,y:kill.y,gold:rewards.wolfGold,pelts:rewards.wolfPelts,expires:time+rewards.dropLifetime});}
@@ -20,7 +21,9 @@ export class Economy{
  }
  act(id:string,p:Fighter,request:unknown,time:number):string{
  const profile=this.profiles.get(id);if(!profile||p.hp<=0)return 'You cannot use items while defeated.';
- if(!request||typeof request!=='object')return 'Invalid action.';const {kind,drop}=request as {kind:unknown;drop:unknown};
+ if(!request||typeof request!=='object')return 'Invalid action.';const {kind,drop,weapon,classId}=request as {kind:unknown;drop:unknown;weapon:unknown;classId:unknown};
+ if(kind==='class'){if(profile.classId!=='citizen')return 'Your class has already been chosen.';if(profile.level<classRules.unlockLevel)return 'Reach level 5 to choose your class.';if(!isClassChoice(classId))return 'Choose Knight, Archer, Mage or Rogue.';profile.classId=classId;const starter=classes[classId].weapon;if(!profile.ownedWeapons.includes(starter))profile.ownedWeapons.push(starter);profile.weapon=starter;p.weapon=starter;p.auto=false;p.target='';return `You chose ${classes[classId].name}. ${weapons[starter].name} equipped.`;}
+ if(kind==='equip'){if(!isWeapon(weapon)||!profile.ownedWeapons.includes(weapon))return 'You do not own that weapon.';if(p.auto)return 'Stop attacking before changing weapons.';profile.weapon=weapon;p.weapon=weapon;p.target='';return 'Weapon equipped.';}
  if(kind==='pickup'){
  if(typeof drop!=='string')return 'Choose a loot bundle.';const d=this.drops.get(drop);
  if(!d||d.owner!==id||time>=d.expires||p.region!=='woods'||Math.hypot(p.x-d.x,p.y-d.y)>rewards.pickupRange||!sight(p,d))return 'Move closer to your loot bundle.';
@@ -47,5 +50,5 @@ export class Economy{
  }
  return 'Invalid action.';
  }
- snapshot(id:string,time:number):EconomySnapshot{const p=this.profiles.get(id)!;return {...p,inventory:p.inventory.map(s=>({...s})),drops:[...this.drops.values()].filter(d=>d.owner===id&&d.expires>time).map(d=>({...d})),capacity:rewards.capacity,nextXp:totalXp(Math.min(rewards.levelCap,p.level+1)),levelXp:totalXp(p.level),time};}
+ snapshot(id:string,time:number):EconomySnapshot{const p=this.profiles.get(id)!;return {...p,ownedWeapons:[...p.ownedWeapons],skills:{...p.skills},skillXp:{...p.skillXp},inventory:p.inventory.map(s=>({...s})),drops:[...this.drops.values()].filter(d=>d.owner===id&&d.expires>time).map(d=>({...d})),capacity:rewards.capacity,nextXp:totalXp(Math.min(rewards.levelCap,p.level+1)),levelXp:totalXp(p.level),time};}
 }

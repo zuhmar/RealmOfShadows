@@ -1,11 +1,11 @@
-import {combat as C,wolfSpawns,PORTAL,type RegionId,type Facing} from '@realm/game-data';
+import {combat as C,wolfSpawns,PORTAL,weapons,weaponDamage,skillRules,type WeaponId,type SkillId,type RegionId,type Facing} from '@realm/game-data';
 import {legal,pathfind,type Point} from './index';
-export interface Fighter extends Point{region:RegionId;hp:number;mana:number;deadUntil:number;shotAt:number;spellAt:number;target:string;auto:boolean}
+export interface Fighter extends Point{weapon:WeaponId;meleeXp:number;distanceXp:number;magicXp:number;region:RegionId;hp:number;mana:number;deadUntil:number;shotAt:number;spellAt:number;target:string;auto:boolean}
 export interface Wolf extends Point{id:string;hp:number;mode:string;facing:Facing;target:string;attackAt:number;respawnAt:number;spawnX:number;spawnY:number}
 export interface Kill {id:number;owner:string;x:number;y:number}
-export interface Projectile extends Point{id:string;owner:string;target:string;region:RegionId;expires:number}
-export interface CombatEvent{kind:'bolt'|'nova'|'hit'|'death'|'respawn';region:RegionId;x:number;y:number;toX?:number;toY?:number;damage?:number}
-export function newFighter():Fighter{return {x:16.5,y:14.5,region:'elderwood',hp:C.playerHp,mana:C.mana,deadUntil:0,shotAt:0,spellAt:0,target:'',auto:false};}
+export interface Projectile extends Point{id:string;owner:string;target:string;region:RegionId;expires:number;weapon:WeaponId;damage:number;speed:number;skill:SkillId}
+export interface CombatEvent{kind:'bolt'|'arrow'|'melee'|'nova'|'hit'|'death'|'respawn';region:RegionId;x:number;y:number;toX?:number;toY?:number;damage?:number;speed?:number}
+export function newFighter():Fighter{return {weapon:'wand',meleeXp:0,distanceXp:0,magicXp:0,x:16.5,y:14.5,region:'elderwood',hp:C.playerHp,mana:C.mana,deadUntil:0,shotAt:0,spellAt:0,target:'',auto:false};}
 const distance=(a:Point,b:Point)=>Math.hypot(a.x-b.x,a.y-b.y);
 export function sight(a:Point,b:Point):boolean{const n=Math.ceil(distance(a,b)*8);for(let i=0;i<=n;i++){if(!legal({x:a.x+(b.x-a.x)*i/Math.max(1,n),y:a.y+(b.y-a.y)*i/Math.max(1,n)},'woods'))return false;}return true;}
 export class CombatSimulation{
@@ -18,11 +18,15 @@ export class CombatSimulation{
  if(p.hp<=0||p.region!=='woods'||this.safe(p))return false;
  if(kind==='stop'){this.clear(p);return true;}
  if(typeof target!=='string')return false;const w=this.wolves.get(target);if(!w||w.hp<=0||w.mode==='return'||!sight(p,w))return false;
- if(kind==='bolt'){if(distance(p,w)>C.bolt.range)return false;p.target=target;p.auto=true;this.shoot(id,p);return true;}
- if(kind==='nova'){if(this.time<p.spellAt||p.mana<C.nova.cost||distance(p,w)>C.nova.range)return false;p.mana-=C.nova.cost;p.spellAt=this.time+C.nova.cooldown;this.events.push({kind:'nova',region:'woods',x:w.x,y:w.y});for(const other of this.wolves.values())if(other.hp>0&&distance(other,w)<=C.nova.radius&&sight(w,other))this.damage(other,C.nova.damage,id);return true;}
+ if(kind==='bolt'){if(distance(p,w)>weapons[p.weapon].range)return false;p.target=target;p.auto=true;this.shoot(id,p);return true;}
+ if(kind==='nova'){if(weapons[p.weapon].skill!=='magic')return false;if(this.time<p.spellAt||p.mana<C.nova.cost||distance(p,w)>C.nova.range)return false;p.mana-=C.nova.cost;p.spellAt=this.time+C.nova.cooldown;this.events.push({kind:'nova',region:'woods',x:w.x,y:w.y});for(const other of this.wolves.values())if(other.hp>0&&distance(other,w)<=C.nova.radius&&sight(w,other))this.hit(other,weaponDamage(p.weapon,p.magicXp,1.5),id,p,'magic',skillRules.novaHitXp);return true;}
  return false;
  }
- shoot(id:string,p:Fighter){const w=this.wolves.get(p.target);if(!w||!w.hp||w.mode==='return'){this.clear(p);return;}if(this.time<p.shotAt||distance(p,w)>C.bolt.range||!sight(p,w))return;p.shotAt=this.time+C.bolt.cooldown;const shot={id:`bolt-${++this.serial}`,owner:id,target:w.id,region:p.region,x:p.x,y:p.y,expires:this.time+2};this.projectiles.set(shot.id,shot);this.events.push({kind:'bolt',region:p.region,x:p.x,y:p.y,toX:w.x,toY:w.y});}
+ hit(w:Wolf,amount:number,id:string,p:Fighter,skill:SkillId,xp=skillRules.hitXp){if(w.hp<=0||w.mode==='return')return;const actual=Math.min(w.hp,amount);this.damage(w,amount,id);if(actual>0)p[`${skill}Xp`]=Math.min(skillRules.factor*(skillRules.cap-1)**2,p[`${skill}Xp`]+xp);}
+ shoot(id:string,p:Fighter){const w=this.wolves.get(p.target);if(!w||!w.hp||w.mode==='return'){this.clear(p);return;}const weapon=weapons[p.weapon];if(this.time<p.shotAt||distance(p,w)>weapon.range||!sight(p,w))return;p.shotAt=this.time+weapon.cooldown;const amount=weaponDamage(p.weapon,p[`${weapon.skill}Xp`]);
+ if(weapon.kind==='melee'){this.events.push({kind:'melee',region:p.region,x:w.x,y:w.y});this.hit(w,amount,id,p,weapon.skill);return;}
+ const shot={id:`bolt-${++this.serial}`,owner:id,target:w.id,region:p.region,x:p.x,y:p.y,expires:this.time+2,weapon:p.weapon,damage:amount,speed:weapon.speed,skill:weapon.skill};this.projectiles.set(shot.id,shot);this.events.push({kind:weapon.kind,region:p.region,x:p.x,y:p.y,toX:w.x,toY:w.y,speed:weapon.speed});}
+
  tick(dt:number,players:Iterable<[string,Fighter]>){this.time+=dt;const actors=new Map(players);
  for(const [id,p] of actors){if(p.hp<=0){if(this.time>=p.deadUntil){p.hp=C.playerHp;p.mana=C.mana;p.region='elderwood';p.x=PORTAL.arrival.x;p.y=PORTAL.arrival.y;this.clear(p);this.events.push({kind:'respawn',region:'elderwood',x:p.x,y:p.y});}continue;}p.mana=Math.min(C.mana,p.mana+dt*5);if(p.region!=='woods'||this.safe(p)){if(p.region==='elderwood')p.hp=Math.min(C.playerHp,p.hp+dt*10);this.clear(p);continue;}if(p.auto)this.shoot(id,p);}
  for(const w of this.wolves.values()){
@@ -34,7 +38,7 @@ export class CombatSimulation{
  if(victim){if(distance(w,victim)<=C.wolf.range&&sight(w,victim)){w.mode='attack';if(this.time>=w.attackAt){w.attackAt=this.time+C.wolf.cooldown;victim.hp=Math.max(0,victim.hp-C.wolf.damage);this.events.push({kind:'hit',region:'woods',x:victim.x,y:victim.y,damage:C.wolf.damage});if(!victim.hp){victim.deadUntil=this.time+C.playerRespawn;this.clear(victim);}}}else{w.mode='chase';this.step(w,victim,dt);}}
  else{w.mode='idle';}
  }
- for(const [id,shot] of this.projectiles){const p=actors.get(shot.owner),w=this.wolves.get(shot.target);if(!p||p.hp<=0||p.region!==shot.region||!w||!w.hp||w.mode==='return'||this.time>=shot.expires){this.projectiles.delete(id);continue;}const d=distance(shot,w),step=C.bolt.speed*dt;const next={x:shot.x+(w.x-shot.x)/Math.max(d,.001)*Math.min(d,step),y:shot.y+(w.y-shot.y)/Math.max(d,.001)*Math.min(d,step)};if(!sight(shot,next)){this.projectiles.delete(id);continue;}Object.assign(shot,next);if(d<=step+.2){this.damage(w,C.bolt.damage,shot.owner);this.projectiles.delete(id);}}
+ for(const [id,shot] of this.projectiles){const p=actors.get(shot.owner),w=this.wolves.get(shot.target);if(!p||p.hp<=0||p.region!==shot.region||!w||!w.hp||w.mode==='return'||this.time>=shot.expires){this.projectiles.delete(id);continue;}const d=distance(shot,w),step=shot.speed*dt;const next={x:shot.x+(w.x-shot.x)/Math.max(d,.001)*Math.min(d,step),y:shot.y+(w.y-shot.y)/Math.max(d,.001)*Math.min(d,step)};if(!sight(shot,next)){this.projectiles.delete(id);continue;}Object.assign(shot,next);if(d<=step+.2){this.hit(w,shot.damage,shot.owner,p,shot.skill);this.projectiles.delete(id);}}
  }
  step(w:Wolf,to:Point,dt:number){const route=pathfind(w,to,'woods');const point=route[0]??to;const dx=point.x-w.x,dy=point.y-w.y,d=Math.hypot(dx,dy);if(d<.001)return;const amount=Math.min(d,C.wolf.speed*dt),next={x:w.x+dx/d*amount,y:w.y+dy/d*amount};if(legal(next,'woods')&&legal({x:next.x,y:w.y},'woods')&&legal({x:w.x,y:next.y},'woods')){w.x=next.x;w.y=next.y;w.facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}}
 }

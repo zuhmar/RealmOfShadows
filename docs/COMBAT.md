@@ -4,9 +4,9 @@ Travel through Elderwood's portal to Whispering Woods. Three Forest Wolves spawn
 
 ## Controls
 
-Click or tap a wolf to select it. Press **1**, **Space**, or **Arc Bolt** to start repeating projectile attacks. **2** or **Moon Nova** casts an area spell centered on the selected wolf. **Escape** or **Stop** clears the target and stops repeating fire. Move with the existing keyboard, right-click/tap navigation or joystick. Attacks do not automatically chase a target. Moving beyond range pauses auto-fire until the target is valid again.
+Click or tap a wolf to select it. Press **1**, **Space**, or **the weapon attack button** to start repeating attacks with the equipped weapon. **2** or **Moon Nova**, with a magic weapon equipped, casts an area spell centered on the selected wolf. **Escape** or **Stop** clears the target and stops repeating fire. Move with the existing keyboard, right-click/tap navigation or joystick. Attacks do not automatically chase a target. Moving beyond range pauses auto-fire until the target is valid again.
 
-Arc Bolt has travel time, a six-tile casting range and a cooldown. Moon Nova costs mana, has its own cooldown and hits nearby visible wolves around the target. Health, mana, target health, projectiles, area rings and damage numbers provide feedback. Configuration lives in `packages/game-data/src/combat.ts`.
+Training-wand Arc Bolt has travel time, a six-tile casting range and a cooldown. Bows fire arrows; swords and daggers use short-range melee. Weapon and skill formulas are documented in `docs/CLASSES.md`. Moon Nova costs mana, has its own cooldown and hits nearby visible wolves around the target. Health, mana, target health, projectiles, area rings and damage numbers provide feedback. Configuration lives in `packages/game-data/src/combat.ts`.
 
 ## Authority and lifecycle
 

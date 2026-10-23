@@ -61,7 +61,7 @@ The three destinations have distinct palettes and collision layouts. Whispering 
 
 ## Wolf combat
 
-Travel to Whispering Woods, leave the glowing portal sanctuary, and click/tap a wolf. **1 / Arc Bolt** or **Space** enables repeating projectile attacks. **2 / Moon Nova** spends mana on an area spell around the selected wolf. **Escape / Stop** cancels attacks. The on-screen buttons support touch. Watch health and mana; defeated players return to Elderwood, and wolves respawn. No attack sprite sheet is needed: wolves use supplied idle/walk sheets, and player attacks use effects.
+Travel to Whispering Woods, leave the glowing portal sanctuary, and click/tap a wolf. **1 / the weapon attack button** or **Space** enables repeating attacks for the equipped weapon. **2 / Moon Nova** requires a magic weapon and spends mana on an area spell around the selected wolf. **Escape / Stop** cancels attacks. The on-screen buttons support touch. Watch health and mana; defeated players return to Elderwood, and wolves respawn. No attack sprite sheet is needed: wolves use supplied idle/walk sheets, and player attacks use effects.
 
 See `docs/COMBAT.md` for authority, lifecycle, balance configuration, tests and limits. Run `npm test`, then (with services running) `npm run test:integration` and `npm run test:browser` sequentially. Browser combat checks use the Canvas renderer to avoid software-WebGL stalls in headless CI. Real device and production deployment checks remain separate.
 
@@ -74,3 +74,7 @@ All connected rewards and transactions are server-controlled. They survive death
 ## Compact HUD
 
 Health and mana stay visible. Expand **Adventurer** for level, gold, stamina and EXP; **Area info** contains region details and connection status. **Actions** opens spell, potion and loot buttons, and opens automatically when selecting a wolf. **Controls** contains sprint, zoom and control hints. Actions and Controls open one at a time and collapse after portal travel. **Bag** and **Interact** remain on the small bottom bar; existing keyboard shortcuts still work. Notices fade after a few seconds. Panels support click/tap and native keyboard toggling.
+
+## Citizen and class progression
+
+New characters are Citizens. At character level 5, expand **Adventurer** and choose **Knight, Archer, Mage or Rogue**. The choice grants and equips its starter weapon. The same panel selects owned weapons and displays **Melee, Distance and Magic** skills. Weapon type determines attacks; its matching skill improves damage. Citizens receive training weapons to try the styles. Stop attacking before swapping. Class and skill progress are session-only until saving is added. See `docs/CLASSES.md` for the current design, formulas and limits; it supersedes the original classless specification.
