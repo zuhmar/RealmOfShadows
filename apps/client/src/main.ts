@@ -5,6 +5,7 @@ import {move,pathfind,CombatSimulation,newFighter,Economy,type EconomySnapshot,t
 import './style.css';
 import {wolfAssets} from './wolf-assets';
 import {characterAssets} from './character-assets';
+import {maraAsset} from './mara-assets';
 import {elderwoodTerrain,elderwoodGround,terrainVariant} from './terrain-assets';
 import elderwoodPortalUrl from '../../../assets/portals/elderwood/Magical Blue Portal Gate.png';
 let noticeTimer:ReturnType<typeof setTimeout>;
@@ -16,9 +17,10 @@ class Elderwood extends Phaser.Scene {
  room?:Room; avatar!:Phaser.GameObjects.Container; bodySprite?:Phaser.GameObjects.Sprite;
  local:Motion={...WORLD.spawn,stamina:100}; keys!:Record<string,Phaser.Input.Keyboard.Key>;
  peers=new Map<string,Phaser.GameObjects.Container>();route:Point[]=[];seq=0;acc=0;online=false;preview=false;touch={x:0,y:0};sprinting=false;pending:Input[]=[];facing:Facing='down';walking=false;animationStyle=new Map<string,{scale:number;origin:number}>();
- preload(){this.load.image('elderwood-portal',elderwoodPortalUrl);this.load.image(elderwoodTerrain.key,elderwoodTerrain.url);for(const asset of wolfAssets)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
+ preload(){this.load.image(maraAsset.key,maraAsset.url);this.load.image('elderwood-portal',elderwoodPortalUrl);this.load.image(elderwoodTerrain.key,elderwoodTerrain.url);for(const asset of wolfAssets)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
  create(){
  const drawers=Array.from(document.querySelectorAll<HTMLDetailsElement>('nav details'));for(const drawer of drawers)drawer.addEventListener('toggle',()=>{if(drawer.open)for(const other of drawers)if(other!==drawer)other.open=false;});
+ if(this.textures.exists(maraAsset.key)){const texture=this.textures.get(maraAsset.key);for(const row of maraAsset.rows)for(const group of maraAsset.groups){const frames=group.columns.map(([left,right],i)=>{const name=`${group.action}-${row.direction}-${i}`;texture.add(name,0,left,row.top,right-left,row.bottom-row.top);return {key:maraAsset.key,frame:name};});this.anims.create({key:`mara-${group.action}-${row.direction}`,frames,frameRate:group.fps,repeat:-1});}}
  this.economy.join('local');this.bag=this.economy.snapshot('local',0);
  for(const asset of wolfAssets){if(!this.textures.exists(asset.key))continue;const texture=this.textures.get(asset.key);asset.rows.forEach((row,d)=>{const direction=['down','left','right','up'][d];const frames=row.map(([x,y,w,h],i)=>{const name=`${direction}-${i}`;texture.add(name,0,x,y,w,h);return {key:asset.key,frame:name};});this.anims.create({key:`${asset.key}-${direction}`,frames,frameRate:asset.fps,repeat:-1});});}
  for(const asset of characterAssets){
@@ -141,7 +143,7 @@ class Elderwood extends Phaser.Scene {
  const label=this.add.text(x,y-(illustratedPortal?194:120),'WAYFARER PORTAL',{fontFamily:'Georgia',fontSize:'14px',color:'#e9e4cb',backgroundColor:'#193b36'}).setOrigin(.5).setDepth(y+1);
  const target=this.add.zone(x,y-(illustratedPortal?70:45),illustratedPortal?224:140,illustratedPortal?220:140).setInteractive({useHandCursor:true}).setDepth(y+2);
  target.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target!==this.game.canvas)return;this.route=[];this.openPortal();});
- if(this.region==='elderwood'){const trader=this.makeAvatar(0xddc79b,merchant.name);trader.setPosition(merchant.x*64,merchant.y*64).setDepth(merchant.y*64);const sprite=trader.getData('sprite') as Phaser.GameObjects.Sprite|undefined;sprite?.setTint(0xc5dfad);const tradeZone=this.add.zone(merchant.x*64,merchant.y*64-30,100,110).setInteractive({useHandCursor:true}).setDepth(merchant.y*64+1);tradeZone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target===this.game.canvas&&!pointer.rightButtonDown())this.openInventory(true);});}
+ if(this.region==='elderwood'){const trader=this.makeAvatar(0xddc79b,merchant.name);trader.setPosition(merchant.x*64,merchant.y*64).setDepth(merchant.y*64);const sprite=trader.getData('sprite') as Phaser.GameObjects.Sprite|undefined;if(sprite&&this.textures.exists(maraAsset.key))sprite.setTexture(maraAsset.key,'idle-down-0').setOrigin(.5,maraAsset.origin).setScale(maraAsset.scale).play('mara-idle-down');const tradeZone=this.add.zone(merchant.x*64,merchant.y*64-30,100,110).setInteractive({useHandCursor:true}).setDepth(merchant.y*64+1);tradeZone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target===this.game.canvas&&!pointer.rightButtonDown())this.openInventory(true);});}
  this.worldObjects=this.children.list.filter(obj=>!existing.has(obj));
  document.querySelector('h1')!.textContent=config.name;
  document.querySelector('footer')!.firstChild!.textContent=config.name.toUpperCase()+' ';

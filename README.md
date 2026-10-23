@@ -86,3 +86,7 @@ New characters are Citizens. At character level 5, expand **Adventurer** and cho
 ## Elderwood portal artwork
 
 `assets/portals/elderwood/Magical Blue Portal Gate.png` replaces the geometric portal in Elderwood. The transparent original is loaded unchanged and scaled proportionally, with its entrance aligned to the existing portal location. A separate ground glow pulses; the artwork stays fully visible. Click/tap the gate or use Interact/Space within the existing range to travel. Other regions retain their existing portals.
+
+## Mara artwork
+
+Mara uses `assets/characters/Mara the Trader RPG Sprite Sheet.png`, unchanged. `apps/client/src/mara-assets.ts` defines the two idle columns and two walking columns, with rows down/left/right/up and separate `mara-` animation names. She stays at her shop playing idle; walking frames are registered for future movement. Her shop location and interaction are unchanged.
