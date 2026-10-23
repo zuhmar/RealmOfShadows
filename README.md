@@ -42,3 +42,11 @@ Maps use configuration-defined building rectangles; client world graphics are ge
 ## Next phase
 
 Phase 2: authenticated accounts, character creation, PostgreSQL/Prisma persistence, durable progress, chat, and reconnect handling. Do not expand into combat until this foundation is validated.
+
+## Frontend-only preview and multiplayer configuration
+
+A deployed frontend with no `VITE_SERVER_URL` runs **Local preview · No multiplayer**. Keyboard, click/tap navigation, collision, stamina, sprite animation and camera movement work locally. If an initial server connection fails, the same labeled preview is enabled. Preview movement is not sent to a server and is not saved. A lost established multiplayer connection stops movement and asks you to reload; it does not silently convert a shared session to local play.
+
+For multiplayer on Vercel, deploy `apps/server` to a WebSocket-capable Node host, then set `VITE_SERVER_URL=wss://your-backend-host` in the Vercel project and redeploy. Vercel serves the client; it does not run the long-lived Colyseus process on port 2567. Local development still attempts the server at the browser hostname on port 2567. Walk animations now depend on simulated displacement, so disconnected or collision-blocked characters stay idle.
+
+Movement browser regression: with Vite and the game server running, run `npm run test:browser`. It uses a synthetic sprite-sheet fixture and checks world displacement, camera follow, walk/idle state and collision in local-preview and server-connected modes. Install a Playwright Chromium browser first (`npx playwright install chromium`) or set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to an existing Chromium binary. `TEST_CLIENT_URL` overrides the Vite URL (default port 5173). This check imports the Vite entry module to inspect actual world positions; run it against the development server.
