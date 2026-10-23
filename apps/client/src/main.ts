@@ -6,7 +6,7 @@ import './style.css';
 import {wolfAssets} from './wolf-assets';
 import {characterAssets} from './character-assets';
 import {maraAsset} from './mara-assets';
-import {elderwoodTerrain,elderwoodGround,terrainVariant} from './terrain-assets';
+import {elderwoodTerrain,elderwoodGround,woodsTerrain,woodsGround,terrainAssets,terrainVariant} from './terrain-assets';
 import elderwoodPortalUrl from '../../../assets/portals/elderwood/Magical Blue Portal Gate.png';
 let noticeTimer:ReturnType<typeof setTimeout>;
 const notice=(s:string)=>{const element=document.querySelector('#notice')!;element.textContent=s;element.classList.remove('is-quiet');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>element.classList.add('is-quiet'),5500);};
@@ -17,7 +17,7 @@ class Elderwood extends Phaser.Scene {
  room?:Room; avatar!:Phaser.GameObjects.Container; bodySprite?:Phaser.GameObjects.Sprite;
  local:Motion={...WORLD.spawn,stamina:100}; keys!:Record<string,Phaser.Input.Keyboard.Key>;
  peers=new Map<string,Phaser.GameObjects.Container>();route:Point[]=[];seq=0;acc=0;online=false;preview=false;touch={x:0,y:0};sprinting=false;pending:Input[]=[];facing:Facing='down';walking=false;animationStyle=new Map<string,{scale:number;origin:number}>();
- preload(){this.load.image(maraAsset.key,maraAsset.url);this.load.image('elderwood-portal',elderwoodPortalUrl);this.load.image(elderwoodTerrain.key,elderwoodTerrain.url);for(const asset of wolfAssets)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
+ preload(){this.load.image(maraAsset.key,maraAsset.url);this.load.image('elderwood-portal',elderwoodPortalUrl);for(const asset of terrainAssets)this.load.image(asset.key,asset.url);for(const asset of wolfAssets)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
  create(){
  const drawers=Array.from(document.querySelectorAll<HTMLDetailsElement>('nav details'));for(const drawer of drawers)drawer.addEventListener('toggle',()=>{if(drawer.open)for(const other of drawers)if(other!==drawer)other.open=false;});
  if(this.textures.exists(maraAsset.key)){const texture=this.textures.get(maraAsset.key);for(const animation of maraAsset.animations){const frames=animation.frames.map(([x,y,w,h],i)=>{const name=`${animation.key}-${i}`;texture.add(name,0,x,y,w,h)?.setTrim(maraAsset.frameWidth,maraAsset.frameHeight,(maraAsset.frameWidth-w)/2,maraAsset.frameHeight-h,w,h);return {key:maraAsset.key,frame:name};});this.anims.create({key:`mara-${animation.key}`,frames,frameRate:animation.fps,repeat:-1});}}
@@ -34,7 +34,7 @@ class Elderwood extends Phaser.Scene {
  }
  }
  for(const [id,s] of Object.entries(spells)){const button=document.createElement('button');button.dataset.spell=id;button.addEventListener('click',()=>this.economyAction({kind:'learn',spell:id}));document.querySelector('#spell-shop')!.append(button);}
- const terrain=this.textures.get(elderwoodTerrain.key);if(this.textures.exists(elderwoodTerrain.key))for(const [kind,y] of Object.entries(elderwoodTerrain.rows))elderwoodTerrain.columns.forEach((x,i)=>terrain.add(`${kind}-${i}`,0,x,y,elderwoodTerrain.size,elderwoodTerrain.size));
+ for(const asset of terrainAssets){if(!this.textures.exists(asset.key))continue;const texture=this.textures.get(asset.key);for(const [kind,y] of Object.entries(asset.rows))asset.columns.forEach((x,i)=>texture.add(`${kind}-${i}`,0,x,y,asset.size,asset.size));}
  this.drawMap();
  this.avatar=this.makeAvatar(0xf0cc80,'You');this.bodySprite=this.avatar.getData('sprite');this.avatar.setPosition(this.local.x*64,this.local.y*64);
  if(characterSprite&&this.textures.exists(characterSprite.key)){this.avatar.removeAll(true);this.bodySprite=this.add.sprite(0,0,characterSprite.key).setOrigin(characterSprite.anchor.x,characterSprite.anchor.y).setScale(characterSprite.scale);this.avatar.add(this.bodySprite);for(const [action,directions] of Object.entries(characterSprite.animations))for(const [direction,a] of Object.entries(directions!)){this.anims.create({key:`${action}-${direction}`,frames:a.frames.map(frame=>({key:characterSprite!.key,frame})),frameRate:a.fps,repeat:-1});}}
@@ -126,8 +126,8 @@ class Elderwood extends Phaser.Scene {
  drawMap(){
  for(const obj of this.worldObjects)obj.destroy();
  const existing=new Set(this.children.list),config=regions[this.region];
- this.cameras.main.setBackgroundColor('#233c38');const g=this.add.graphics();
- for(let y=0;y<WORLD.height;y++)for(let x=0;x<WORLD.width;x++){if(this.region==='elderwood'&&this.textures.exists(elderwoodTerrain.key)){this.add.image(x*64+1,y*64+1,elderwoodTerrain.key,`${elderwoodGround(x,y)}-${terrainVariant(x,y)}`).setOrigin(0).setDisplaySize(62,62).setDepth(-1);continue;}const road=Math.abs(x-16)<2||Math.abs(y-13)<2;const palette=road?config.road:config.ground;g.fillStyle(palette[(x+y)%2]);g.fillRoundedRect(x*64+1,y*64+1,62,62,8);if(!road&&(x*7+y*11)%9===0){g.fillStyle(0x749462,.6);g.fillCircle(x*64+22,y*64+25,4);}}
+ this.cameras.main.setBackgroundColor('#233c38');const g=this.add.graphics();const terrain=this.region==='elderwood'?elderwoodTerrain:this.region==='woods'?woodsTerrain:undefined;const ground=this.region==='woods'?woodsGround:elderwoodGround;
+ for(let y=0;y<WORLD.height;y++)for(let x=0;x<WORLD.width;x++){if(terrain&&this.textures.exists(terrain.key)){this.add.image(x*64+1,y*64+1,terrain.key,`${ground(x,y)}-${terrainVariant(x,y)}`).setOrigin(0).setDisplaySize(62,62).setDepth(-1);continue;}const road=Math.abs(x-16)<2||Math.abs(y-13)<2;const palette=road?config.road:config.ground;g.fillStyle(palette[(x+y)%2]);g.fillRoundedRect(x*64+1,y*64+1,62,62,8);if(!road&&(x*7+y*11)%9===0){g.fillStyle(0x749462,.6);g.fillCircle(x*64+22,y*64+25,4);}}
  for(let x=0;x<WORLD.width;x++)for(const y of [0,23])this.tree(x*64+32,y*64+32);
  for(let y=1;y<23;y++)for(const x of [0,31])this.tree(x*64+32,y*64+32);
  for(const b of this.region==='elderwood'?landmarks:[]){const x=b.x*64,y=b.y*64,w=b.w*64,h=b.h*64;const panel=this.add.graphics();panel.fillStyle(0x172f2d,.35);panel.fillRoundedRect(x+8,y+12,w,h,18);panel.fillStyle(b.color);panel.fillRoundedRect(x,y,w,h,18);panel.fillStyle(0xffffff,.12);panel.fillRoundedRect(x+8,y+8,w-16,26,10);panel.fillStyle(0x374b45);panel.fillRoundedRect(x+w/2-22,y+h-55,44,55,10);panel.setDepth((b.y+b.h)*64);this.add.text(x+w/2,y+40,b.name,{fontFamily:'Georgia',fontSize:'20px',color:'#fff4d6'}).setOrigin(.5).setDepth(panel.depth+1);}

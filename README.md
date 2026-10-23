@@ -90,3 +90,7 @@ New characters are Citizens. At character level 5, expand **Adventurer** and cho
 ## Mara artwork
 
 Mara uses `assets/characters/Mara the Trader RPG Sprite Sheet.png`, unchanged. `apps/client/src/mara-assets.ts` defines explicit crop rectangles and separate `mara-` animation names. Idle columns use rows down/left/right/up; in the walking half, both middle-row frames of column 3 face right and both middle-row frames of column 4 face left. Frames use a common logical canvas and foot baseline so animation changes do not move the sprite anchor. She stays at her shop playing idle; walking frames are registered for future movement. Her shop location and interaction are unchanged.
+
+## Whispering Woods terrain
+
+`assets/tilesets/whispering-woods/Whispering Woods Fantasy Tileset.png` supplies forest grass, leafy dirt paths and the mossy stone portal clearing. `apps/client/src/terrain-assets.ts` defines interior crop frames and stable coordinate-based variation. The original PNG and two-pixel tile gaps are preserved. Wolves, spawn locations, obstacles, combat, and portal sanctuary/travel remain unchanged. Water frames are available but not placed; adding forest ponds will require shared collision changes.
