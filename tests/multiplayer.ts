@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 const endpoint=process.env.TEST_SERVER_URL??'ws://localhost:2567';
 const wait=(ms:number)=>new Promise(r=>setTimeout(r,ms));
 const a=await new Client(endpoint).joinOrCreate('elderwood');const b=await new Client(endpoint).joinOrCreate('elderwood');
+for(const room of [a,b]){room.onMessage('economy-state',()=>{});room.onMessage('economy-result',()=>{});}
 try{a.onMessage('travel-complete',()=>{});let travelErrors=0;a.onMessage('travel-error',()=>travelErrors++);await wait(250);assert.equal(a.roomId,b.roomId);assert.equal(a.state.players.size,2);const start=a.state.players.get(a.sessionId).x;
 for(let i=1;i<=8;i++){a.send('input',{x:1,y:0,sprint:false,seq:i});await wait(60);}await wait(150);
 const own=a.state.players.get(a.sessionId),remote=b.state.players.get(a.sessionId);assert.ok(own.x>start);assert.ok(Math.abs(own.x-remote.x)<.01);assert.ok(own.x-start<=1.61);

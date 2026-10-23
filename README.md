@@ -35,7 +35,7 @@ Positions are logical tile coordinates, with 64 px tiles. Velocity is normalized
 
 ## Phase boundary and known limitations
 
-No accounts, database persistence, inventory, chat, or implemented banking/crafting. A first wolf combat slice is available in Whispering Woods. Portal travel is available between the village and three exploration regions. Landmarks are interactive previews of future systems. Fresh joins start at the square. Phase 2 will implement authentication, persistence and reconnection. Current networking is a foundation with approximate snapshot reconciliation rather than timestamped rollback; latency/loss can cause visible corrections. It needs network-condition and load testing before production. Movement input has no economy authority. No production deployment is claimed.
+No accounts, database persistence, chat, or implemented banking/crafting. A session inventory, wolf rewards and a village merchant are available. A first wolf combat slice is available in Whispering Woods. Portal travel is available between the village and three exploration regions. Landmarks are interactive previews of future systems. Fresh joins start at the square. Phase 2 will implement authentication, persistence and reconnection. Current networking is a foundation with approximate snapshot reconciliation rather than timestamped rollback; latency/loss can cause visible corrections. It needs network-condition and load testing before production. Movement input has no economy authority. No production deployment is claimed.
 
 Maps use configuration-defined building rectangles; client world graphics are geometric placeholders. Four-direction idle/walk animation manifests are supported; eight-direction input maps to the nearest primary facing. Sprint reuses walk. Future attacks use projectiles and area spells; character attack and run sheets are not required. Real device touch testing remains outstanding. Backend TLS, origin policy and account authorization belong to later deployment/hardening work.
 
@@ -57,10 +57,16 @@ The Wayfarer Portal is in the middle of Elderwood square. Walk nearby and click/
 
 Travel works in local preview and multiplayer. Connected travel is validated by the server against the current player position and allowed destination IDs; arrivals and map collisions come from shared configuration. The client only renders players in its own region. Regions currently share the room's total 32-player capacity; this is not independent regional sharding. Region selection is temporary and resets to Elderwood on a fresh session. Both the client and server must be deployed together for the updated region state/message protocol.
 
-The three destinations have distinct palettes and collision layouts. Whispering Woods now has wolf combat; the caverns and swamp remain exploration prototypes. Gathering and rewards are not implemented yet. Original character artwork, idle/walk animations and movement controls are preserved.
+The three destinations have distinct palettes and collision layouts. Whispering Woods now has wolf combat; the caverns and swamp remain exploration prototypes. Gathering remains future work; wolves now grant EXP and collectible gold/pelts. Original character artwork, idle/walk animations and movement controls are preserved.
 
 ## Wolf combat
 
 Travel to Whispering Woods, leave the glowing portal sanctuary, and click/tap a wolf. **1 / Arc Bolt** or **Space** enables repeating projectile attacks. **2 / Moon Nova** spends mana on an area spell around the selected wolf. **Escape / Stop** cancels attacks. The on-screen buttons support touch. Watch health and mana; defeated players return to Elderwood, and wolves respawn. No attack sprite sheet is needed: wolves use supplied idle/walk sheets, and player attacks use effects.
 
 See `docs/COMBAT.md` for authority, lifecycle, balance configuration, tests and limits. Run `npm test`, then (with services running) `npm run test:integration` and `npm run test:browser` sequentially. Browser combat checks use the Canvas renderer to avoid software-WebGL stalls in headless CI. Real device and production deployment checks remain separate.
+
+## Loot, EXP and trading
+
+Wolf kills grant character EXP and leave private bundles of gold and wolf pelts. Pick up nearby spoils with **E**, **Loot**, or a click/tap. Open **Bag / I** for your 12-slot inventory. Return to Elderwood and visit **Mara the Trader**, east of the portal: sell pelts and buy healing potions. **3 / Potion** heals a wounded character. Levels and EXP appear on the HUD.
+
+All connected rewards and transactions are server-controlled. They survive death and travel, but **reset on disconnect/reload or server restart** until accounts and persistence are implemented. See `docs/REWARDS.md` for prices, rules, tests and current limits.

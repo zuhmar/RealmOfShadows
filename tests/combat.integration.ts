@@ -2,7 +2,8 @@ import {Client} from 'colyseus.js';
 import assert from 'node:assert/strict';
 const endpoint=process.env.TEST_SERVER_URL??'ws://localhost:2567',wait=(ms:number)=>new Promise(r=>setTimeout(r,ms));
 const a=await new Client(endpoint).joinOrCreate('elderwood'),b=await new Client(endpoint).joinOrCreate('elderwood');
-for(const room of [a,b])for(const name of ['combat-event','combat-error','travel-complete','travel-error'])room.onMessage(name,()=>{});
+for(const room of [a,b])for(const name of ['combat-event','combat-error','travel-complete','travel-error','economy-state','economy-result'])room.onMessage(name,()=>{});
+let bag:any,observerBag:any;a.onMessage('economy-state',state=>bag=state);b.onMessage('economy-state',state=>observerBag=state);
 try{
  await wait(200);assert.equal(a.roomId,b.roomId);assert.equal(a.state.wolves.size,3);
  a.send('travel','woods');b.send('travel','woods');await wait(200);
@@ -14,5 +15,16 @@ try{
  a.send('combat',{kind:'bolt',target:'wolf-1',damage:99999});await wait(400);assert.ok(a.state.wolves.get('wolf-1').hp<37);assert.ok(a.state.wolves.get('wolf-1').hp>0);
  for(let i=0;i<60&&a.state.wolves.get('wolf-1').hp>0;i++)await wait(100);
  assert.equal(a.state.wolves.get('wolf-1').hp,0);assert.equal(b.state.wolves.get('wolf-1').hp,0);const player=a.state.players.get(a.sessionId);assert.ok(player.hp>0&&player.hp<100);assert.equal(b.state.players.get(b.sessionId).hp,100);assert.equal(b.state.players.get(a.sessionId).hp,player.hp);
+ await wait(250);assert.equal(bag.xp,35);assert.equal(bag.drops.length,1);assert.equal(observerBag.xp,0);assert.equal(observerBag.drops.length,0);
+ const firstDrop=bag.drops[0].id;b.send('economy',{kind:'pickup',drop:firstDrop});await wait(150);a.send('economy',{kind:'pickup',drop:firstDrop,gold:99999});await wait(200);a.send('economy',{kind:'pickup',drop:firstDrop});await wait(200);assert.equal(bag.gold,6);assert.equal(bag.inventory[0].quantity,1);assert.equal(observerBag.gold,0);assert.equal(bag.xp,35);
+ a.send('economy',{kind:'award',gold:99999,xp:99999});await wait(150);a.send('economy',{kind:'sell',quantity:99999});await wait(150);assert.equal(bag.gold,6);assert.equal(bag.xp,35);
+ a.send('combat',{kind:'bolt',target:'wolf-3'});for(let i=0;i<70&&a.state.wolves.get('wolf-3').hp>0;i++)await wait(100);assert.equal(a.state.wolves.get('wolf-3').hp,0);await wait(250);assert.equal(bag.xp,70);
+ a.send('economy',{kind:'pickup',drop:bag.drops[0].id});await wait(200);assert.equal(bag.gold,12);assert.equal(bag.inventory[0].quantity,2);
+ for(let seq=1001;seq<1050&&a.state.players.get(a.sessionId).x>17.1;seq++){a.send('input',{x:-1,y:0,sprint:false,seq});await wait(55);}await wait(150);a.send('travel','elderwood');await wait(200);assert.equal(a.state.players.get(a.sessionId).region,'elderwood');
+ for(let seq=2001;seq<2050&&a.state.players.get(a.sessionId).x<20.1;seq++){a.send('input',{x:1,y:0,sprint:false,seq});await wait(55);}
+ for(let seq=3001;seq<3011;seq++){a.send('input',{x:0,y:-1,sprint:false,seq});await wait(55);}await wait(100);
+ a.send('economy',{kind:'sell',quantity:99999,price:99999});await wait(200);assert.equal(bag.gold,20);assert.equal(bag.inventory.length,0);
+ a.send('economy',{kind:'buy',quantity:99999,price:0});await wait(200);a.send('economy',{kind:'buy',quantity:99999,price:0});await wait(200);assert.equal(bag.gold,8);assert.equal(bag.inventory[0].item,'potion');assert.equal(bag.inventory[0].quantity,1);assert.equal(observerBag.gold,0);
+ console.log('PASS: EXP and private loot, duplicate/foreign pickup rejection, forged rewards rejected, second kill, merchant sale/purchase, insufficient funds');
  console.log('PASS: shared wolves, safe arrival, client damage ignored, projectile kill replicated, wolf bite damage, safe observer, nova cooldown and mana validated');
 }finally{await a.leave();await b.leave();}

@@ -24,3 +24,4 @@ export const PORTAL={x:16.5,y:13.5,radius:2.5,arrival:{x:16.5,y:15.5}};
 export function isRegion(value:unknown):value is RegionId{return typeof value==='string'&&Object.hasOwn(regions,value);}
 export function canTravel(position:{x:number;y:number},from:RegionId,to:unknown):to is RegionId{return isRegion(to)&&from!==to&&Math.hypot(position.x-PORTAL.x,position.y-PORTAL.y)<=PORTAL.radius;}
 export {combat,wolfSpawns} from './combat';
+export {items,rewards,merchant,totalXp,levelForXp,type ItemId} from './economy';

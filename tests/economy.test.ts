@@ -1,0 +1,26 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {Economy} from '../packages/shared/src/economy';
+import {CombatSimulation,newFighter} from '../packages/shared/src/combat';
+import {totalXp,levelForXp,merchant,rewards} from '@realm/game-data';
+function setup(){const economy=new Economy();economy.join('a');economy.join('b');const p={...newFighter(),region:'woods' as const,x:19.5,y:15.5};const players=new Map([['a',p],['b',{...p}]]);return {economy,p,players};}
+test('quadratic EXP boundaries are separate from skills and capped at level 100',()=>{assert.equal(totalXp(1),0);assert.equal(totalXp(2),100);assert.equal(levelForXp(99),1);assert.equal(levelForXp(100),2);assert.equal(levelForXp(399),2);assert.equal(levelForXp(400),3);assert.equal(levelForXp(10**12),100);});
+test('a real wolf death awards EXP once, loot is created once, and observer gains nothing',()=>{
+ const {economy,p,players}=setup(),sim=new CombatSimulation();sim.damage(sim.wolves.get('wolf-1')!,999,'a');sim.damage(sim.wolves.get('wolf-1')!,999,'a');assert.equal(sim.kills.length,1);economy.process(sim.kills,players,0);economy.process(sim.kills,players,0);assert.equal(economy.profiles.get('a')!.xp,35);assert.equal(economy.profiles.get('b')!.xp,0);assert.equal(economy.drops.size,1);assert.equal(economy.profiles.get('a')!.gold,0);economy.process([{id:2,owner:'a',x:p.x,y:p.y},{id:3,owner:'a',x:p.x,y:p.y}],players,0);assert.equal(economy.profiles.get('a')!.level,2);
+});
+test('loot checks ownership, proximity, region and expiration; duplicate pickup is atomic',()=>{
+ const {economy,p,players}=setup();economy.process([{id:1,owner:'a',x:p.x,y:p.y}],players,0);const drop='spoils-1';economy.act('b',p,{kind:'pickup',drop},0);assert.equal(economy.drops.size,1);economy.act('a',{...p,x:2},{kind:'pickup',drop},0);assert.equal(economy.drops.size,1);economy.act('a',{...p,region:'elderwood'},{kind:'pickup',drop},0);assert.equal(economy.drops.size,1);economy.act('a',p,{kind:'pickup',drop,gold:999999,quantity:9999},0);economy.act('a',p,{kind:'pickup',drop},0);assert.equal(economy.profiles.get('a')!.gold,6);assert.equal(economy.profiles.get('a')!.inventory[0].quantity,1);assert.equal(economy.drops.size,0);economy.process([{id:2,owner:'a',x:p.x,y:p.y}],players,0);economy.act('a',p,{kind:'pickup',drop:'spoils-2'},100);assert.equal(economy.profiles.get('a')!.gold,6);economy.process([],players,100);assert.equal(economy.drops.size,0);
+});
+test('full inventory leaves drop and gold untouched; existing stacks accept remaining room',()=>{
+ const {economy,p,players}=setup(),profile=economy.profiles.get('a')!;profile.inventory=Array.from({length:rewards.capacity},(_,id)=>({id,item:'pelt' as const,quantity:20}));economy.process([{id:1,owner:'a',x:p.x,y:p.y}],players,0);economy.act('a',p,{kind:'pickup',drop:'spoils-1'},0);assert.equal(profile.gold,0);assert.equal(economy.drops.size,1);profile.inventory[0].quantity=19;economy.act('a',p,{kind:'pickup',drop:'spoils-1'},0);assert.equal(profile.inventory[0].quantity,20);assert.equal(profile.gold,6);assert.equal(economy.drops.size,0);
+});
+test('merchant sales and purchases validate distance, balances and inventory atomically',()=>{
+ const {economy,p}=setup(),profile=economy.profiles.get('a')!;const town={...p,...merchant,region:'elderwood' as const};profile.inventory=[{id:1,item:'pelt',quantity:3}];economy.act('a',p,{kind:'sell'},0);assert.equal(profile.gold,0);economy.act('a',town,{kind:'sell',quantity:9999,price:999},0);economy.act('a',town,{kind:'sell'},0);assert.equal(profile.gold,12);assert.equal(profile.inventory.length,0);economy.act('a',town,{kind:'buy',price:0,quantity:9999},0);economy.act('a',town,{kind:'buy'},0);assert.equal(profile.gold,0);assert.equal(profile.inventory.length,1);assert.equal(profile.inventory[0].quantity,1);
+ profile.gold=12;profile.inventory=Array.from({length:12},(_,id)=>({id,item:'pelt',quantity:20}));economy.act('a',town,{kind:'buy'},0);assert.equal(profile.gold,12);
+});
+test('potions heal, consume exactly one, respect cooldown, reject full health and death',()=>{
+ const {economy,p}=setup(),profile=economy.profiles.get('a')!;profile.inventory=[{id:1,item:'potion',quantity:3}];economy.act('a',p,{kind:'potion'},0);assert.equal(profile.inventory[0].quantity,3);p.hp=20;economy.act('a',p,{kind:'potion'},0);assert.equal(p.hp,60);assert.equal(profile.inventory[0].quantity,2);economy.act('a',p,{kind:'potion'},1);assert.equal(p.hp,60);economy.act('a',p,{kind:'potion'},3);assert.equal(p.hp,100);assert.equal(profile.inventory[0].quantity,1);p.hp=0;economy.act('a',p,{kind:'potion'},10);assert.equal(p.hp,0);assert.equal(profile.inventory[0].quantity,1);
+});
+test('death and travel preserve collected rewards; leaving clears temporary profile and drops',()=>{
+ const {economy,p,players}=setup(),sim=new CombatSimulation();economy.process([{id:1,owner:'a',x:p.x,y:p.y}],players,0);economy.act('a',p,{kind:'pickup',drop:'spoils-1'},0);p.hp=0;p.deadUntil=0;sim.tick(.05,players);assert.equal(economy.profiles.get('a')!.gold,6);assert.equal(economy.profiles.get('a')!.xp,35);economy.leave('a');economy.join('a');assert.equal(economy.profiles.get('a')!.gold,0);assert.equal(economy.profiles.get('a')!.xp,0);
+});

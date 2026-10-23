@@ -2,17 +2,18 @@ import {combat as C,wolfSpawns,PORTAL,type RegionId,type Facing} from '@realm/ga
 import {legal,pathfind,type Point} from './index';
 export interface Fighter extends Point{region:RegionId;hp:number;mana:number;deadUntil:number;shotAt:number;spellAt:number;target:string;auto:boolean}
 export interface Wolf extends Point{id:string;hp:number;mode:string;facing:Facing;target:string;attackAt:number;respawnAt:number;spawnX:number;spawnY:number}
+export interface Kill {id:number;owner:string;x:number;y:number}
 export interface Projectile extends Point{id:string;owner:string;target:string;region:RegionId;expires:number}
 export interface CombatEvent{kind:'bolt'|'nova'|'hit'|'death'|'respawn';region:RegionId;x:number;y:number;toX?:number;toY?:number;damage?:number}
 export function newFighter():Fighter{return {x:16.5,y:14.5,region:'elderwood',hp:C.playerHp,mana:C.mana,deadUntil:0,shotAt:0,spellAt:0,target:'',auto:false};}
 const distance=(a:Point,b:Point)=>Math.hypot(a.x-b.x,a.y-b.y);
 export function sight(a:Point,b:Point):boolean{const n=Math.ceil(distance(a,b)*8);for(let i=0;i<=n;i++){if(!legal({x:a.x+(b.x-a.x)*i/Math.max(1,n),y:a.y+(b.y-a.y)*i/Math.max(1,n)},'woods'))return false;}return true;}
 export class CombatSimulation{
- time=0;serial=0;wolves=new Map<string,Wolf>();projectiles=new Map<string,Projectile>();events:CombatEvent[]=[];
+ kills:Kill[]=[];time=0;serial=0;wolves=new Map<string,Wolf>();projectiles=new Map<string,Projectile>();events:CombatEvent[]=[];
  constructor(){for(const s of wolfSpawns)this.wolves.set(s.id,{...s,hp:C.wolf.hp,mode:'idle',facing:'down',target:'',attackAt:0,respawnAt:0,spawnX:s.x,spawnY:s.y});}
  safe(p:Point){return distance(p,PORTAL)<C.portalSafeRadius;}
  clear(p:Fighter){p.target='';p.auto=false;}
- damage(w:Wolf,amount:number,attacker?:string){if(w.hp<=0||w.mode==='return')return;w.hp=Math.max(0,w.hp-amount);if(w.hp>0&&attacker){w.target=attacker;if(w.mode==='idle')w.mode='chase';}this.events.push({kind:'hit',region:'woods',x:w.x,y:w.y,damage:amount});if(!w.hp){w.mode='dead';w.target='';w.respawnAt=this.time+C.wolf.respawn;this.events.push({kind:'death',region:'woods',x:w.x,y:w.y});}}
+ damage(w:Wolf,amount:number,attacker?:string){if(w.hp<=0||w.mode==='return')return;w.hp=Math.max(0,w.hp-amount);if(w.hp>0&&attacker){w.target=attacker;if(w.mode==='idle')w.mode='chase';}this.events.push({kind:'hit',region:'woods',x:w.x,y:w.y,damage:amount});if(!w.hp){if(attacker)this.kills.push({id:++this.serial,owner:attacker,x:w.x,y:w.y});w.mode='dead';w.target='';w.respawnAt=this.time+C.wolf.respawn;this.events.push({kind:'death',region:'woods',x:w.x,y:w.y});}}
  action(id:string,p:Fighter,kind:unknown,target:unknown):boolean{
  if(p.hp<=0||p.region!=='woods'||this.safe(p))return false;
  if(kind==='stop'){this.clear(p);return true;}
