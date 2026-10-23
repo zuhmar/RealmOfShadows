@@ -78,3 +78,7 @@ Health and mana stay visible. Expand **Adventurer** for level, gold, stamina and
 ## Citizen and class progression
 
 New characters are Citizens. At character level 5, expand **Adventurer** and choose **Knight, Archer, Mage or Rogue**. The choice grants and equips its starter weapon. The same panel selects owned weapons and displays **Melee, Distance and Magic** skills. Weapon type determines attacks; its matching skill improves damage. Citizens receive training weapons to try the styles. Stop attacking before swapping. Class and skill progress are session-only until saving is added. See `docs/CLASSES.md` for the current design, formulas and limits; it supersedes the original classless specification.
+
+## Elderwood terrain
+
+`assets/tilesets/elderwood/Cartoon Terrain Tileset Sprite Sheet.png` supplies Elderwood's grass, dirt roads and central cobblestone plaza. The original artwork is unchanged. `apps/client/src/terrain-assets.ts` defines interior crop rectangles that exclude the sheet's painted borders and colored gutters, plus deterministic tile variation. This illustrated sheet is not a seamless autotile set; transitions currently use straight tile edges. Water frames are registered for future map authoring but are not placed on walkable ground. Existing collision, portal, merchant and other regions are unchanged. Adjust the crop configuration when replacing this sheet; the empty `Terrain.png` placeholder is not loaded.
