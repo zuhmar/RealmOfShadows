@@ -3,12 +3,12 @@ import {Client,type Room} from 'colyseus.js';
 import {WORLD,landmarks,characterSprite,type Facing} from '@realm/game-data';
 import {move,pathfind,type Point,type Motion,type Input} from '@realm/shared';
 import './style.css';
-import {suppliedCharacterSheet} from '../../../packages/game-data/src/character-sheet';
+import {suppliedCharacterSheet,idleCharacterSheet} from '../../../packages/game-data/src/character-sheet';
 const notice=(s:string)=>{document.querySelector('#notice')!.textContent=s;};
 class Elderwood extends Phaser.Scene {
  room?:Room; avatar!:Phaser.GameObjects.Container; bodySprite?:Phaser.GameObjects.Sprite;
  local:Motion={...WORLD.spawn,stamina:100}; keys!:Record<string,Phaser.Input.Keyboard.Key>;
- peers=new Map<string,Phaser.GameObjects.Container>();route:Point[]=[];seq=0;acc=0;online=false;preview=false;touch={x:0,y:0};sprinting=false;pending:Input[]=[];facing:Facing='down';walking=false;
+ peers=new Map<string,Phaser.GameObjects.Container>();route:Point[]=[];seq=0;acc=0;online=false;preview=false;touch={x:0,y:0};sprinting=false;pending:Input[]=[];facing:Facing='down';walking=false;animationStyle=new Map<string,{scale:number;origin:number}>();
  preload(){if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
  create(){
  this.cameras.main.setBackgroundColor('#233c38');const g=this.add.graphics();
@@ -26,6 +26,8 @@ class Elderwood extends Phaser.Scene {
  this.keys.SPACE.on('down',()=>this.interact());
  const fileInput=document.querySelector<HTMLInputElement>('#character-sheet')!;
  fileInput.addEventListener('change',()=>{const file=fileInput.files?.[0];if(file)void this.importCharacterSheet(file);});
+ const idleInput=document.querySelector<HTMLInputElement>('#idle-sheet')!;
+ idleInput.addEventListener('change',()=>{const file=idleInput.files?.[0];if(file)void this.importCharacterSheet(file,true);});
  document.querySelector('#interact')!.addEventListener('click',()=>this.interact());
  const sprint=document.querySelector('#sprint')!;sprint.addEventListener('pointerdown',()=>{this.sprinting=true;});window.addEventListener('pointerup',()=>{this.sprinting=false;});
  for(const [id,delta] of [['zoom-in',.1],['zoom-out',-.1]] as const)document.querySelector(`#${id}`)!.addEventListener('click',()=>this.cameras.main.setZoom(Phaser.Math.Clamp(this.cameras.main.zoom+delta,.5,1.5)));
@@ -36,11 +38,11 @@ class Elderwood extends Phaser.Scene {
  window.addEventListener('blur',()=>{release();this.sprinting=false;this.route=[];this.input.keyboard?.resetKeys();});
  void this.connect();
  }
- async importCharacterSheet(file:File){
+ async importCharacterSheet(file:File,idleOnly=false){
  const url=URL.createObjectURL(file);
  try{
  const img=new Image();img.src=url;await img.decode();
- const layout=suppliedCharacterSheet;
+ const layout=idleOnly?idleCharacterSheet:suppliedCharacterSheet;
  if(img.naturalWidth!==layout.width||img.naturalHeight!==layout.height){notice('This sheet layout expects the original 1536 × 1024 image.');return;}
  // Register source rectangles, rather than rewriting or resampling the artwork.
  const key=`supplied-character-${Date.now()}`;
@@ -54,11 +56,12 @@ class Elderwood extends Phaser.Scene {
  const animation=`${group.action}-${row.direction}`;
  if(this.anims.exists(animation))this.anims.remove(animation);
  this.anims.create({key:animation,frames,frameRate:group.fps,repeat:group.action==='attack'?0:-1});
+ this.animationStyle.set(animation,{scale:idleOnly?.30:.36,origin:idleOnly?.97:.92});
  }
  this.avatar.removeAll(true);
- this.bodySprite=this.add.sprite(0,0,key,'idle-down-0').setOrigin(.5,.92).setScale(.36);
+ this.bodySprite=this.add.sprite(0,0,key,'idle-down-0').setOrigin(.5,.97).setScale(idleOnly?.30:.36);
  this.avatar.add(this.bodySprite);
- notice('Character sheet imported · Idle and walk ready in all four directions');
+ notice(idleOnly?'Idle sheet imported · Two frames per direction · Existing walk animations preserved':'Character sheet imported · Idle and walk ready in all four directions');
  }catch{notice('Could not read this image. Choose the original PNG character sheet.');}
  finally{URL.revokeObjectURL(url);}
  }
@@ -79,7 +82,7 @@ class Elderwood extends Phaser.Scene {
  const blend=1-Math.exp(-delta/55);this.avatar.x+=(this.local.x*64-this.avatar.x)*blend;this.avatar.y+=(this.local.y*64-this.avatar.y)*blend;this.avatar.setDepth(this.avatar.y);
  if(simulated)this.walking=(this.online||this.preview)&&Math.hypot(this.local.x-previous.x,this.local.y-previous.y)>.00001;
  const moving=this.walking&&(this.online||this.preview);
- if(moving&&(x||y))this.facing=Math.abs(x)>Math.abs(y)?(x>0?'right':'left'):(y>0?'down':'up');if(this.bodySprite){const action=moving?((this.keys.SHIFT.isDown||this.sprinting)&&this.anims.exists(`run-${this.facing}`)?'run':'walk'):'idle',key=`${action}-${this.facing}`;if(this.anims.exists(key))this.bodySprite.play(key,true);}
+ if(moving&&(x||y))this.facing=Math.abs(x)>Math.abs(y)?(x>0?'right':'left'):(y>0?'down':'up');if(this.bodySprite){const action=moving?((this.keys.SHIFT.isDown||this.sprinting)&&this.anims.exists(`run-${this.facing}`)?'run':'walk'):'idle',key=`${action}-${this.facing}`;const selected=this.anims.exists(key)?key:`idle-${this.facing}`;if(this.anims.exists(selected)){const style=this.animationStyle.get(selected);if(style)this.bodySprite.setScale(style.scale).setOrigin(.5,style.origin);this.bodySprite.play(selected,true);}}
  for(const obj of this.peers.values()){const p=obj.getData('target');if(p){obj.x+=(p.x-obj.x)*blend;obj.y+=(p.y-obj.y)*blend;obj.setDepth(obj.y);}}
  (document.querySelector('#stamina') as HTMLMeterElement).value=this.local.stamina;
  }
