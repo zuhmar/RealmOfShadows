@@ -70,3 +70,7 @@ See `docs/COMBAT.md` for authority, lifecycle, balance configuration, tests and 
 Wolf kills grant character EXP and leave private bundles of gold and wolf pelts. Pick up nearby spoils with **E**, **Loot**, or a click/tap. Open **Bag / I** for your 12-slot inventory. Return to Elderwood and visit **Mara the Trader**, east of the portal: sell pelts and buy healing potions. **3 / Potion** heals a wounded character. Levels and EXP appear on the HUD.
 
 All connected rewards and transactions are server-controlled. They survive death and travel, but **reset on disconnect/reload or server restart** until accounts and persistence are implemented. See `docs/REWARDS.md` for prices, rules, tests and current limits.
+
+## Compact HUD
+
+Health and mana stay visible. Expand **Adventurer** for level, gold, stamina and EXP; **Area info** contains region details and connection status. **Actions** opens spell, potion and loot buttons, and opens automatically when selecting a wolf. **Controls** contains sprint, zoom and control hints. Actions and Controls open one at a time and collapse after portal travel. **Bag** and **Interact** remain on the small bottom bar; existing keyboard shortcuts still work. Notices fade after a few seconds. Panels support click/tap and native keyboard toggling.
