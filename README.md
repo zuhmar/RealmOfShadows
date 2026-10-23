@@ -35,7 +35,7 @@ Positions are logical tile coordinates, with 64 px tiles. Velocity is normalized
 
 ## Phase boundary and known limitations
 
-No accounts, database persistence, chat, combat, inventory, region travel, or implemented banking/crafting. Landmarks are interactive previews of future systems. Fresh joins start at the square. Phase 2 will implement authentication, persistence and reconnection. Current networking is a foundation with approximate snapshot reconciliation rather than timestamped rollback; latency/loss can cause visible corrections. It needs network-condition and load testing before production. Movement input has no economy authority. No production deployment is claimed.
+No accounts, database persistence, chat, combat, inventory, or implemented banking/crafting. Portal travel is available between the village and three exploration regions. Landmarks are interactive previews of future systems. Fresh joins start at the square. Phase 2 will implement authentication, persistence and reconnection. Current networking is a foundation with approximate snapshot reconciliation rather than timestamped rollback; latency/loss can cause visible corrections. It needs network-condition and load testing before production. Movement input has no economy authority. No production deployment is claimed.
 
 Maps use configuration-defined building rectangles; client world graphics are geometric placeholders. Four-direction idle/walk animation manifests are supported; eight-direction input maps to the nearest primary facing. Sprint reuses walk. Future attacks use projectiles and area spells; character attack and run sheets are not required. Real device touch testing remains outstanding. Backend TLS, origin policy and account authorization belong to later deployment/hardening work.
 
@@ -50,3 +50,11 @@ A deployed frontend with no `VITE_SERVER_URL` runs **Local preview · No multipl
 For multiplayer on Vercel, deploy `apps/server` to a WebSocket-capable Node host, then set `VITE_SERVER_URL=wss://your-backend-host` in the Vercel project and redeploy. Vercel serves the client; it does not run the long-lived Colyseus process on port 2567. Local development still attempts the server at the browser hostname on port 2567. Walk animations now depend on simulated displacement, so disconnected or collision-blocked characters stay idle.
 
 Movement browser regression: with Vite and the game server running, run `npm run test:browser`. It uses the committed Citizen sheets and checks automatic loading, world displacement, camera follow, walk/idle state and collision in local-preview and server-connected modes. Install a Playwright Chromium browser first (`npx playwright install chromium`) or set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to an existing Chromium binary. `TEST_CLIENT_URL` overrides the Vite URL (default port 5173). This check imports the Vite entry module to inspect actual world positions; run it against the development server.
+
+## Village portal
+
+The Wayfarer Portal is in the middle of Elderwood square. Walk nearby and click/tap it, press Space, or use Interact. Choose Whispering Woods, Crystal Caverns, or Murkmire Swamp. Each destination has the same portal near arrival, with Elderwood available as a return destination. Close the picker with × or Escape.
+
+Travel works in local preview and multiplayer. Connected travel is validated by the server against the current player position and allowed destination IDs; arrivals and map collisions come from shared configuration. The client only renders players in its own region. Regions currently share the room's total 32-player capacity; this is not independent regional sharding. Region selection is temporary and resets to Elderwood on a fresh session. Both the client and server must be deployed together for the updated region state/message protocol.
+
+The three destinations are exploration prototypes with distinct palettes and collision layouts. Enemies, combat, gathering and rewards are not implemented yet. Original character artwork, idle/walk animations and movement controls are preserved.
