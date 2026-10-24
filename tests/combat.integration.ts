@@ -1,3 +1,5 @@
+import {merchant} from '@realm/game-data';
+import {walkTo} from './helpers/walk';
 import {Client} from 'colyseus.js';
 import assert from 'node:assert/strict';
 const endpoint=process.env.TEST_SERVER_URL??'ws://localhost:2567',wait=(ms:number)=>new Promise(r=>setTimeout(r,ms));
@@ -21,8 +23,7 @@ try{
  a.send('combat',{kind:'bolt',target:'wolf-3'});for(let i=0;i<70&&a.state.wolves.get('wolf-3').hp>0;i++)await wait(100);assert.equal(a.state.wolves.get('wolf-3').hp,0);await wait(250);assert.equal(bag.xp,70);
  a.send('economy',{kind:'pickup',drop:bag.drops[0].id});await wait(200);assert.equal(bag.gold,12);assert.equal(bag.inventory[0].quantity,2);
  for(let seq=1001;seq<1050&&a.state.players.get(a.sessionId).x>17.1;seq++){a.send('input',{x:-1,y:0,sprint:false,seq});await wait(55);}await wait(150);a.send('travel','elderwood');await wait(200);assert.equal(a.state.players.get(a.sessionId).region,'elderwood');
- for(let seq=2001;seq<2050&&a.state.players.get(a.sessionId).x<20.1;seq++){a.send('input',{x:1,y:0,sprint:false,seq});await wait(55);}
- for(let seq=3001;seq<3011;seq++){a.send('input',{x:0,y:-1,sprint:false,seq});await wait(55);}await wait(100);
+ await walkTo(a,merchant,2000);
  a.send('economy',{kind:'sell',quantity:99999,price:99999});await wait(200);assert.equal(bag.gold,20);assert.equal(bag.inventory.length,0);
  a.send('economy',{kind:'buy',quantity:99999,price:0});await wait(200);a.send('economy',{kind:'buy',quantity:99999,price:0});await wait(200);assert.equal(bag.gold,8);assert.equal(bag.inventory[0].item,'potion');assert.equal(bag.inventory[0].quantity,1);assert.equal(observerBag.gold,0);
  console.log('PASS: EXP and private loot, duplicate/foreign pickup rejection, forged rewards rejected, second kill, merchant sale/purchase, insufficient funds');

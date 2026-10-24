@@ -2,6 +2,8 @@ import {spawn,type ChildProcess} from 'node:child_process';
 import {once} from 'node:events';
 import {Client,type Room} from 'colyseus.js';
 import assert from 'node:assert/strict';
+import {merchant} from '@realm/game-data';
+import {walkTo} from './helpers/walk';
 import {Economy} from '@realm/shared';
 import {writeProgress} from '../packages/shared/src/saves';
 import {mockSupabase,userA,userB} from './fixtures/supabase';
@@ -17,7 +19,7 @@ try{
  await mock.db.query('insert into public.character_saves(user_id,progress) values($1,$2::jsonb)',[userA,JSON.stringify(initial)]);
  await start();await assert.rejects(join('invalid-token'));const a=await join('token-a'),bag=bagOf(a),guest=await join(),guestBag=bagOf(guest);await until(()=>bag()?.gold===321&&guestBag()?.gold===0);assert.equal(bag().classId,'mage');assert.equal(bag().level,5);assert.equal(bag().skills.magic,4);assert.equal(a.state.players.get(a.sessionId).magicXp,900);assert.deepEqual(bag().learnedSpells,['moonNova','mend']);assert.equal(guestBag().account,null);
  await assert.rejects(join('token-a'));let seq=0;const player=()=>a.state.players.get(a.sessionId);
- for(let i=0;i<40&&player().x<20.1;i++){a.send('input',{x:1,y:0,sprint:false,seq:++seq});await wait(55);}a.send('economy',{kind:'learn',spell:'spark'});await until(()=>bag().learnedSpells.includes('spark'));a.send('economy',{kind:'buy'});await until(()=>bag().inventory.some((s:any)=>s.item==='potion'));a.send('economy',{kind:'equip',weapon:'bow'});await until(()=>bag().weapon==='bow');
+ seq=await walkTo(a,merchant,seq);a.send('economy',{kind:'learn',spell:'spark'});await until(()=>bag().learnedSpells.includes('spark'));a.send('economy',{kind:'buy'});await until(()=>bag().inventory.some((s:any)=>s.item==='potion'));a.send('economy',{kind:'equip',weapon:'bow'});await until(()=>bag().weapon==='bow');
  const expected={gold:bag().gold,xp:bag().xp,inventory:bag().inventory,learnedSpells:bag().learnedSpells,skillXp:bag().skillXp,weapon:bag().weapon};assert.equal(expected.gold,294);assert.equal(expected.inventory.find((s:any)=>s.item==='potion').id>25,true);
  await a.leave(true);await guest.leave(true);await stop();await start();const b=await join('token-a'),loaded=bagOf(b);await until(()=>loaded()?.weapon==='bow');for(const [key,value] of Object.entries(expected))assert.deepEqual(loaded()[key],value);assert.equal(b.state.players.get(b.sessionId).region,'elderwood');assert.ok(b.state.players.get(b.sessionId).hp>0);
  // A cloud write outage must disconnect instead of pretending new progress is saved.

@@ -15,6 +15,13 @@ test('river, forest, planting beds and building bases block movement and pathfin
  assert.equal(legal(point),false);assert.deepEqual(pathfind(WORLD.spawn,point),[]);
  }
  // Eastern river edge: both ordinary movement and sprint stop at the bank.
- const start={x:24.7,y:15.5,stamina:100};assert.equal(legal(start),true);
+ const start={x:24.95,y:15.5,stamina:100};assert.equal(legal(start),true);
  for(const sprint of [false,true])assert.deepEqual(move(start,{x:1,y:0,sprint,seq:1},.05).x,start.x);
+});
+
+test('painted river bank no longer blocks the open ground at the old whole-tile boundary',()=>{
+ assert.equal(legal({x:24.9,y:15.5}),true);
+ assert.equal(legal({x:25.3,y:15.5}),false);
+ const route=pathfind(WORLD.spawn,merchant);assert.ok(route.length);
+ for(let i=1;i<route.length;i++)assert.ok(Math.hypot(route[i].x-route[i-1].x,route[i].y-route[i-1].y)<=Math.SQRT1_2+.001);
 });
