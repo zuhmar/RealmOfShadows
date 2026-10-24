@@ -1,12 +1,3 @@
-import baseUrl from '../../../assets/maps/elderwood/svg/base.svg?url&no-inline';
-import tavernUrl from '../../../assets/maps/elderwood/svg/tavern.svg?url&no-inline';
-import blacksmithUrl from '../../../assets/maps/elderwood/svg/blacksmith.svg?url&no-inline';
-import portalUrl from '../../../assets/maps/elderwood/svg/portal.svg?url&no-inline';
-// Genuine vector art. Original PNGs and Reference.png remain unchanged.
-// Base terrain is generated from the server's water/cliff/bridge geometry.
-export const elderwoodMapAssets=[
- {key:'elderwood-base',url:baseUrl,scale:1.5},
- {key:'elderwood-tavern',url:tavernUrl,scale:2},
- {key:'elderwood-blacksmith',url:blacksmithUrl,scale:2},
- {key:'elderwood-portal',url:portalUrl,scale:2},
-];
+// Load shared prefab textures once; every placed prop retains its own depth.
+const files=import.meta.glob('../../../assets/maps/elderwood/svg/*.svg',{eager:true,query:'?url&no-inline',import:'default'}) as Record<string,string>;
+export const elderwoodMapAssets=Object.entries(files).filter(([path])=>!path.endsWith('/full-map.svg')).map(([path,url])=>{const name=path.split('/').at(-1)!.replace('.svg','');return {key:`elderwood-${name}`,url,scale:name==='base'?1.5:2};});

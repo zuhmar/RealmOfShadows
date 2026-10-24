@@ -14,7 +14,7 @@ test('committed Elderwood SVGs match the shared geometry generator and contain o
 });
 test('every water, cliff and bridge collision outline is represented in the SVG base',async()=>{
  const base=await readFile(new URL('../assets/maps/elderwood/svg/base.svg',import.meta.url),'utf8');
- for(const polygons of Object.values(elderwoodTerrainGeometry))for(const polygon of polygons){
+ for(const polygon of [...elderwoodTerrainGeometry.rivers,...elderwoodTerrainGeometry.cliffs,...elderwoodTerrainGeometry.bridges]){
   assert.ok(base.includes(`points="${polygon.map(p=>p.join(',')).join(' ')}"`));
  }
 });

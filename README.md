@@ -81,7 +81,7 @@ New characters are Citizens. At character level 5, open your **profile** and cho
 
 ## Elderwood terrain
 
-Elderwood now renders four genuine SVG assets in `assets/maps/elderwood/svg/`: ground, tavern, blacksmith and portal. They keep the original 1536 × 1024 layout and existing object placement. The original PNGs and `Reference.png` remain unchanged as artwork/reference files. `npm run art:elderwood` regenerates the SVGs from `scripts/build-elderwood-svg.ts`; water, cliff and bridge outlines come directly from the shared server/client collision geometry in `packages/game-data/src/elderwood.ts`. There are no embedded PNGs. Grass and surface flowers remain walkable; placed buildings keep their own collision footprints. Mara remains at the tavern entrance. See `assets/maps/elderwood/svg/README.md` for editing instructions. Other regions retain their existing terrain.
+Elderwood now uses the complete layout from the latest `assets/maps/elderwood/Reference.png`: seven buildings, a five-stall market, farm, training yard, central upright portal, gates, fences, furniture and woodland. SVG prefabs in `assets/maps/elderwood/svg/` render as separate objects with depth based on their feet. Only trunks and solid bases collide, so players can walk behind foliage and roofs. The shared layout in `packages/game-data/src/elderwood.ts` drives rendering, exact footprint collisions and navigation; `island-layout.ts` supplies reusable placement and spatial collision helpers. `npm run art:elderwood` regenerates the SVGs and a standalone `full-map.svg`. Original PNGs and the new reference are preserved. Future island references can go under `assets/maps/whispering-woods/`, `crystal-caverns/` and `murkmire-swamp/`; their current gameplay maps are unchanged.
 
 ## Elderwood portal artwork
 
@@ -160,3 +160,12 @@ character profile, **Character appearance → Original character** switches back
 for comparison (a local browser preference). See
 `assets/characters/paper-doll/README.md` for art/rig details. Verify the trial with
 `npm run test:paper-doll:browser` against a running client/server.
+
+
+Full-island verification: `npm run test:island:browser` checks the assembled
+village and real click-to-move routes using 100ms frames, including Mara's shop,
+the bank and a southern footbridge. Route steering recalculates each fixed tick
+so slower frames cannot repeatedly overshoot a waypoint. Collision checks use
+polygon/footprint intersections, including thin fence posts; a spatial index
+keeps the denser scenery local to each movement query. Reference-derived new
+buildings are landmarks; existing trading remains with Mara at the tavern.

@@ -1,8 +1,11 @@
-import {blocked,elderwoodPositionBlocked,WORLD,type RegionId} from '@realm/game-data';
+import {blocked,elderwoodFootprintBlocked,WORLD,type RegionId} from '@realm/game-data';
 export interface Point {x:number;y:number}
 export interface Motion extends Point {stamina:number}
 export interface Input {x:number;y:number;sprint:boolean;seq:number}
-export function legal(p:Point,region:RegionId='elderwood',r=.20):boolean {return [-r,0,r].every(dx=>[-r,0,r].every(dy=>region==='elderwood'?p.x+dx>=1&&p.y+dy>=1&&p.x+dx<WORLD.width-1&&p.y+dy<WORLD.height-1&&!elderwoodPositionBlocked(p.x+dx,p.y+dy):!blocked(Math.floor(p.x+dx),Math.floor(p.y+dy),region)));}
+export function legal(p:Point,region:RegionId='elderwood',r=.20):boolean {
+ if(region==='elderwood')return p.x-r>=1&&p.y-r>=1&&p.x+r<WORLD.width-1&&p.y+r<WORLD.height-1&&!elderwoodFootprintBlocked(p.x,p.y,r);
+ return [-r,0,r].every(dx=>[-r,0,r].every(dy=>!blocked(Math.floor(p.x+dx),Math.floor(p.y+dy),region)));
+}
 export function move(p:Motion,input:Input,dt:number,region:RegionId='elderwood'):Motion {
  const len=Math.hypot(input.x,input.y);if(!len)return {...p,stamina:Math.min(100,p.stamina+dt*15)};
  const sprint=input.sprint&&p.stamina>0, distance=WORLD.speed*(sprint?WORLD.sprint:1)*dt;

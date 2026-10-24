@@ -1,10 +1,7 @@
-import {elderwoodBlocked} from './elderwood';
-export {elderwoodGround,elderwoodBlocked,elderwoodPositionBlocked,elderwoodTerrainGeometry,elderwoodMap,elderwoodObjects,type ElderwoodTerrain} from './elderwood';
+import {elderwoodBlocked,elderwoodObjects} from './elderwood';
+export {elderwoodGround,elderwoodBlocked,elderwoodFootprintBlocked,elderwoodPositionBlocked,elderwoodTerrainGeometry,elderwoodMap,elderwoodObjects,type ElderwoodTerrain} from './elderwood';
 export const WORLD = { tile:64, width:32, height:24, speed:4, sprint:1.5, capacity:32, spawn:{x:16.5,y:14.5} };
-export const landmarks = [
- {name:'The Copperleaf Tavern',x:335/48,y:105/48+4/3,w:230/48,h:110/48,color:0x668ca0,description:'A welcoming stop in Elderwood. Interiors are coming later.'},
- {name:'Willow & Anvil',x:965/48,y:105/48+4/3,w:230/48,h:115/48,color:0xb78256,description:'The village blacksmith. Crafting is coming later.'},
-];
+export const landmarks=elderwoodObjects.filter(object=>object.name&&object.key!=='elderwood-stall-red'&&object.key!=='elderwood-stall-blue'&&object.key!=='elderwood-stall-green').map(object=>({name:object.name!,x:object.x/48,y:object.y/48+4/3,w:object.w/48,h:object.h/48,color:0x8b9b79,description:'A village landmark. Interiors are not open yet.'}));
 export function blocked(x:number,y:number,region:RegionId='elderwood'):boolean {
  return x<1||y<1||x>=WORLD.width-1||y>=WORLD.height-1||(region==='elderwood'?elderwoodBlocked(x,y):regions[region].obstacles.some(b=>x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h));
 }
@@ -30,3 +27,5 @@ export * from './classes';
 export * from './spells';
 
 export * from './equipment';
+
+export * from './island-layout';

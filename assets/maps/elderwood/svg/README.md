@@ -1,25 +1,30 @@
-# SVG Elderwood
+# Full reference-driven Elderwood
 
-The game loads these four standalone, genuinely vector SVGs:
+`Reference.png` in the parent folder is the latest village plan. This recreation
+uses a base SVG and reusable SVG prefabs. The original uploaded PNGs are preserved.
 
-- `base.svg`: meadow, dirt paths, paved square, river banks, water, cliffs,
-  waterfalls and bridge decks. Surface flowers and grass do not block movement.
-- `tavern.svg`: the blue-roof tavern beside Mara.
-- `blacksmith.svg`: the red-roof forge.
-- `portal.svg`: the crystal portal in the village square.
+The layout includes seven buildings (tavern, blacksmith, apothecary, general store,
+workshop, hall, bank), five market stalls, farm, training yard, upright portal,
+gates, fences, benches, lamps, banners, barrels, planters, trees and boulders.
+Buildings are environment landmarks; new interiors or shop services are not
+implied. Mara's existing trading remains available in front of the tavern.
 
-No PNGs are embedded or traced into bitmap wrappers. Original uploaded PNGs and
-Reference.png remain in the parent folders unchanged. Player/NPC/monster artwork
-is configured separately.
+- `base.svg`: ground, paths, plaza, water, cliffs and footbridges.
+- The other SVGs: individual reusable prop/building textures.
+- `full-map.svg`: standalone assembled vector map, sorted by object feet. This is
+  for viewing/export; the game loads the base and shared prefab textures instead.
 
-Source: `scripts/build-elderwood-svg.ts`. Run `npm run art:elderwood` to regenerate
-all four SVGs. Edit that generator for styles/building details, and
-`packages/game-data/src/elderwood.ts` for water, cliffs, bridges or object placement.
-Base art and server/client collision share the same geometry. Tests reject stale
-generated SVGs after geometry edits. Direct edits to generated SVGs are replaced
-on regeneration, so transfer permanent changes into the generator.
+Run `npm run art:elderwood` after edits. Sources:
 
-Dimensions remain 1536 × 1024 for the base. Existing world scale, building
-footprints, merchant position, portal interaction and travel destinations are
-unchanged. Phaser rasterizes the source SVGs once at load time, with extra
-resolution for display; it does not parse vector paths during gameplay.
+- `packages/game-data/src/elderwood.ts`: placements, terrain and normalized solid
+  footprints, shared by client and server.
+- `packages/game-data/src/island-layout.ts`: reusable placement and collision
+  helpers for reference-driven islands, including full player-footprint checks.
+- `scripts/build-elderwood-svg.ts`: Elderwood terrain and portal art.
+- `scripts/island-svg.ts`: reusable vector prefab kit and full-map compositor.
+
+Direct SVG edits are replaced on regeneration; put permanent art changes in the
+source generators. The tests check that generated art stays current. No PNGs are
+embedded in these SVGs. Separate props allow players to walk behind canopies and
+roofs while colliding only with trunks and solid bases. Other islands can use the
+same layout/prefab workflow when their references are supplied.

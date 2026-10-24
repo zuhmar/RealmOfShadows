@@ -16,6 +16,6 @@ test('movement and pathfinding use the selected destination collision map',()=>{
  assert.equal(move(position,input,.05,'woods').x,position.x);
  assert.ok(move(position,input,.05,'swamp').x===position.x);
  assert.ok(pathfind({x:5.5,y:7.5},{x:11.5,y:7.5},'woods').every(p=>legal(p,'woods')));
- // The woods clearing is river in the illustrated village.
- assert.equal(legal({x:5.5,y:5.5},'elderwood'),false);assert.equal(legal({x:5.5,y:5.5},'woods'),true);
+ // A woods clearing occupies the bank footprint in the reference village.
+ assert.equal(legal({x:26.5,y:17.5},'elderwood'),false);assert.equal(legal({x:26.5,y:17.5},'woods'),true);
 });

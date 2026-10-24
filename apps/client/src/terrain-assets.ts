@@ -14,7 +14,8 @@ export function terrainVariant(x:number,y:number){return ((Math.imul(x,73856093)
 // Matching illustrated layout, with its own forest artwork and palette.
 export const woodsTerrain={key:'woods-terrain',url:woodsUrl,
  columns:[64,316,564,812,1064,1312],rows:{grass:64,dirt:312,stone:552,water:792},size:160};
-export const terrainAssets=[elderwoodTerrain,woodsTerrain];
+// Elderwood uses its reference-driven SVG island; retain only forest tiles in preload.
+export const terrainAssets=[woodsTerrain];
 export function woodsGround(x:number,y:number):TerrainKind{
  if(Math.abs(x-16)<=2&&Math.abs(y-13)<=2)return 'stone';
  if(Math.abs(x-16)<2||Math.abs(y-13)<2)return 'dirt';
