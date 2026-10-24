@@ -18,7 +18,8 @@
     "test:startup": "tsx tests/startup.browser.ts",
     "test:equipment:browser": "node tests/browser-equipment.cjs",
     "test:character:browser": "node tests/browser-character.cjs",
-    "test:paper-doll:browser": "node tests/browser-paper-doll.cjs"
+    "test:paper-doll:browser": "node tests/browser-paper-doll.cjs",
+    "art:elderwood": "tsx scripts/build-elderwood-svg.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

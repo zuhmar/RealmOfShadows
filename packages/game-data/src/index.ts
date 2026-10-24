@@ -1,5 +1,5 @@
 import {elderwoodBlocked} from './elderwood';
-export {elderwoodGround,elderwoodBlocked,elderwoodPositionBlocked,elderwoodMap,elderwoodObjects,type ElderwoodTerrain} from './elderwood';
+export {elderwoodGround,elderwoodBlocked,elderwoodPositionBlocked,elderwoodTerrainGeometry,elderwoodMap,elderwoodObjects,type ElderwoodTerrain} from './elderwood';
 export const WORLD = { tile:64, width:32, height:24, speed:4, sprint:1.5, capacity:32, spawn:{x:16.5,y:14.5} };
 export const landmarks = [
  {name:'The Copperleaf Tavern',x:335/48,y:105/48+4/3,w:230/48,h:110/48,color:0x668ca0,description:'A welcoming stop in Elderwood. Interiors are coming later.'},

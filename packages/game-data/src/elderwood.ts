@@ -1,4 +1,4 @@
-// Coordinates are measured on the original 1536 × 1024 Elderwood base image.
+// Coordinates use the original 1536 × 1024 Elderwood layout.
 // Keep the original aspect ratio, centered inside the 32 × 24 tile world.
 export const elderwoodMap={width:1536,height:1024,worldWidth:32,worldHeight:64/3,offsetY:4/3};
 export const elderwoodObjects=[
@@ -31,6 +31,8 @@ const bridges:readonly Polygon[]=[
  [[55,725],[185,725],[185,780],[55,780]],
  [[1315,720],[1415,720],[1415,780],[1315,780]],
 ];
+// The SVG art generator consumes these same outlines; no separate collision map.
+export const elderwoodTerrainGeometry={rivers,cliffs,bridges};
 function inside(x:number,y:number,polygon:Polygon){
  let result=false;
  for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
@@ -47,7 +49,7 @@ export function elderwoodPositionBlocked(x:number,y:number){
 }
 // Tile queries use their centers; movement samples the actual player footprint.
 export function elderwoodBlocked(x:number,y:number){return elderwoodPositionBlocked(x+.5,y+.5);}
-// Retained for terrain consumers; Elderwood now renders its supplied base PNG.
+// Retained for terrain consumers; Elderwood renders its SVG base.
 export type ElderwoodTerrain='grass'|'dirt'|'stone'|'water';
 export function elderwoodGround(x:number,y:number):ElderwoodTerrain{
  if(x>=12&&x<=19&&y>=8&&y<=15)return 'stone';

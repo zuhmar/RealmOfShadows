@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="187" viewBox="0 0 280 187">
+<defs><linearGradient id="wood" x2=".8" y2="1"><stop stop-color="#c69758"/><stop offset="1" stop-color="#805335"/></linearGradient><linearGradient id="wall" x2=".7" y2="1"><stop stop-color="#edd3a0"/><stop offset="1" stop-color="#be9d65"/></linearGradient><linearGradient id="blue" x2=".6" y2="1"><stop stop-color="#649ec3"/><stop offset="1" stop-color="#2d577a"/></linearGradient><linearGradient id="red" x2=".7" y2="1"><stop stop-color="#ce7461"/><stop offset="1" stop-color="#8d3b38"/></linearGradient><radialGradient id="light"><stop stop-color="#fff1a7"/><stop offset="1" stop-color="#e5a64f"/></radialGradient><linearGradient id="stone" x2=".7" y2="1"><stop stop-color="#bac3b0"/><stop offset="1" stop-color="#7b8d83"/></linearGradient></defs>
+<g stroke="#443f33" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<ellipse cx="140" cy="173" rx="119" ry="12" fill="#263d32" opacity=".22" stroke="none"/><rect x="34" y="73" width="212" height="98" rx="7" fill="url(#wall)"/><path d="M38 94h204M38 131h204M58 81v88M222 81v88" fill="none" stroke="#866443" stroke-width="5"/><path d="M30 92l110-79 110 79z" fill="url(#wood)"/><path d="M16 89L138 6l127 83-13 17-113-76-110 77z" fill="url(#blue)"/>
+<path d="M110.88 34l28.12 -12.920000000000002 29.26 12.920000000000002" fill="none" stroke="#9fbdd0" stroke-width="2" opacity=".65"/>
+<path d="M85.72 51l53.28 -24.48 55.44 24.48" fill="none" stroke="#9fbdd0" stroke-width="2" opacity=".65"/>
+<path d="M60.56 68l78.44 -36.04 81.62 36.04" fill="none" stroke="#9fbdd0" stroke-width="2" opacity=".65"/>
+<path d="M35.400000000000006 85l103.6 -47.6 107.8 47.6" fill="none" stroke="#9fbdd0" stroke-width="2" opacity=".65"/>
+<path d="M30 100l109-73 114 75" fill="none" stroke="#e1ba79" stroke-width="6"/><rect x="36" y="4" width="30" height="63" rx="2" fill="url(#stone)"/><path d="M37 19h27M38 37h26M38 53h25M50 5v12M53 21v14M49 39v12" stroke="#6b7b70" stroke-width="2"/><rect x="32" y="2" width="38" height="11" rx="2" fill="#b9c0a9"/>
+<path d="M106 166v-44q0-24 31-24t31 24v44z" fill="url(#wood)"/><path d="M137 102v62M118 111v51M154 111v51" stroke="#785232" stroke-width="2"/><circle cx="157" cy="142" r="3" fill="#e3c577"/><path d="M101 166h75v9H98zM95 176h84v8H93z" fill="url(#stone)"/>
+<path d="M54 134v-22q0-17 18-17t18 17v22z" fill="url(#light)"/><path d="M72 98v34M56 116h32" stroke="#8a653b" stroke-width="3"/>
+<path d="M183 134v-22q0-17 18-17t18 17v22z" fill="url(#light)"/><path d="M201 98v34M185 116h32" stroke="#8a653b" stroke-width="3"/>
+<path d="M224 98h43v47h-43z" fill="#795537" stroke="#d3ac66" stroke-width="3"/><path d="M232 110h18v23h-18zM251 115h7v12h-7" fill="#f3d49b"/><path d="M232 108q8-9 18 0" fill="#fff0cf" stroke-width="2"/>
+<ellipse cx="44" cy="159" rx="12" ry="7" fill="#c2975c"/><path d="M32 157v17q12 10 24 0v-17" fill="url(#wood)"/><path d="M33 162h22M34 172h20" stroke="#6f7d75" stroke-width="3"/>
+<ellipse cx="234" cy="159" rx="12" ry="7" fill="#c2975c"/><path d="M222 157v17q12 10 24 0v-17" fill="url(#wood)"/><path d="M223 162h22M224 172h20" stroke="#6f7d75" stroke-width="3"/>
+</g></svg>
