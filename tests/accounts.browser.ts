@@ -1,0 +1,25 @@
+import {spawn,type ChildProcess} from 'node:child_process';
+import {once} from 'node:events';
+import {chromium} from 'playwright';
+import assert from 'node:assert/strict';
+import {mockSupabase,userA} from './fixtures/supabase';
+const mock=await mockSupabase(),children:ChildProcess[]=[];const serverPort=2581,clientPort=5189;
+const wait=(ms:number)=>new Promise(r=>setTimeout(r,ms));
+async function launch(args:string[],env:Record<string,string>){const child=spawn(process.execPath,args,{cwd:process.cwd(),env:{...process.env,...env},stdio:['ignore','pipe','pipe']});children.push(child);let logs='';child.stdout!.on('data',d=>logs+=d.toString());child.stderr!.on('data',d=>logs+=d.toString());return {child,logs:()=>logs};}
+async function ready(url:string,logs:()=>string){for(let i=0;i<160;i++){try{if((await fetch(url)).ok)return;}catch{}await wait(50);}throw Error('Service failed to start: '+logs());}
+async function stop(child:ChildProcess){if(child.exitCode===null){const done=once(child,'exit');child.kill('SIGTERM');await done;}}
+const browser=await chromium.launch({executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
+try{
+ const backend=await launch(['--import','tsx','apps/server/src/index.ts'],{PORT:String(serverPort),SUPABASE_URL:mock.url,SUPABASE_SECRET_KEY:'test-server-secret'});await ready(`http://127.0.0.1:${serverPort}`,backend.logs);
+ const frontend=await launch(['node_modules/vite/bin/vite.js','apps/client','--host','127.0.0.1','--port',String(clientPort)],{VITE_SERVER_URL:`ws://127.0.0.1:${serverPort}`,VITE_SUPABASE_URL:mock.url,VITE_SUPABASE_PUBLISHABLE_KEY:'test-publishable-key'});await ready(`http://127.0.0.1:${clientPort}`,frontend.logs);
+ const page=await browser.newPage({viewport:{width:1280,height:900}}),errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(this:HTMLCanvasElement,k:string,...a:any[]){return ['webgl','webgl2','experimental-webgl'].includes(k)?null:(get as any).call(this,k,...a); } as typeof get;});
+ const inspect=()=>page.evaluate(async()=>{const script=document.querySelector<HTMLScriptElement>('script[src*="/src/main.ts"]')!;const {game}=await import(script.src),s=game.scene.scenes[0];return {online:s.online,preview:s.preview,bag:s.bag};});
+ const until=async(check:(s:any)=>boolean)=>{for(let i=0;i<240;i++){if(check(await inspect()))return;await wait(50);}throw Error('Account UI condition timeout: '+JSON.stringify(await inspect()));};
+ await page.goto(`http://127.0.0.1:${clientPort}`);await until(s=>s.online&&s.bag.account===null);await page.locator('#character-panel').click();await page.locator('#account-email').fill('hero@example.test');await page.locator('#account-password').fill('wrong-password-123');await page.locator('#sign-in').click();await page.waitForFunction(()=>document.querySelector('#account-feedback')!.textContent!.includes('Invalid login'));
+ await page.locator('#account-password').fill('test-password-123');await page.locator('#sign-in').click();await until(s=>s.bag.account?.email==='hero@example.test');await page.locator('#character-panel').click();await page.locator('#weapon-select').selectOption('bow');await until(s=>s.bag.weapon==='bow'&&s.bag.account?.savedAt);
+ await page.reload();await until(s=>s.online&&s.bag.account?.email==='hero@example.test'&&s.bag.weapon==='bow');await page.locator('#character-panel').click();await page.locator('#sign-out').click();await until(s=>s.online&&s.bag.account===null&&s.bag.weapon==='wand');
+ const saved=await mock.db.query<{progress:any}>('select progress from public.character_saves where user_id=$1',[userA]);assert.equal(saved.rows[0].progress.profile.weapon,'bow');
+ await page.locator('#character-panel').click();await page.locator('#account-email').fill('other@example.test');await page.locator('#account-password').fill('test-password-123');await page.locator('#create-account').click();await page.waitForFunction(()=>document.querySelector('#account-feedback')!.textContent!.includes('Check your email'));
+ await page.locator('#account-email').fill('hero@example.test');await page.locator('#account-password').fill('test-password-123');await page.locator('#sign-in').click();await until(s=>s.bag.account?.email==='hero@example.test');await stop(backend.child);await page.reload();await page.waitForFunction(()=>document.querySelector('#connection')!.textContent!.includes('Account offline'));const offline=await inspect();assert.equal(offline.preview,false);assert.equal(offline.online,false);assert.deepEqual(errors,[]);
+ console.log('PASS account UI: email/password sign-in, errors, persisted login, equipment restored after reload, save/sign-out, email confirmation notice, no local-preview fallback for signed-in account outage');
+}finally{await browser.close();for(const child of children.reverse())await stop(child);await mock.close();}

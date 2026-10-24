@@ -3,7 +3,7 @@ import {sight,type Fighter,type Kill} from './combat';
 export interface Stack{id:number;item:ItemId;quantity:number}
 export interface Profile{learnedSpells:SpellId[];classId:ClassId;weapon:WeaponId;ownedWeapons:WeaponId[];skills:{melee:number;distance:number;magic:number};skillXp:{melee:number;distance:number;magic:number};gold:number;xp:number;level:number;inventory:Stack[];potionReadyAt:number}
 export interface Drop{id:string;owner:string;x:number;y:number;gold:number;pelts:number;expires:number}
-export interface EconomySnapshot extends Profile{drops:Drop[];capacity:number;nextXp:number;levelXp:number;time:number}
+export interface EconomySnapshot extends Profile{account?:{email:string;savedAt:string;state:'ready'|'saving'|'error'}|null;drops:Drop[];capacity:number;nextXp:number;levelXp:number;time:number}
 export class Economy{
  profiles=new Map<string,Profile>();drops=new Map<string,Drop>();lastKill=0;serial=0;
  join(id:string){if(!this.profiles.has(id))this.profiles.set(id,{learnedSpells:[],classId:'citizen',weapon:'wand',ownedWeapons:[...classRules.starterWeapons],skills:{melee:1,distance:1,magic:1},skillXp:{melee:0,distance:0,magic:0},gold:0,xp:0,level:1,inventory:[],potionReadyAt:0});}

@@ -11,7 +11,7 @@ npm ci --cache /workspace/.npm-cache
 npm run dev
 ```
 
-Open the Vite address printed in the terminal in your local browser. Server defaults to port 2567; Vite defaults to 5173. For a remote deployment, set `VITE_SERVER_URL` to the public secure WebSocket backend address before building. The frontend and backend must both be running. No database or credentials are needed for Phase 1.
+Open the Vite address printed in the terminal in your local browser. Server defaults to port 2567; Vite defaults to 5173. For a remote deployment, set `VITE_SERVER_URL` to the public secure WebSocket backend address before building. The frontend and backend must both be running. Guest play needs no database or credentials. Supabase accounts and saving are optional; see `supabase/README.md` for configuration and required SQL migrations.
 
 ```sh
 npm test
@@ -35,13 +35,13 @@ Positions are logical tile coordinates, with 64 px tiles. Velocity is normalized
 
 ## Phase boundary and known limitations
 
-No accounts, database persistence, chat, or implemented banking/crafting. A session inventory, wolf rewards and a village merchant are available. A first wolf combat slice is available in Whispering Woods. Portal travel is available between the village and three exploration regions. Landmarks are interactive previews of future systems. Fresh joins start at the square. Phase 2 will implement authentication, persistence and reconnection. Current networking is a foundation with approximate snapshot reconciliation rather than timestamped rollback; latency/loss can cause visible corrections. It needs network-condition and load testing before production. Movement input has no economy authority. No production deployment is claimed.
+Supabase accounts and character saves are implemented; configure the client/server credentials and run both SQL migrations to enable them. Chat and banking/crafting are not implemented. A session inventory, wolf rewards and a village merchant are available. A first wolf combat slice is available in Whispering Woods. Portal travel is available between the village and three exploration regions. Landmarks are interactive previews of future systems. Fresh joins start at the square. Accounts restore character progress on rejoin; automatic network reconnection remains future work. Current networking is a foundation with approximate snapshot reconciliation rather than timestamped rollback; latency/loss can cause visible corrections. It needs network-condition and load testing before production. Movement input has no economy authority. No production deployment is claimed.
 
 Maps use configuration-defined building rectangles; client world graphics are geometric placeholders. Four-direction idle/walk animation manifests are supported; eight-direction input maps to the nearest primary facing. Sprint reuses walk. Future attacks use projectiles and area spells; character attack and run sheets are not required. Real device touch testing remains outstanding. Backend TLS, origin policy and account authorization belong to later deployment/hardening work.
 
 ## Next phase
 
-Phase 2: authenticated accounts, character creation, PostgreSQL/Prisma persistence, durable progress, chat, and reconnect handling. Wolf combat now provides a temporary gameplay slice before accounts and persistence.
+Supabase email/password accounts and PostgreSQL character saves are available. Next: starter quests, password reset UI, chat, and automatic reconnect. See `supabase/README.md` for the deployed setup and current limits.
 
 ## Frontend-only preview and multiplayer configuration
 
@@ -69,7 +69,7 @@ See `docs/COMBAT.md` for authority, lifecycle, balance configuration, tests and 
 
 Wolf kills grant character EXP and leave private bundles of gold and wolf pelts. Pick up nearby spoils with **E**, **Loot**, or a click/tap. Open **Bag / I** for your 12-slot inventory. Return to Elderwood and visit **Mara the Trader**, east of the portal: sell pelts and buy healing potions. **3 / Potion** heals a wounded character. Levels and EXP appear on the HUD.
 
-All connected rewards and transactions are server-controlled. They survive death and travel, but **reset on disconnect/reload or server restart** until accounts and persistence are implemented. See `docs/REWARDS.md` for prices, rules, tests and current limits.
+All connected rewards and transactions are server-controlled. **Signed-in characters save progress to Supabase** across reconnects and server restarts. Guest progress resets on disconnect/reload. Uncollected ground drops remain temporary. Configure both migrations and credentials before enabling accounts; see `supabase/README.md`. See `docs/REWARDS.md` for prices, rules, tests and current limits.
 
 ## Compact HUD
 
@@ -77,7 +77,7 @@ A compact top-left profile button shows the player sprite, level, health, mana a
 
 ## Citizen and class progression
 
-New characters are Citizens. At character level 5, open your **profile** and choose **Knight, Archer, Mage or Rogue**. The choice grants and equips its starter weapon. The same panel selects owned weapons and displays **Melee, Distance and Magic** skills. Weapon type determines attacks; its matching skill improves damage. Citizens receive training weapons to try the styles. Stop attacking before swapping. Class and skill progress are session-only until saving is added. See `docs/CLASSES.md` for the current design, formulas and limits; it supersedes the original classless specification.
+New characters are Citizens. At character level 5, open your **profile** and choose **Knight, Archer, Mage or Rogue**. The choice grants and equips its starter weapon. The same panel selects owned weapons and displays **Melee, Distance and Magic** skills. Weapon type determines attacks; its matching skill improves damage. Citizens receive training weapons to try the styles. Stop attacking before swapping. Class and skill progress save for signed-in characters; guest progress is session-only. See `docs/CLASSES.md` for the current design, formulas and limits; it supersedes the original classless specification.
 
 ## Elderwood terrain
 

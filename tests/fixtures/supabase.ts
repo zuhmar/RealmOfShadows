@@ -1,0 +1,19 @@
+import {PGlite} from '@electric-sql/pglite';
+import {createServer} from 'node:http';
+import {readFile} from 'node:fs/promises';
+export const userA='10000000-0000-4000-8000-000000000001',userB='10000000-0000-4000-8000-000000000002';
+export async function database(){const db=new PGlite();await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema public,auth to authenticated,service_role;insert into auth.users values('${userA}'),('${userB}');`);for(const file of ['202610230001_character_saves.sql','202610230002_save_sessions.sql'])await db.exec(await readFile(new URL(`../../supabase/migrations/${file}`,import.meta.url),'utf8'));return db;}
+export async function mockSupabase(port=0){const db=await database();let failSaves=false;const users:Record<string,{id:string;email:string}>={'token-a':{id:userA,email:'hero@example.test'},'token-b':{id:userB,email:'other@example.test'}};
+ const server=createServer(async(req,res)=>{res.setHeader('Content-Type','application/json');res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Headers','apikey,authorization,content-type,x-client-info,x-supabase-api-version');res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS');if(req.method==='OPTIONS'){res.writeHead(204);res.end();return;}
+ try{const chunks:Buffer[]=[];for await(const chunk of req)chunks.push(chunk);const body=chunks.length?JSON.parse(Buffer.concat(chunks).toString()):{},url=new URL(req.url??'/','http://localhost');
+ if(url.pathname==='/auth/v1/token'){if(body.email!=='hero@example.test'||body.password!=='test-password-123'){res.writeHead(400);res.end(JSON.stringify({msg:'Invalid login credentials',error_code:'invalid_credentials'}));return;}res.end(JSON.stringify({access_token:'token-a',refresh_token:'refresh-a',token_type:'bearer',expires_in:3600,user:{...users['token-a'],aud:'authenticated',role:'authenticated',app_metadata:{provider:'email'},user_metadata:{},created_at:new Date().toISOString()}}));return;}
+ if(url.pathname==='/auth/v1/signup'){res.end(JSON.stringify({user:{...users['token-b'],identities:[{id:userB}],aud:'authenticated',created_at:new Date().toISOString()},session:null}));return;}
+ if(url.pathname==='/auth/v1/logout'){res.end('{}');return;}
+ if(url.pathname==='/auth/v1/user'){const user=users[req.headers.authorization?.replace('Bearer ','')??''];if(!user){res.writeHead(401);res.end('{}');return;}res.end(JSON.stringify(user));return;}
+ if(req.headers.apikey!=='test-server-secret')throw Error('Wrong server credential');
+ if(url.pathname==='/rest/v1/rpc/claim_character'){const result=await db.query<{progress:unknown}>('select public.claim_character($1,$2,$3::jsonb) as progress',[body.p_user_id,body.p_session_id,JSON.stringify(body.p_initial_progress)]);res.end(JSON.stringify(result.rows[0].progress));return;}
+ if(url.pathname==='/rest/v1/rpc/save_character'){if(failSaves)throw Error('Fixture save outage');const result=await db.query<{saved:string}>('select public.save_character($1,$2,$3::jsonb,$4) as saved',[body.p_user_id,body.p_session_id,JSON.stringify(body.p_progress),body.p_release]);res.end(JSON.stringify(result.rows[0].saved));return;}
+ res.writeHead(404);res.end('{}');
+ }catch(e){res.writeHead(400);res.end(JSON.stringify({message:e instanceof Error?e.message:'Fixture error'}));}});
+ await new Promise<void>(r=>server.listen(port,'127.0.0.1',r));const address=server.address() as {port:number};return {db,url:`http://127.0.0.1:${address.port}`,fail:(value:boolean)=>failSaves=value,close:async()=>{await new Promise<void>(r=>server.close(()=>r()));await db.close();}};
+}
