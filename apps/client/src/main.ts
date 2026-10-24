@@ -5,7 +5,7 @@ import {WORLD,equipmentItems,equipmentSlots,type EquipmentSlot,elderwoodMap,elde
 import {move,pathfind,CombatSimulation,newFighter,Economy,type EconomySnapshot,type Fighter,type Wolf,type CombatEvent,type Point,type Motion,type Input} from '@realm/shared';
 import './style.css';
 import {wolfAssets} from './wolf-assets';
-import {characterAssets} from './character-assets';
+import {characterAssets,characterFrameSize,characterStyle} from './character-assets';
 import {maraAsset} from './mara-assets';
 import {elderwoodTerrain,elderwoodGround,woodsTerrain,woodsGround,terrainAssets,terrainVariant} from './terrain-assets';
 import {itemSprite} from './item-assets';
@@ -31,12 +31,12 @@ class Elderwood extends Phaser.Scene {
  for(const asset of characterAssets){
  if(!this.textures.exists(asset.key))continue;
  const texture=this.textures.get(asset.key);
- for(const row of asset.layout.rows)for(const group of asset.layout.groups){
- const frames=group.columns.map(([left,right],i)=>{const name=`${group.action}-${row.direction}-${i}`;texture.add(name,0,left+2,row.top+2,right-left-4,row.bottom-row.top-4);return {key:asset.key,frame:name};});
- const animation=`${group.action}-${row.direction}`;
- this.anims.create({key:animation,frames,frameRate:group.fps,repeat:-1});
- this.animationStyle.set(animation,{scale:asset.scale,origin:asset.origin});
- }
+ const frames=asset.bounds.map(([left,top,right,bottom],i)=>{const name=`frame-${i}`,w=right-left,h=bottom-top;
+ texture.add(name,0,i*characterFrameSize+left,top,w,h)?.setTrim(characterFrameSize,characterFrameSize,(characterFrameSize-w)/2,characterFrameSize-h,w,h);
+ return {key:asset.key,frame:name};});
+ for(const action of ['idle','walk'] as const){const animation=`${action}-${asset.direction}`;
+ this.anims.create({key:animation,frames:action==='idle'?frames.slice(0,1):frames.slice(1),frameRate:action==='idle'?1:8,repeat:-1});
+ this.animationStyle.set(animation,characterStyle);}
  }
  for(const [id,s] of Object.entries(spells)){const button=document.createElement('button');button.dataset.spell=id;button.addEventListener('click',()=>this.economyAction({kind:'learn',spell:id}));document.querySelector('#spell-shop')!.append(button);}
  for(const asset of terrainAssets){if(!this.textures.exists(asset.key))continue;const texture=this.textures.get(asset.key);for(const [kind,y] of Object.entries(asset.rows))asset.columns.forEach((x,i)=>texture.add(`${kind}-${i}`,0,x,y,asset.size,asset.size));}
@@ -72,7 +72,7 @@ class Elderwood extends Phaser.Scene {
  this.input.keyboard!.enabled=false;this.accounts=setupAccounts(()=>this.reconnectAccount(),()=>this.leaveAccount());
  }
  drawPortraits(){
- const frame=this.textures.getFrame('citizen-idle','idle-down-0');if(!frame)return;
+ const frame=this.textures.getFrame('citizen-down','frame-0');if(!frame)return;
  for(const id of ['profile-portrait','character-portrait']){const canvas=document.querySelector<HTMLCanvasElement>(`#${id}`)!,context=canvas.getContext('2d');if(!context)continue;const scale=Math.min(canvas.width/frame.cutWidth,canvas.height/frame.cutHeight);const w=frame.cutWidth*scale,h=frame.cutHeight*scale;context.clearRect(0,0,canvas.width,canvas.height);context.drawImage(frame.source.image as HTMLImageElement,frame.cutX,frame.cutY,frame.cutWidth,frame.cutHeight,(canvas.width-w)/2,canvas.height-h,w,h);}
  }
  openCharacter(){
@@ -204,7 +204,7 @@ class Elderwood extends Phaser.Scene {
  this.avatar.setPosition(this.local.x*64,this.local.y*64);this.cameras.main.centerOn(this.avatar.x,this.avatar.y);notice(`Arrived in ${regions[region].name}. Use the portal to return or explore another destination.`);
  }
  tree(x:number,y:number){const g=this.add.graphics();g.fillStyle(0x675a40);g.fillRoundedRect(x-9,y-20,18,30,5);g.fillStyle(0x284f3b);g.fillCircle(x,y-32,34);g.fillStyle(0x5a8555);g.fillEllipse(x-6,y-42,46,30);g.setDepth(y);}
- makeAvatar(color:number,label:string){const g=this.add.graphics();g.fillStyle(0x102823,.3);g.fillEllipse(0,0,30,13);g.fillStyle(0x446d82);g.fillRoundedRect(-13,-32,26,30,8);g.fillStyle(color);g.fillCircle(0,-40,13);g.fillStyle(0xffffff,.35);g.fillEllipse(-4,-44,12,7);const text=this.add.text(0,-65,label,{fontFamily:'sans-serif',fontSize:'12px',color:'#fff5d7',backgroundColor:'#203b36'}).setOrigin(.5);if(this.textures.exists('citizen-idle')){g.clear();g.fillStyle(0x102823,.3);g.fillEllipse(0,0,30,13);const sprite=this.add.sprite(0,0,'citizen-idle','idle-down-0').setOrigin(.5,.97).setScale(.30);sprite.play('idle-down');return this.add.container(0,0,[g,sprite,text]).setData('sprite',sprite);}return this.add.container(0,0,[g,text]);}
+ makeAvatar(color:number,label:string){const g=this.add.graphics();g.fillStyle(0x102823,.3);g.fillEllipse(0,0,30,13);g.fillStyle(0x446d82);g.fillRoundedRect(-13,-32,26,30,8);g.fillStyle(color);g.fillCircle(0,-40,13);g.fillStyle(0xffffff,.35);g.fillEllipse(-4,-44,12,7);const text=this.add.text(0,-65,label,{fontFamily:'sans-serif',fontSize:'12px',color:'#fff5d7',backgroundColor:'#203b36'}).setOrigin(.5);if(this.textures.exists('citizen-down')){g.clear();g.fillStyle(0x102823,.3);g.fillEllipse(0,0,30,13);const sprite=this.add.sprite(0,0,'citizen-down','frame-0').setOrigin(.5,characterStyle.origin).setScale(characterStyle.scale);sprite.play('idle-down');return this.add.container(0,0,[g,sprite,text]).setData('sprite',sprite);}return this.add.container(0,0,[g,text]);}
  enterWorld(){this.entryReady=true;this.input.keyboard!.enabled=true;this.input.keyboard!.resetKeys();this.accounts?.entered();}
  startPreview(message:string){this.enterWorld();this.online=false;this.preview=true;this.pending=[];document.querySelector('#connection')!.textContent='Local preview · No multiplayer';notice(message);}
  async leaveAccount(){this.connectionGeneration++;this.entryReady=false;this.preview=false;this.input.keyboard!.enabled=false;this.switchingAccount=true;this.online=false;this.route=[];this.pending=[];if(this.room){const room=this.room;this.room=undefined;if(room.connection.isOpen)await room.leave(true);}this.switchingAccount=false;}

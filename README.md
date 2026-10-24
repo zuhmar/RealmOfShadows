@@ -136,3 +136,15 @@ by uploading a transparent PNG with the same item ID, such as `sword.png`,
 build. See `assets/items/README.md` for the naming rules. Original character and
 map assets are untouched. Run `npm run test:equipment:browser` with the normal
 Playwright/client URL environment variables to check desktop/mobile bag controls.
+
+
+### Directional Citizen animation sheets
+
+`assets/characters/Citizen_walk_down.png`, `Citizen_walk_left.png`,
+`Citizen_walk_right.png` and `Citizen_walk_up.png` each contain six horizontal
+256 × 256 cells. The first cell supplies that direction's idle pose; cells 2–6
+loop at 8 FPS while moving. `apps/client/src/character-assets.ts` records the
+alpha bounds; runtime trim frames align centers and feet on a shared canvas,
+including the upward frames with drifting transparent margins. Profile portraits
+use the down-facing idle pose. These sheets replace the earlier combined sheets
+for players and peers; originals and Mara's independent animations are unchanged.
