@@ -1,10 +1,12 @@
 import {createClient,type Session} from '@supabase/supabase-js';
-let configurationMessage='Account sign-in is not configured for this build.';
+let configurationMessage='Account sign-in is not configured on this site. Guest play is available.';
 // Account configuration must never stop the game module from loading. Vercel
 // values are copied manually, so handle whitespace, missing/invalid values and
 // the commonly copied /rest/v1 API path without leaking keys into diagnostics.
 function initializeAccounts(){
- const value=import.meta.env.VITE_SUPABASE_URL?.trim(),key=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
+ const clean=(value:string|undefined)=>value?.trim().replace(/^(['"])(.*)\1$/,'$2').trim();
+ let value=clean(import.meta.env.VITE_SUPABASE_URL);const key=clean(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+ if(value&&/^[a-z0-9-]+\.supabase\.co(?:\/.*)?$/i.test(value))value=`https://${value}`;
  if(!value||!key)return;
  try{const url=new URL(value);if(!['https:','http:'].includes(url.protocol)||!/^\/(rest\/v1\/?)?$/.test(url.pathname)||url.username||url.password||url.search||url.hash)throw Error('Invalid project URL');
  return createClient(url.origin,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -25,10 +27,13 @@ export interface AccountUI{
 export function setupAccounts(start:(mode:PlayMode)=>Promise<void>,leave:()=>Promise<void>):AccountUI{
  const dialog=document.querySelector<HTMLDialogElement>('#login-dialog')!,form=document.querySelector<HTMLFormElement>('#account-form')!,feedback=document.querySelector<HTMLElement>('#account-feedback')!,signout=document.querySelector<HTMLButtonElement>('#sign-out')!,guest=document.querySelector<HTMLButtonElement>('#play-guest')!,retry=document.querySelector<HTMLButtonElement>('#retry-login')!;
  let current:Session|null=null,busy=false,connecting=false,selected:PlayMode|null=null;
- const message=(text:string)=>feedback.textContent=text;
+ dialog.dataset.accountsUnavailable=String(!supabase);
+ const message=(text:string)=>feedback.textContent=text||(!supabase?configurationMessage:'');
  const render=()=>{
  form.hidden=Boolean(current);document.querySelector<HTMLElement>('#returning-account')!.hidden=!current;document.querySelector('#returning-label')!.textContent=current?`Welcome back, ${current.user.email}`:'';
- for(const control of Array.from(form.querySelectorAll<HTMLInputElement|HTMLButtonElement>('input,button')))control.disabled=!supabase||busy||connecting;
+ // Native mobile inputs stay focusable even when account setup is unavailable.
+ for(const input of Array.from(form.querySelectorAll<HTMLInputElement>('input')))input.disabled=busy||connecting;
+ document.querySelector<HTMLButtonElement>('#sign-in')!.disabled=!supabase||busy||connecting;
  document.querySelector<HTMLButtonElement>('#create-account')!.disabled=!supabase||busy||connecting||Boolean(current);
  for(const id of ['continue-account','different-account'])document.querySelector<HTMLButtonElement>(`#${id}`)!.disabled=busy||connecting;
  guest.disabled=busy||connecting;retry.disabled=busy||connecting;signout.disabled=busy||connecting;
@@ -37,7 +42,7 @@ export function setupAccounts(start:(mode:PlayMode)=>Promise<void>,leave:()=>Pro
  };
  const show=()=>{for(const other of Array.from(document.querySelectorAll<HTMLDialogElement>('dialog[open]')))if(other!==dialog)other.close();if(!dialog.open)dialog.showModal();};
  const initialize=supabase?supabase.auth.getSession().then(({data,error})=>{if(error)message(error.message);current=data.session;render();}).catch(()=>{message('Unable to restore sign-in. Please sign in again.');render();}):Promise.resolve();
- const back=async()=>{connecting=true;render();show();try{await leave();selected=null;retry.hidden=true;}catch{message('Unable to leave the game. Reload before switching characters.');}finally{connecting=false;render();}};
+ const back=async()=>{connecting=true;render();show();try{await leave();selected=null;retry.hidden=true;message('');}catch{message('Unable to leave the game. Reload before switching characters.');}finally{connecting=false;render();}};
  const play=async(mode:PlayMode)=>{if(mode==='account')await initialize;selected=mode;retry.hidden=true;message(mode==='account'?'Loading your saved character…':'Entering as guest…');try{await start(mode);}catch{connecting=false;message('Unable to connect. Please retry.');retry.hidden=false;render();}};
  if(!supabase)message(configurationMessage);else message('');render();if(dialog.open)dialog.close();show();dialog.addEventListener('cancel',event=>event.preventDefault());
  supabase?.auth.onAuthStateChange((_event,session)=>{const previous=current?.user.id;current=session;render();if(selected==='account'&&previous&&previous!==session?.user.id&&!busy)setTimeout(()=>void back(),0);});

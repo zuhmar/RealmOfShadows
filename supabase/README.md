@@ -23,8 +23,11 @@ not transfer the current guest's progress.
    `VITE_SERVER_URL=wss://realmofshadows.onrender.com`. Redeploy after changing
    client variables: Vite embeds them at build time. The client trims pasted
    whitespace and accepts a copied `/rest/v1/` path. Invalid account settings
-   disable sign-in with a visible warning while allowing the game to start;
-   they must not prevent Phaser from loading.
+   disable sign-in actions with a visible warning while allowing the game to start;
+   they must not prevent Phaser from loading. Text inputs remain editable so
+   mobile browsers can focus them and open their keyboard. The setup warning
+   remains visible after returning from guest play. Quoted public settings and
+   Supabase project addresses missing `https://` are normalized before use.
 5. Deploy the client and server. Use the starting screen to create an account. If email
    confirmation is enabled, confirm the email before signing in. Use your own
    email; the account UI does not ask for database or server credentials.
