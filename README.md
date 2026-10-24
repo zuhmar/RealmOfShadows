@@ -169,3 +169,13 @@ so slower frames cannot repeatedly overshoot a waypoint. Collision checks use
 polygon/footprint intersections, including thin fence posts; a spatial index
 keeps the denser scenery local to each movement query. Reference-derived new
 buildings are landmarks; existing trading remains with Mara at the tavern.
+
+Whispering Woods now follows `assets/maps/whispering-woods/Reference(1).png`:
+four habitats around a central portal, separate SVG scenery, shared collision,
+and eight monsters (three wolves, two Thorn Spiders, two Wild Boars, one Forest
+Bear boss). Run `npm run art:woods` and `npm run art:monsters` to regenerate its
+vectors. `npm run test:woods:browser` checks guest and multiplayer rendering,
+navigation and clickable combat against a running client/server. See the map
+and monster asset READMEs for the editing workflow. Deploy both the client and
+server together because the layout, monster definitions and replicated state
+changed. Existing uploaded reference and sprite PNGs are preserved.

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {Economy} from '../packages/shared/src/economy';
 import {CombatSimulation,newFighter} from '../packages/shared/src/combat';
 import {totalXp,levelForXp,merchant,rewards} from '@realm/game-data';
-function setup(){const economy=new Economy();economy.join('a');economy.join('b');const p={...newFighter(),region:'woods' as const,x:19.5,y:15.5};const players=new Map([['a',p],['b',{...p}]]);return {economy,p,players};}
+function setup(){const economy=new Economy();economy.join('a');economy.join('b');const p={...newFighter(),region:'woods' as const,x:15,y:5.8};const players=new Map([['a',p],['b',{...p}]]);return {economy,p,players};}
 test('quadratic EXP boundaries are separate from skills and capped at level 100',()=>{assert.equal(totalXp(1),0);assert.equal(totalXp(2),100);assert.equal(levelForXp(99),1);assert.equal(levelForXp(100),2);assert.equal(levelForXp(399),2);assert.equal(levelForXp(400),3);assert.equal(levelForXp(10**12),100);});
 test('a real wolf death awards EXP once, loot is created once, and observer gains nothing',()=>{
  const {economy,p,players}=setup(),sim=new CombatSimulation();sim.damage(sim.wolves.get('wolf-1')!,999,'a');sim.damage(sim.wolves.get('wolf-1')!,999,'a');assert.equal(sim.kills.length,1);economy.process(sim.kills,players,0);economy.process(sim.kills,players,0);assert.equal(economy.profiles.get('a')!.xp,35);assert.equal(economy.profiles.get('b')!.xp,0);assert.equal(economy.drops.size,1);assert.equal(economy.profiles.get('a')!.gold,0);economy.process([{id:2,owner:'a',x:p.x,y:p.y},{id:3,owner:'a',x:p.x,y:p.y}],players,0);assert.equal(economy.profiles.get('a')!.level,2);

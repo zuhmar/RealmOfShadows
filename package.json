@@ -20,7 +20,10 @@
     "test:character:browser": "node tests/browser-character.cjs",
     "test:paper-doll:browser": "node tests/browser-paper-doll.cjs",
     "art:elderwood": "tsx scripts/build-elderwood-svg.ts",
-    "test:island:browser": "node tests/browser-island.cjs"
+    "test:island:browser": "node tests/browser-island.cjs",
+    "art:woods": "tsx scripts/build-woods-svg.ts",
+    "art:monsters": "tsx scripts/build-monsters-svg.ts",
+    "test:woods:browser": "node tests/browser-woods.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

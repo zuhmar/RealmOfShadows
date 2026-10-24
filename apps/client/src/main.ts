@@ -1,8 +1,10 @@
+import {woodsMapAssets} from './woods-map';
+import {monsterAssets} from './monster-assets';
 import Phaser from 'phaser';
 import {PaperDoll,paperDollAssets} from './paper-doll';
 import {setupAccounts,type AccountUI} from './accounts';
 import {Client,type Room} from 'colyseus.js';
-import {WORLD,readAppearance,equipmentItems,equipmentSlots,type EquipmentSlot,elderwoodMap,elderwoodObjects,landmarks,characterSprite,regions,PORTAL,canTravel,combat as C,items,merchant,rewards,weapons,classes,classRules,skillRequirement,spells,canLearnSpell,isSpell,type RegionId,type Facing} from '@realm/game-data';
+import {monsters,monsterKind,woodsMap,woodsObjects,WORLD,readAppearance,equipmentItems,equipmentSlots,type EquipmentSlot,elderwoodMap,elderwoodObjects,landmarks,characterSprite,regions,PORTAL,canTravel,combat as C,items,merchant,rewards,weapons,classes,classRules,skillRequirement,spells,canLearnSpell,isSpell,type RegionId,type Facing} from '@realm/game-data';
 import {move,pathfind,CombatSimulation,newFighter,Economy,type EconomySnapshot,type Fighter,type Wolf,type CombatEvent,type Point,type Motion,type Input} from '@realm/shared';
 import './style.css';
 import {wolfAssets} from './wolf-assets';
@@ -22,7 +24,7 @@ class Elderwood extends Phaser.Scene {
  room?:Room; avatar!:Phaser.GameObjects.Container; bodySprite?:Phaser.GameObjects.Sprite;
  local:Motion={...WORLD.spawn,stamina:100}; keys!:Record<string,Phaser.Input.Keyboard.Key>;
  peers=new Map<string,Phaser.GameObjects.Container>();route:Point[]=[];seq=0;acc=0;online=false;preview=false;touch={x:0,y:0};sprinting=false;pending:Input[]=[];facing:Facing='down';walking=false;animationStyle=new Map<string,{scale:number;origin:number}>();
- preload(){for(const asset of paperDollAssets)this.load.svg(asset.key,asset.url);this.load.image(maraAsset.key,maraAsset.url);for(const asset of elderwoodMapAssets)this.load.svg(asset.key,asset.url,{scale:asset.scale});for(const asset of terrainAssets)this.load.image(asset.key,asset.url);for(const asset of wolfAssets)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
+ preload(){for(const asset of monsterAssets)this.load.svg(asset.key,asset.url);for(const asset of woodsMapAssets)this.load.svg(asset.key,asset.url,{scale:asset.scale});for(const asset of paperDollAssets)this.load.svg(asset.key,asset.url);this.load.image(maraAsset.key,maraAsset.url);for(const asset of elderwoodMapAssets)this.load.svg(asset.key,asset.url,{scale:asset.scale});for(const asset of terrainAssets)this.load.image(asset.key,asset.url);for(const asset of wolfAssets)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
  create(){
  try{this.usePaperDoll=localStorage.getItem('realm-appearance')!=='original';}catch{}
  const appearance=document.querySelector<HTMLSelectElement>('#appearance-style')!;appearance.value=this.usePaperDoll?'paper':'original';appearance.addEventListener('change',()=>{this.usePaperDoll=appearance.value==='paper';try{localStorage.setItem('realm-appearance',this.usePaperDoll?'paper':'original');}catch{}this.drawPortraits();});
@@ -30,6 +32,7 @@ class Elderwood extends Phaser.Scene {
  if(this.textures.exists(maraAsset.key)){const texture=this.textures.get(maraAsset.key);for(const animation of maraAsset.animations){const frames=animation.frames.map(([x,y,w,h],i)=>{const name=`${animation.key}-${i}`;texture.add(name,0,x,y,w,h)?.setTrim(maraAsset.frameWidth,maraAsset.frameHeight,(maraAsset.frameWidth-w)/2,maraAsset.frameHeight-h,w,h);return {key:maraAsset.key,frame:name};});this.anims.create({key:`mara-${animation.key}`,frames,frameRate:animation.fps,repeat:-1});}}
  document.querySelector('#character-panel')!.addEventListener('click',()=>this.openCharacter());document.querySelector('#close-character')!.addEventListener('click',()=>document.querySelector<HTMLDialogElement>('#character-dialog')!.close());
  this.economy.join('local');this.bag=this.economy.snapshot('local',0);
+ for(const kind of ['spider','boar','bear'])for(const motion of ['idle','walk'])for(const direction of ['down','left','right','up'])this.anims.create({key:`${kind}-${motion}-${direction}`,frames:Array.from({length:4},(_,i)=>({key:`${kind}-${motion}-${direction}-${i}`})),frameRate:motion==='walk'?8:3,repeat:-1});
  for(const asset of wolfAssets){if(!this.textures.exists(asset.key))continue;const texture=this.textures.get(asset.key);asset.rows.forEach((row,d)=>{const direction=['down','left','right','up'][d];const frames=row.map(([x,y,w,h],i)=>{const name=`${direction}-${i}`;texture.add(name,0,x,y,w,h);return {key:asset.key,frame:name};});this.anims.create({key:`${asset.key}-${direction}`,frames,frameRate:asset.fps,repeat:-1});});}
  for(const asset of characterAssets){
  if(!this.textures.exists(asset.key))continue;
@@ -92,7 +95,7 @@ class Elderwood extends Phaser.Scene {
  if(this.preview){Object.assign(this.fighter,{x:this.local.x,y:this.local.y,region:this.region});const message=this.economy.act('local',this.fighter,request,this.sim.time);this.bag=this.economy.snapshot('local',this.sim.time);document.querySelector<HTMLSelectElement>('#weapon-select')!.value=this.bag.weapon;notice(message);document.querySelector('#inventory-feedback')!.textContent=message;this.renderInventory();}
  else if(this.online)this.room?.send('economy',request);
  }
- pickupNearest(){const nearest=this.bag?.drops.filter(d=>this.region==='woods').sort((a,b)=>Math.hypot(a.x-this.local.x,a.y-this.local.y)-Math.hypot(b.x-this.local.x,b.y-this.local.y))[0];if(nearest)this.economyAction({kind:'pickup',drop:nearest.id});else notice('No loot nearby. Defeat a wolf to earn EXP and leave a bundle.');}
+ pickupNearest(){const nearest=this.bag?.drops.filter(d=>this.region==='woods').sort((a,b)=>Math.hypot(a.x-this.local.x,a.y-this.local.y)-Math.hypot(b.x-this.local.x,b.y-this.local.y))[0];if(nearest)this.economyAction({kind:'pickup',drop:nearest.id});else notice('No loot nearby. Defeat a monster to earn EXP and leave a bundle.');}
  openInventory(shop:boolean){
  if(shop&&(this.region!=='elderwood'||Math.hypot(this.local.x-merchant.x,this.local.y-merchant.y)>merchant.range)){notice('Walk closer to Mara the Trader.');return;}
  if(this.fighter.hp<=0)return;const dialog=document.querySelector<HTMLDialogElement>('#inventory-dialog')!;document.querySelector<HTMLDialogElement>('#portal-dialog')!.close();document.querySelector<HTMLDialogElement>('#character-dialog')!.close();this.shopOpen=shop;this.route=[];this.touch={x:0,y:0};this.input.keyboard?.resetKeys();document.querySelector('#inventory-title')!.textContent=shop?merchant.name:'Your inventory';document.querySelector<HTMLElement>('#shop-controls')!.hidden=!shop;document.querySelector('#inventory-feedback')!.textContent='';this.renderInventory();if(!dialog.open)dialog.showModal();
@@ -121,14 +124,14 @@ class Elderwood extends Phaser.Scene {
  for(const skill of ['melee','distance','magic'] as const){const level=bag.skills[skill];document.querySelector(`#skill-${skill}`)!.textContent=`${skill[0].toUpperCase()+skill.slice(1)} ${level} · ${level>=100?'Max':`${bag.skillXp[skill]-skillRequirement(level)} / ${skillRequirement(level+1)-skillRequirement(level)} EXP`}`;}
  if(bag.classId!=='citizen')document.querySelector<HTMLDialogElement>('#class-dialog')!.close();
  const exp=document.querySelector<HTMLProgressElement>('#experience')!;exp.max=Math.max(1,bag.nextXp-bag.levelXp);exp.value=bag.level>=rewards.levelCap?exp.max:bag.xp-bag.levelXp;exp.title=`${bag.xp} total EXP`;document.querySelector('#xp-label')!.textContent=bag.level>=rewards.levelCap?'Level cap':`${bag.xp-bag.levelXp} / ${bag.nextXp-bag.levelXp} EXP`;
- if(bag.xp>this.lastXp){notice(`+${bag.xp-this.lastXp} EXP · Level ${bag.level} · Collect your wolf spoils.`);this.lastXp=bag.xp;}
- const visible=new Set<string>();if(this.region==='woods')for(const drop of bag.drops){visible.add(drop.id);if(this.dropViews.has(drop.id))continue;const glyph=this.add.graphics();glyph.fillStyle(0x352f20,.8);glyph.fillEllipse(0,6,34,14);glyph.fillStyle(0xe2bd65);glyph.fillRoundedRect(-12,-13,24,24,6);glyph.lineStyle(2,0xffe3a0);glyph.strokeRoundedRect(-12,-13,24,24,6);const label=this.add.text(0,-28,'Wolf spoils',{fontSize:'11px',color:'#ffe5ad',backgroundColor:'#24392d'}).setOrigin(.5);const zone=this.add.zone(0,0,56,56).setInteractive({useHandCursor:true});zone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target===this.game.canvas&&!pointer.rightButtonDown())this.economyAction({kind:'pickup',drop:drop.id});});const view=this.add.container(drop.x*64,drop.y*64,[glyph,label,zone]).setDepth(drop.y*64+1);this.dropViews.set(drop.id,view);}
+ if(bag.xp>this.lastXp){notice(`+${bag.xp-this.lastXp} EXP · Level ${bag.level} · Collect your spoils.`);this.lastXp=bag.xp;}
+ const visible=new Set<string>();if(this.region==='woods')for(const drop of bag.drops){visible.add(drop.id);if(this.dropViews.has(drop.id))continue;const glyph=this.add.graphics();glyph.fillStyle(0x352f20,.8);glyph.fillEllipse(0,6,34,14);glyph.fillStyle(0xe2bd65);glyph.fillRoundedRect(-12,-13,24,24,6);glyph.lineStyle(2,0xffe3a0);glyph.strokeRoundedRect(-12,-13,24,24,6);const label=this.add.text(0,-28,'Monster spoils',{fontSize:'11px',color:'#ffe5ad',backgroundColor:'#24392d'}).setOrigin(.5);const zone=this.add.zone(0,0,56,56).setInteractive({useHandCursor:true});zone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target===this.game.canvas&&!pointer.rightButtonDown())this.economyAction({kind:'pickup',drop:drop.id});});const view=this.add.container(drop.x*64,drop.y*64,[glyph,label,zone]).setDepth(drop.y*64+1);this.dropViews.set(drop.id,view);}
  for(const [id,view] of this.dropViews)if(!visible.has(id)){view.destroy();this.dropViews.delete(id);}
  }
  cast(kind:'bolt'|'nova'|'stop'){
  if(document.querySelector('dialog[open]')!==null||this.traveling||this.fighter.hp<=0)return;
  const spell=document.querySelector<HTMLSelectElement>('#spell-select')!.value;if(kind==='nova'&&!isSpell(spell)){notice('Learn a spell from Mara first.');return;}
- if(kind!=='stop'&&!(kind==='nova'&&spell==='mend')&&!this.selected){notice('Click or tap a wolf to select it.');return;}
+ if(kind!=='stop'&&!(kind==='nova'&&spell==='mend')&&!this.selected){notice('Click or tap a monster to select it.');return;}
  if(this.preview){Object.assign(this.fighter,{x:this.local.x,y:this.local.y,region:this.region});if(!(kind==='nova'?this.sim.castSpell('local',this.fighter,spell,this.selected,this.economy.profiles.get('local')):this.sim.action('local',this.fighter,kind,this.selected))&&kind!=='stop')notice('Spell unavailable. Check learned spells, target range, mana, cooldown and sanctuary.');}
  else if(this.online)this.room?.send('combat',{kind:kind==='nova'?'spell':kind,spell,target:this.selected});
  this.autoAttack=kind==='bolt';if(kind==='stop')this.autoAttack=false;
@@ -144,12 +147,12 @@ class Elderwood extends Phaser.Scene {
  const wolves=this.preview?this.sim.wolves:this.room?.state?.wolves;
  const visible=new Set<string>();
  if(this.region==='woods'&&wolves)wolves.forEach((w:Wolf,id:string)=>{
- if(w.hp<=0)return;visible.add(id);let view=this.wolfViews.get(id);
- if(!view){const sprite=this.add.sprite(0,0,'wolf-idle','down-0').setOrigin(.5,.95).setScale(.2);const health=this.add.graphics();const label=this.add.text(0,-82,'Forest Wolf',{fontSize:'12px',color:'#f5dfbd',backgroundColor:'#203a31'}).setOrigin(.5);view=this.add.container(w.x*64,w.y*64,[sprite,health,label]).setData('sprite',sprite).setData('health',health);const zone=this.add.zone(0,-30,110,100).setInteractive({useHandCursor:true});zone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target!==this.game.canvas||pointer.rightButtonDown())return;this.selected=id;this.route=[];document.querySelector<HTMLDetailsElement>('#combat-panel')!.open=true;this.cast('bolt');notice('Auto-attack enabled · Fires in range · Esc: Stop');});view.add(zone);this.wolfViews.set(id,view);}
- const moving=w.mode==='chase'||w.mode==='return',sprite=view.getData('sprite') as Phaser.GameObjects.Sprite;sprite.play(`wolf-${moving?'walk':'idle'}-${w.facing}`,true);view.x+=(w.x*64-view.x)*(1-Math.exp(-delta/70));view.y+=(w.y*64-view.y)*(1-Math.exp(-delta/70));view.setDepth(view.y);sprite.setTint(this.selected===id?0xffe4aa:0xffffff);const bar=view.getData('health') as Phaser.GameObjects.Graphics;bar.clear();bar.fillStyle(0x162727);bar.fillRoundedRect(-30,-73,60,6,3);bar.fillStyle(0xbacb85);bar.fillRoundedRect(-30,-73,60*w.hp/C.wolf.hp,6,3);
+ if(w.hp<=0)return;const kind=monsterKind(w.kind),stats=monsters[kind];visible.add(id);let view=this.wolfViews.get(id);
+ if(!view){const sprite=this.add.sprite(0,0,kind==='wolf'?'wolf-idle':`${kind}-idle-down-0`,kind==='wolf'?'down-0':undefined).setOrigin(.5,.95).setScale(kind==='wolf'?.2:kind==='bear'?1.1:.72);const health=this.add.graphics();const label=this.add.text(0,kind==='bear'?-150:-92,`${stats.name} · Lv ${stats.level}${stats.boss?' · BOSS':''}`,{fontSize:'12px',color:'#f5dfbd',backgroundColor:'#203a31'}).setOrigin(.5);view=this.add.container(w.x*64,w.y*64,[sprite,health,label]).setData('sprite',sprite).setData('health',health);const zone=this.add.zone(0,-30,110,100).setInteractive({useHandCursor:true});zone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target!==this.game.canvas||pointer.rightButtonDown())return;this.selected=id;this.route=[];document.querySelector<HTMLDetailsElement>('#combat-panel')!.open=true;this.cast('bolt');notice('Auto-attack enabled · Fires in range · Esc: Stop');});view.add(zone);this.wolfViews.set(id,view);}
+ const moving=w.mode==='chase'||w.mode==='return',sprite=view.getData('sprite') as Phaser.GameObjects.Sprite;sprite.play(`${kind}-${moving?'walk':'idle'}-${w.facing}`,true);view.x+=(w.x*64-view.x)*(1-Math.exp(-delta/70));view.y+=(w.y*64-view.y)*(1-Math.exp(-delta/70));view.setDepth(view.y);sprite.setTint(this.selected===id?0xffe4aa:0xffffff);const bar=view.getData('health') as Phaser.GameObjects.Graphics;bar.y=kind==='bear'?-52:-10;bar.clear();bar.fillStyle(0x162727);bar.fillRoundedRect(-30,-73,60,6,3);bar.fillStyle(0xbacb85);bar.fillRoundedRect(-30,-73,60*w.hp/stats.hp,6,3);
  });
  for(const [id,view] of this.wolfViews)if(!visible.has(id)){view.destroy();this.wolfViews.delete(id);if(this.selected===id)this.selected='';}
- const target=wolves?.get(this.selected);document.querySelector('#combat-target')!.textContent=target&&target.hp>0?`Forest Wolf · ${Math.ceil(target.hp)} / ${C.wolf.hp}`:'Select a wolf in Whispering Woods';
+ const target=wolves?.get(this.selected);document.querySelector('#combat-target')!.textContent=target&&target.hp>0?`${monsters[monsterKind(target.kind)].name} · ${Math.ceil(target.hp)} / ${monsters[monsterKind(target.kind)].hp}`:'Select a monster in Whispering Woods';
  (document.querySelector('#health') as HTMLMeterElement).value=this.fighter.hp;(document.querySelector('#mana') as HTMLMeterElement).value=this.fighter.mana;document.querySelector('#character-health')!.textContent=`${Math.ceil(this.fighter.hp)} / ${C.playerHp} HP`;document.querySelector('#character-mana')!.textContent=`${Math.floor(this.fighter.mana)} / ${C.mana} MP`;
  document.querySelector('#death-notice')!.textContent=this.fighter.hp<=0?'Defeated · Returning to Elderwood…':'';
  this.avatar?.setAlpha(this.fighter.hp<=0?.35:1);
@@ -158,27 +161,28 @@ class Elderwood extends Phaser.Scene {
  for(const obj of this.worldObjects)obj.destroy();
  const existing=new Set(this.children.list),config=regions[this.region];
  this.cameras.main.setBackgroundColor('#233c38');const g=this.add.graphics();const terrain=this.region==='woods'?woodsTerrain:undefined;const ground=woodsGround;
- const illustratedMap=this.region==='elderwood'&&this.textures.exists('elderwood-base');
+ const mapConfig=this.region==='woods'?woodsMap:elderwoodMap,mapObjects=this.region==='woods'?woodsObjects:elderwoodObjects,mapPrefix=this.region==='woods'?'woods':'elderwood';
+ const illustratedMap=(this.region==='elderwood'||this.region==='woods')&&this.textures.exists(`${mapPrefix}-base`);
  if(illustratedMap){
- this.add.image(0,elderwoodMap.offsetY*64,'elderwood-base').setOrigin(0).setDisplaySize(elderwoodMap.worldWidth*64,elderwoodMap.worldHeight*64).setDepth(-2);
- for(const object of elderwoodObjects){const sx=elderwoodMap.worldWidth*64/elderwoodMap.width,sy=elderwoodMap.worldHeight*64/elderwoodMap.height;
- this.add.image(object.x*sx,object.y*sy+elderwoodMap.offsetY*64,object.key).setOrigin(0).setDisplaySize(object.w*sx,object.h*sy).setDepth(object.footY*sy+elderwoodMap.offsetY*64);}
+ this.add.image(0,mapConfig.offsetY*64,`${mapPrefix}-base`).setOrigin(0).setDisplaySize(mapConfig.worldWidth*64,mapConfig.worldHeight*64).setDepth(-2);
+ for(const object of mapObjects){const sx=mapConfig.worldWidth*64/mapConfig.width,sy=mapConfig.worldHeight*64/mapConfig.height;
+ this.add.image(object.x*sx,object.y*sy+mapConfig.offsetY*64,object.key).setOrigin(0).setDisplaySize(object.w*sx,object.h*sy).setDepth(object.footY*sy+mapConfig.offsetY*64);}
  }else{
  for(let y=0;y<WORLD.height;y++)for(let x=0;x<WORLD.width;x++){if(terrain&&this.textures.exists(terrain.key)){this.add.image(x*64+1,y*64+1,terrain.key,`${ground(x,y)}-${terrainVariant(x,y)}`).setOrigin(0).setDisplaySize(62,62).setDepth(-1);continue;}const road=Math.abs(x-16)<2||Math.abs(y-13)<2;const palette=road?config.road:config.ground;g.fillStyle(palette[(x+y)%2]);g.fillRoundedRect(x*64+1,y*64+1,62,62,8);if(!road&&(x*7+y*11)%9===0){g.fillStyle(0x749462,.6);g.fillCircle(x*64+22,y*64+25,4);}}
  for(let x=0;x<WORLD.width;x++)for(const y of [0,23])this.tree(x*64+32,y*64+32);
  for(let y=1;y<23;y++)for(const x of [0,31])this.tree(x*64+32,y*64+32);
  }
- if(this.region!=='elderwood')this.add.text(16.5*64,12.2*64,config.name.toUpperCase(),{fontFamily:'Georgia',fontSize:'18px',color:'#535d42',letterSpacing:3}).setOrigin(.5);
+ if(!illustratedMap)this.add.text(16.5*64,12.2*64,config.name.toUpperCase(),{fontFamily:'Georgia',fontSize:'18px',color:'#535d42',letterSpacing:3}).setOrigin(.5);
  for(const b of config.obstacles){const rock=this.add.graphics();rock.fillStyle(config.accent,.45);rock.fillRoundedRect(b.x*64,b.y*64,b.w*64,b.h*64,24);rock.lineStyle(3,config.accent,.6);rock.strokeRoundedRect(b.x*64,b.y*64,b.w*64,b.h*64,24);rock.setDepth((b.y+b.h)*64);}
  const x=PORTAL.x*64,y=PORTAL.y*64;
- const illustratedPortal=this.region==='elderwood'&&this.textures.exists('elderwood-portal');
+ const illustratedPortal=illustratedMap&&this.textures.exists(`${mapPrefix}-portal`);
  const portal=this.add.graphics();
  if(illustratedPortal){portal.fillStyle(0xc576ff,.12);portal.fillEllipse(x,y,160,48);portal.setDepth(-1);}
  else{portal.fillStyle(0x182f3c,.8);portal.fillEllipse(x,y,128,50);portal.lineStyle(5,0xd9c591);portal.strokeEllipse(x,y,128,50);portal.fillStyle(config.accent,.25);portal.fillEllipse(x,y-48,80,104);portal.lineStyle(5,config.accent);portal.strokeEllipse(x,y-48,80,104);portal.lineStyle(2,0xf0f6ff,.8);portal.strokeEllipse(x,y-48,60,86);portal.setDepth(y);}this.portalGlow=portal;
- const portalArt=elderwoodObjects.find(object=>object.key==='elderwood-portal')!;
- const portalScale=elderwoodMap.worldWidth*64/elderwoodMap.width;
+ const portalArt=mapObjects.find(object=>object.key===`${mapPrefix}-portal`)!;
+ const portalScale=mapConfig.worldWidth*64/mapConfig.width;
  const portalCenterX=illustratedPortal?(portalArt.x+portalArt.w/2)*portalScale:x;
- const portalTop=illustratedPortal?portalArt.y*portalScale+elderwoodMap.offsetY*64:y-120;
+ const portalTop=illustratedPortal?portalArt.y*portalScale+mapConfig.offsetY*64:y-120;
  this.add.text(portalCenterX,portalTop-(illustratedPortal?18:0),'WAYFARER PORTAL',{fontFamily:'Georgia',fontSize:'14px',color:'#e9e4cb',backgroundColor:'#193b36'}).setOrigin(.5).setDepth(y+1);
  const target=this.add.zone(portalCenterX,illustratedPortal?portalTop+portalArt.h*portalScale/2:y-45,illustratedPortal?portalArt.w*portalScale:140,illustratedPortal?portalArt.h*portalScale:140).setInteractive({useHandCursor:true}).setDepth(y+2);
  target.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target!==this.game.canvas)return;this.route=[];this.openPortal();});
@@ -230,7 +234,7 @@ class Elderwood extends Phaser.Scene {
  this.acc+=Math.min(delta,100);while(this.acc>=50){this.acc-=50;
  // Re-evaluate waypoints on every fixed tick, including frames that simulate
  // two ticks. This prevents overshooting a narrow path on slower devices.
- if(followingRoute){const tolerance=this.region==='elderwood'?.11:.22;while(this.route.length&&Math.hypot(this.route[0].x-this.local.x,this.route[0].y-this.local.y)<tolerance)this.route.shift();const waypoint=this.route[0];if(waypoint){const dx=waypoint.x-this.local.x,dy=waypoint.y-this.local.y,divisor=Math.max(Math.abs(dx),Math.abs(dy));x=dx/divisor;y=dy/divisor;}else{x=0;y=0;}}
+ if(followingRoute){const tolerance=(this.region==='elderwood'||this.region==='woods')?.11:.22;while(this.route.length&&Math.hypot(this.route[0].x-this.local.x,this.route[0].y-this.local.y)<tolerance)this.route.shift();const waypoint=this.route[0];if(waypoint){const dx=waypoint.x-this.local.x,dy=waypoint.y-this.local.y,divisor=Math.max(Math.abs(dx),Math.abs(dy));x=dx/divisor;y=dy/divisor;}else{x=0;y=0;}}
  const next=this.route[0];const sprint=(this.keys.SHIFT.isDown||this.sprinting)&&!(this.region==='elderwood'&&next&&Math.hypot(next.x-this.local.x,next.y-this.local.y)<.35);if(this.preview&&this.fighter.hp>0){this.local=move(this.local,{x,y,sprint,seq:0},.05,this.region);}else if(this.online&&!this.traveling){const input={x,y,sprint,seq:++this.seq};if(this.fighter.hp>0)this.local=move(this.local,input,.05,this.region);this.pending.push(input);if(this.pending.length>40){this.online=false;document.querySelector('#connection')!.textContent='Disconnected · Reload to reconnect';notice('Server stopped responding. Reload to reconnect.');break;}this.room?.send('input',input);}}
  if(this.preview){Object.assign(this.fighter,{x:this.local.x,y:this.local.y,region:this.region});this.sim.tick(Math.min(delta,100)/1000,[['local',this.fighter]]);this.economy.sync('local',this.fighter);this.economy.process(this.sim.kills.splice(0),new Map([['local',this.fighter]]),this.sim.time);this.bag=this.economy.snapshot('local',this.sim.time);if(this.fighter.region!==this.region)this.applyTravel(this.fighter.region,{x:this.fighter.x,y:this.fighter.y,stamina:100});for(const event of this.sim.events.splice(0))this.effect(event);}
  this.renderCombat(delta);this.renderRewards();
