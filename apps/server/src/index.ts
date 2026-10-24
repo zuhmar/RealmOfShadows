@@ -4,10 +4,10 @@ import {writeProgress} from '../../../packages/shared/src/saves';
 import {Server,Room,Client} from '@colyseus/core';
 import {WebSocketTransport} from '@colyseus/ws-transport';
 import {Schema,MapSchema,defineTypes} from '@colyseus/schema';
-import {WORLD,PORTAL,canTravel,type RegionId,type WeaponId} from '@realm/game-data';
+import {WORLD,PORTAL,equipmentArmor,canTravel,type RegionId,type WeaponId} from '@realm/game-data';
 import {move,CombatSimulation,Economy,type Input,type Fighter} from '@realm/shared';
-class Player extends Schema {weapon:WeaponId='wand';meleeXp=0;distanceXp=0;magicXp=0;x=WORLD.spawn.x;y=WORLD.spawn.y;stamina=100;seq=0;region:RegionId='elderwood';hp=100;mana=100;deadUntil=0;shotAt=0;spellAt=0;target='';auto=false;}
-defineTypes(Player,{weapon:'string',meleeXp:'number',distanceXp:'number',magicXp:'number',x:'number',y:'number',stamina:'number',seq:'number',region:'string',hp:'number',mana:'number',deadUntil:'number',shotAt:'number',spellAt:'number',target:'string',auto:'boolean'});
+class Player extends Schema {armor=0;weapon:WeaponId='wand';meleeXp=0;distanceXp=0;magicXp=0;x=WORLD.spawn.x;y=WORLD.spawn.y;stamina=100;seq=0;region:RegionId='elderwood';hp=100;mana=100;deadUntil=0;shotAt=0;spellAt=0;target='';auto=false;}
+defineTypes(Player,{armor:'number',weapon:'string',meleeXp:'number',distanceXp:'number',magicXp:'number',x:'number',y:'number',stamina:'number',seq:'number',region:'string',hp:'number',mana:'number',deadUntil:'number',shotAt:'number',spellAt:'number',target:'string',auto:'boolean'});
 class WolfState extends Schema{x=0;y=0;hp=65;mode='idle';facing='down';}
 defineTypes(WolfState,{x:'number',y:'number',hp:'number',mode:'string',facing:'string'});
 class State extends Schema {players=new MapSchema<Player>();wolves=new MapSchema<WolfState>();}
@@ -42,7 +42,7 @@ class Elderwood extends Room<State>{
  this.economy.join(client.sessionId);const p=new Player();
  try{if(client.auth?.id){const save=new SaveSession(progressStore!,client.auth as Identity);const data=await save.claim(writeProgress(this.economy.profiles.get(client.sessionId)!,0));
  this.saves.set(client.sessionId,save);this.economy.profiles.set(client.sessionId,data.profile);this.economy.serial=Math.max(this.economy.serial,...data.profile.inventory.map(s=>s.id));
- p.weapon=data.profile.weapon;p.meleeXp=data.profile.skillXp.melee;p.distanceXp=data.profile.skillXp.distance;p.magicXp=data.profile.skillXp.magic;
+ p.armor=equipmentArmor(data.profile.equipment);p.weapon=data.profile.weapon;p.meleeXp=data.profile.skillXp.melee;p.distanceXp=data.profile.skillXp.distance;p.magicXp=data.profile.skillXp.magic;
  data.profile.potionReadyAt=this.simulation.time+data.potionRemaining;this.simulation.spellCooldowns.set(client.sessionId,Object.fromEntries(Object.entries(data.cooldowns).map(([id,remaining])=>[id,this.simulation.time+remaining!])));
  }
  this.state.players.set(client.sessionId,p);

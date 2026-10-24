@@ -1,11 +1,11 @@
 import {combat as C,wolfSpawns,PORTAL,weapons,weaponDamage,skillRules,spells,isSpell,canLearnSpell,skillLevel,type SpellAccess,type SpellId,type WeaponId,type SkillId,type RegionId,type Facing} from '@realm/game-data';
 import {legal,pathfind,type Point} from './index';
-export interface Fighter extends Point{weapon:WeaponId;meleeXp:number;distanceXp:number;magicXp:number;region:RegionId;hp:number;mana:number;deadUntil:number;shotAt:number;spellAt:number;target:string;auto:boolean}
+export interface Fighter extends Point{armor:number;weapon:WeaponId;meleeXp:number;distanceXp:number;magicXp:number;region:RegionId;hp:number;mana:number;deadUntil:number;shotAt:number;spellAt:number;target:string;auto:boolean}
 export interface Wolf extends Point{id:string;hp:number;mode:string;facing:Facing;target:string;attackAt:number;respawnAt:number;spawnX:number;spawnY:number}
 export interface Kill {id:number;owner:string;x:number;y:number}
 export interface Projectile extends Point{id:string;owner:string;target:string;region:RegionId;expires:number;weapon:WeaponId;damage:number;speed:number;skill:SkillId}
 export interface CombatEvent{kind:'bolt'|'arrow'|'melee'|'nova'|'hit'|'death'|'respawn'|'heal';region:RegionId;x:number;y:number;toX?:number;toY?:number;damage?:number;speed?:number;radius?:number}
-export function newFighter():Fighter{return {weapon:'wand',meleeXp:0,distanceXp:0,magicXp:0,x:16.5,y:14.5,region:'elderwood',hp:C.playerHp,mana:C.mana,deadUntil:0,shotAt:0,spellAt:0,target:'',auto:false};}
+export function newFighter():Fighter{return {armor:0,weapon:'wand',meleeXp:0,distanceXp:0,magicXp:0,x:16.5,y:14.5,region:'elderwood',hp:C.playerHp,mana:C.mana,deadUntil:0,shotAt:0,spellAt:0,target:'',auto:false};}
 const distance=(a:Point,b:Point)=>Math.hypot(a.x-b.x,a.y-b.y);
 export function sight(a:Point,b:Point):boolean{const n=Math.ceil(distance(a,b)*8);for(let i=0;i<=n;i++){if(!legal({x:a.x+(b.x-a.x)*i/Math.max(1,n),y:a.y+(b.y-a.y)*i/Math.max(1,n)},'woods'))return false;}return true;}
 export class CombatSimulation{
@@ -51,7 +51,7 @@ export class CombatSimulation{
  if(distance(w,spawn)>C.wolf.leash||(w.target&&(!victim||victim.hp<=0||victim.region!=='woods'||this.safe(victim)||distance(victim,spawn)>C.wolf.leash))) {w.mode='return';w.target='';victim=undefined;}
  if(w.mode==='return'){if(distance(w,spawn)<.15){w.x=spawn.x;w.y=spawn.y;w.hp=C.wolf.hp;w.mode='idle';}else this.step(w,spawn,dt);continue;}
  if(!victim){let best=C.wolf.detect;for(const [id,p] of actors){const d=distance(w,p);if(p.hp>0&&p.region==='woods'&&!this.safe(p)&&d<best&&sight(w,p)){best=d;w.target=id;victim=p;}}}
- if(victim){if(distance(w,victim)<=C.wolf.range&&sight(w,victim)){w.mode='attack';if(this.time>=w.attackAt){w.attackAt=this.time+C.wolf.cooldown;victim.hp=Math.max(0,victim.hp-C.wolf.damage);this.events.push({kind:'hit',region:'woods',x:victim.x,y:victim.y,damage:C.wolf.damage});if(!victim.hp){victim.deadUntil=this.time+C.playerRespawn;this.clear(victim);}}}else{w.mode='chase';this.step(w,victim,dt);}}
+ if(victim){if(distance(w,victim)<=C.wolf.range&&sight(w,victim)){w.mode='attack';if(this.time>=w.attackAt){w.attackAt=this.time+C.wolf.cooldown;const damage=Math.max(1,C.wolf.damage-victim.armor);victim.hp=Math.max(0,victim.hp-damage);this.events.push({kind:'hit',region:'woods',x:victim.x,y:victim.y,damage});if(!victim.hp){victim.deadUntil=this.time+C.playerRespawn;this.clear(victim);}}}else{w.mode='chase';this.step(w,victim,dt);}}
  else{w.mode='idle';}
  }
  for(const [id,shot] of this.projectiles){const p=actors.get(shot.owner),w=this.wolves.get(shot.target);if(!p||p.hp<=0||p.region!==shot.region||!w||!w.hp||w.mode==='return'||this.time>=shot.expires){this.projectiles.delete(id);continue;}const d=distance(shot,w),step=shot.speed*dt;const next={x:shot.x+(w.x-shot.x)/Math.max(d,.001)*Math.min(d,step),y:shot.y+(w.y-shot.y)/Math.max(d,.001)*Math.min(d,step)};if(!sight(shot,next)){this.projectiles.delete(id);continue;}Object.assign(shot,next);if(d<=step+.2){this.hit(w,shot.damage,shot.owner,p,shot.skill);this.projectiles.delete(id);}}

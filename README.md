@@ -117,3 +117,22 @@ notice because those controls are not implemented. Account errors and Retry
 remain interactive. Remembered accounts receive a readable Continue adventure
 panel. The portrait is fitted without cropping; small landscape screens scroll
 instead of shrinking the controls below usable sizes.
+
+
+### Bag equipment and item art
+
+The bag shows eight equipped slots: weapon, off-hand, head, chest, legs, feet,
+necklace and ring. Open “Equipment in your bag” to switch owned weapons or equip
+starter clothing and a shield. Tap equipped clothing/shield to remove it. These
+five starter items each give 1 armor, reducing wolf-hit damage by that amount
+(minimum 1 damage). New and existing characters receive them unequipped; necklaces
+and rings have slots ready for future items. Equipment swaps are blocked during
+auto attack and while defeated. Equipment ownership is separate from the 12
+supply-stack slots. Signed-in equipment persists; older saves migrate on load.
+
+Transparent starter SVG item sprites live in `assets/items/`. Replace any icon
+by uploading a transparent PNG with the same item ID, such as `sword.png`,
+`clothTunic.png` or `potion.png`. PNG overrides WebP/SVG after the next client
+build. See `assets/items/README.md` for the naming rules. Original character and
+map assets are untouched. Run `npm run test:equipment:browser` with the normal
+Playwright/client URL environment variables to check desktop/mobile bag controls.

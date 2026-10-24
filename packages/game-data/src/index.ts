@@ -28,3 +28,5 @@ export {items,rewards,merchant,totalXp,levelForXp,type ItemId} from './economy';
 export * from './classes';
 
 export * from './spells';
+
+export * from './equipment';

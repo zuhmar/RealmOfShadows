@@ -15,7 +15,8 @@
     "test:browser": "node tests/browser-movement.cjs && node tests/browser-combat.cjs && node tests/browser-classes.cjs && node tests/browser-spells.cjs && node tests/browser-profile.cjs && node tests/browser-login.cjs",
     "test:accounts": "tsx tests/accounts.integration.ts",
     "test:accounts:browser": "tsx tests/accounts.browser.ts",
-    "test:startup": "tsx tests/startup.browser.ts"
+    "test:startup": "tsx tests/startup.browser.ts",
+    "test:equipment:browser": "node tests/browser-equipment.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",
