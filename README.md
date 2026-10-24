@@ -148,3 +148,15 @@ alpha bounds; runtime trim frames align centers and feet on a shared canvas,
 including the upward frames with drifting transparent margins. Profile portraits
 use the down-facing idle pose. These sheets replace the earlier combined sheets
 for players and peers; originals and Mara's independent animations are unchanged.
+
+### SVG paper-doll trial
+
+Players now default to a layered SVG character. Equipped hood, tunic/sleeves,
+trousers, boots, shield and every current weapon appear on the model, follow
+idle/walk motion in four directions, and update the profile portraits. Other
+players see the equipped look through a small public appearance field; inventory
+and ownership remain private. Mara and original PNG sheets are preserved. In the
+character profile, **Character appearance → Original character** switches back
+for comparison (a local browser preference). See
+`assets/characters/paper-doll/README.md` for art/rig details. Verify the trial with
+`npm run test:paper-doll:browser` against a running client/server.

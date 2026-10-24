@@ -6,8 +6,8 @@ import {WebSocketTransport} from '@colyseus/ws-transport';
 import {Schema,MapSchema,defineTypes} from '@colyseus/schema';
 import {WORLD,PORTAL,equipmentArmor,canTravel,type RegionId,type WeaponId} from '@realm/game-data';
 import {move,CombatSimulation,Economy,type Input,type Fighter} from '@realm/shared';
-class Player extends Schema {armor=0;weapon:WeaponId='wand';meleeXp=0;distanceXp=0;magicXp=0;x=WORLD.spawn.x;y=WORLD.spawn.y;stamina=100;seq=0;region:RegionId='elderwood';hp=100;mana=100;deadUntil=0;shotAt=0;spellAt=0;target='';auto=false;}
-defineTypes(Player,{armor:'number',weapon:'string',meleeXp:'number',distanceXp:'number',magicXp:'number',x:'number',y:'number',stamina:'number',seq:'number',region:'string',hp:'number',mana:'number',deadUntil:'number',shotAt:'number',spellAt:'number',target:'string',auto:'boolean'});
+class Player extends Schema {appearance='';armor=0;weapon:WeaponId='wand';meleeXp=0;distanceXp=0;magicXp=0;x=WORLD.spawn.x;y=WORLD.spawn.y;stamina=100;seq=0;region:RegionId='elderwood';hp=100;mana=100;deadUntil=0;shotAt=0;spellAt=0;target='';auto=false;}
+defineTypes(Player,{appearance:'string',armor:'number',weapon:'string',meleeXp:'number',distanceXp:'number',magicXp:'number',x:'number',y:'number',stamina:'number',seq:'number',region:'string',hp:'number',mana:'number',deadUntil:'number',shotAt:'number',spellAt:'number',target:'string',auto:'boolean'});
 class WolfState extends Schema{x=0;y=0;hp=65;mode='idle';facing='down';}
 defineTypes(WolfState,{x:'number',y:'number',hp:'number',mode:'string',facing:'string'});
 class State extends Schema {players=new MapSchema<Player>();wolves=new MapSchema<WolfState>();}
@@ -23,7 +23,7 @@ class Elderwood extends Room<State>{
  this.simulation.clear(p);p.region=destination;p.x=PORTAL.arrival.x;p.y=PORTAL.arrival.y;
  client.send('travel-complete',{region:p.region,x:p.x,y:p.y,stamina:p.stamina,seq:p.seq});
  });
- this.onMessage('economy',(client:Client,request:unknown)=>{const now=this.simulation.time;const budget=this.economyReceived.get(client.sessionId)??{tokens:4,time:now};budget.tokens=Math.min(4,budget.tokens+(now-budget.time)*10);budget.time=now;this.economyReceived.set(client.sessionId,budget);if(budget.tokens<1)return;budget.tokens--; const p=this.state.players.get(client.sessionId);if(!p||this.saveFailed.has(client.sessionId))return;const message=this.economy.act(client.sessionId,p,request,now);client.send('economy-result',message);this.sendSnapshot(client);void this.savePlayer(client);});
+ this.onMessage('economy',(client:Client,request:unknown)=>{const now=this.simulation.time;const budget=this.economyReceived.get(client.sessionId)??{tokens:4,time:now};budget.tokens=Math.min(4,budget.tokens+(now-budget.time)*10);budget.time=now;this.economyReceived.set(client.sessionId,budget);if(budget.tokens<1)return;budget.tokens--; const p=this.state.players.get(client.sessionId);if(!p||this.saveFailed.has(client.sessionId))return;const message=this.economy.act(client.sessionId,p,request,now);p.appearance=JSON.stringify(this.economy.profiles.get(client.sessionId)!.equipment);client.send('economy-result',message);this.sendSnapshot(client);void this.savePlayer(client);});
  this.onMessage('combat',(client:Client,data:unknown)=>{if(this.saveFailed.has(client.sessionId)||!data||typeof data!=='object')return;const now=this.simulation.time;if(now-(this.combatReceived.get(client.sessionId)??-Infinity)<.1)return;this.combatReceived.set(client.sessionId,now);const p=this.state.players.get(client.sessionId);if(p){const {kind,target,spell}=data as {kind:unknown;target:unknown;spell:unknown};if(!(kind==='spell'?this.simulation.castSpell(client.sessionId,p,spell,target,this.economy.profiles.get(client.sessionId)):this.simulation.action(client.sessionId,p,kind,target)))client.send('combat-error','Attack unavailable: check your target, range, mana, cooldown, and portal sanctuary.');}});
  this.onMessage('input',(client:Client,data:unknown)=>{if(this.saveFailed.has(client.sessionId))return;const d=data as Input;if(!d||!Number.isFinite(d.x)||!Number.isFinite(d.y)||Math.abs(d.x)>1||Math.abs(d.y)>1||typeof d.sprint!=='boolean'||!Number.isSafeInteger(d.seq)||d.seq<0||d.seq<=(this.received.get(client.sessionId)??-1))return;this.received.set(client.sessionId,d.seq);this.inputs.set(client.sessionId,{x:d.x,y:d.y,sprint:d.sprint,seq:d.seq});});
  // One input is consumed per server tick; flooding cannot increase speed.
@@ -45,7 +45,7 @@ class Elderwood extends Room<State>{
  p.armor=equipmentArmor(data.profile.equipment);p.weapon=data.profile.weapon;p.meleeXp=data.profile.skillXp.melee;p.distanceXp=data.profile.skillXp.distance;p.magicXp=data.profile.skillXp.magic;
  data.profile.potionReadyAt=this.simulation.time+data.potionRemaining;this.simulation.spellCooldowns.set(client.sessionId,Object.fromEntries(Object.entries(data.cooldowns).map(([id,remaining])=>[id,this.simulation.time+remaining!])));
  }
- this.state.players.set(client.sessionId,p);
+ p.appearance=JSON.stringify(this.economy.profiles.get(client.sessionId)!.equipment);this.state.players.set(client.sessionId,p);
  }catch(err){this.economy.leave(client.sessionId);throw err;}
  }
  sendSnapshot(client:Client){if(!this.economy.profiles.has(client.sessionId)||!this.state.players.has(client.sessionId))return;const save=this.saves.get(client.sessionId);client.send('economy-state',{...this.economy.snapshot(client.sessionId,this.simulation.time),account:save?{email:save.identity.email,savedAt:save.savedAt,state:this.saveFailed.has(client.sessionId)?'error':this.saving.has(client.sessionId)?'saving':'ready'}:null});}

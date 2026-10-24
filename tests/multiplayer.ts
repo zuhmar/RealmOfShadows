@@ -8,6 +8,7 @@ for(const room of [a,b]){room.onMessage('economy-state',()=>{});room.onMessage('
 try{a.onMessage('travel-complete',()=>{});let travelErrors=0;a.onMessage('travel-error',()=>travelErrors++);await wait(250);assert.equal(a.roomId,b.roomId);assert.equal(a.state.players.size,2);const start=a.state.players.get(a.sessionId).x;
 for(let i=1;i<=8;i++){a.send('input',{x:1,y:0,sprint:false,seq:i});await wait(60);}await wait(150);
 const own=a.state.players.get(a.sessionId),remote=b.state.players.get(a.sessionId);assert.ok(own.x>start);assert.ok(Math.abs(own.x-remote.x)<.01);assert.ok(own.x-start<=1.61);
+a.send('economy',{kind:'equip-item',item:'clothHood'});await wait(180);assert.equal(JSON.parse(b.state.players.get(a.sessionId).appearance).head,'clothHood');assert.equal(b.state.players.get(a.sessionId).ownedEquipment,undefined);
 const before=own.x;a.send('input',{x:999,y:0,sprint:false,seq:100});await wait(150);assert.equal(a.state.players.get(a.sessionId).x,before);
 const floodStarted=performance.now();for(let i=101;i<201;i++)a.send('input',{x:1,y:0,sprint:false,seq:i});await wait(160);assert.ok(a.state.players.get(a.sessionId).x-before<=4*(performance.now()-floodStarted)/1000+.2);
 for(let i=201;i<250&&a.state.players.get(a.sessionId).x>17.5;i++){a.send('input',{x:-1,y:0,sprint:false,seq:i});await wait(55);}await wait(150);

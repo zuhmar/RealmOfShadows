@@ -14,3 +14,9 @@ export function emptyEquipment():Equipment{return {offhand:null,head:null,chest:
 export function isEquipment(value:unknown):value is EquipmentId{return typeof value==='string'&&Object.hasOwn(equipmentItems,value);}
 export function isEquipmentSlot(value:unknown):value is EquipmentSlot{return typeof value==='string'&&Object.hasOwn(equipmentSlots,value);}
 export function equipmentArmor(equipment:Equipment){return Object.values(equipment).reduce((sum,id)=>sum+(id?equipmentItems[id].armor:0),0);}
+// Public appearance contains equipped slots only, never inventory or ownership.
+export function readAppearance(value:unknown):Equipment{
+ const result=emptyEquipment();if(typeof value!=='string'||value.length>1024)return result;
+ try{const data=JSON.parse(value);if(!data||typeof data!=='object'||Array.isArray(data))return result;for(const slot of Object.keys(equipmentSlots) as EquipmentSlot[]){const id=data[slot];if(isEquipment(id)&&equipmentItems[id].slot===slot)result[slot]=id;}}catch{}
+ return result;
+}

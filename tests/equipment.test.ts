@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {Economy,newFighter,CombatSimulation} from '@realm/shared';
-import {starterEquipment,combat as C} from '@realm/game-data';
+import {readAppearance,emptyEquipment,starterEquipment,combat as C} from '@realm/game-data';
 import {readProgress,writeProgress} from '../packages/shared/src/saves';
 const setup=()=>{const e=new Economy();e.join('p');return {e,p:newFighter(),profile:e.profiles.get('p')!};};
 test('equipment checks ownership, slot and combat state; snapshots cannot mutate ownership',()=>{
@@ -25,4 +25,10 @@ test('equipment persists, legacy saves migrate, and forged slot saves are reject
  const saved=writeProgress(profile,0),loaded=readProgress(saved);assert.deepEqual(loaded.profile.equipment,profile.equipment);
  const legacy:any=structuredClone(saved);delete legacy.profile.equipment;delete legacy.profile.ownedEquipment;const migrated=readProgress(legacy);assert.deepEqual(migrated.profile.ownedEquipment,starterEquipment);assert.ok(Object.values(migrated.profile.equipment).every(id=>id===null));
  for(const edit of [(s:any)=>s.profile.equipment.head='woodenShield',(s:any)=>s.profile.equipment.ring='__proto__',(s:any)=>s.profile.ownedEquipment=[],(s:any)=>s.profile.equipment.extra='clothHood',(s:any)=>delete s.profile.equipment.head,(s:any)=>s.profile.ownedEquipment.push('clothHood')]){const invalid=structuredClone(saved);edit(invalid);assert.throws(()=>readProgress(invalid));}
+});
+
+test('public appearance accepts only valid equipped slots and ignores private or malformed data',()=>{
+ for(const value of [null,'oops','[]','null','x'.repeat(1100)])assert.deepEqual(readAppearance(value),emptyEquipment());
+ const valid=readAppearance(JSON.stringify({head:'clothHood',offhand:'woodenShield',chest:'clothTunic',ring:'woodenShield',gold:999,ownedEquipment:['clothHood']}));
+ assert.equal(valid.head,'clothHood');assert.equal(valid.offhand,'woodenShield');assert.equal(valid.ring,null);assert.deepEqual(Object.keys(valid).sort(),Object.keys(emptyEquipment()).sort());
 });
