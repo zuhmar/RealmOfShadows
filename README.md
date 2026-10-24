@@ -73,11 +73,11 @@ All connected rewards and transactions are server-controlled. They survive death
 
 ## Compact HUD
 
-Health and mana stay visible. Expand **Adventurer** for level, gold, stamina and EXP; **Area info** contains region details and connection status. **Actions** opens spell, potion and loot buttons, and opens automatically when selecting a wolf. **Controls** contains sprint, zoom and control hints. Actions and Controls open one at a time and collapse after portal travel. **Bag** and **Interact** remain on the small bottom bar; existing keyboard shortcuts still work. Notices fade after a few seconds. Panels support click/tap and native keyboard toggling.
+A compact top-left profile button shows the player sprite, level, health, mana and EXP bars. Click/tap it to open the detailed character popup with a larger sprite, vitals, gold, stamina, equipment, skills and class choice. Area info has been removed; the smaller world title stays below the profile, and connection status appears inside the character popup. **Actions** opens spell, potion and loot buttons, and opens automatically when selecting a wolf. **Controls** contains sprint, zoom and control hints. Actions and Controls open one at a time and collapse after portal travel. **Bag** and **Interact** remain on the small bottom bar; existing keyboard shortcuts still work. Notices fade after a few seconds. Panels support click/tap and native keyboard toggling.
 
 ## Citizen and class progression
 
-New characters are Citizens. At character level 5, expand **Adventurer** and choose **Knight, Archer, Mage or Rogue**. The choice grants and equips its starter weapon. The same panel selects owned weapons and displays **Melee, Distance and Magic** skills. Weapon type determines attacks; its matching skill improves damage. Citizens receive training weapons to try the styles. Stop attacking before swapping. Class and skill progress are session-only until saving is added. See `docs/CLASSES.md` for the current design, formulas and limits; it supersedes the original classless specification.
+New characters are Citizens. At character level 5, open your **profile** and choose **Knight, Archer, Mage or Rogue**. The choice grants and equips its starter weapon. The same panel selects owned weapons and displays **Melee, Distance and Magic** skills. Weapon type determines attacks; its matching skill improves damage. Citizens receive training weapons to try the styles. Stop attacking before swapping. Class and skill progress are session-only until saving is added. See `docs/CLASSES.md` for the current design, formulas and limits; it supersedes the original classless specification.
 
 ## Elderwood terrain
 

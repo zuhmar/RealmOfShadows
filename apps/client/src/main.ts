@@ -21,6 +21,7 @@ class Elderwood extends Phaser.Scene {
  create(){
  const drawers=Array.from(document.querySelectorAll<HTMLDetailsElement>('nav details'));for(const drawer of drawers)drawer.addEventListener('toggle',()=>{if(drawer.open)for(const other of drawers)if(other!==drawer)other.open=false;});
  if(this.textures.exists(maraAsset.key)){const texture=this.textures.get(maraAsset.key);for(const animation of maraAsset.animations){const frames=animation.frames.map(([x,y,w,h],i)=>{const name=`${animation.key}-${i}`;texture.add(name,0,x,y,w,h)?.setTrim(maraAsset.frameWidth,maraAsset.frameHeight,(maraAsset.frameWidth-w)/2,maraAsset.frameHeight-h,w,h);return {key:maraAsset.key,frame:name};});this.anims.create({key:`mara-${animation.key}`,frames,frameRate:animation.fps,repeat:-1});}}
+ document.querySelector('#character-panel')!.addEventListener('click',()=>this.openCharacter());document.querySelector('#close-character')!.addEventListener('click',()=>document.querySelector<HTMLDialogElement>('#character-dialog')!.close());
  this.economy.join('local');this.bag=this.economy.snapshot('local',0);
  for(const asset of wolfAssets){if(!this.textures.exists(asset.key))continue;const texture=this.textures.get(asset.key);asset.rows.forEach((row,d)=>{const direction=['down','left','right','up'][d];const frames=row.map(([x,y,w,h],i)=>{const name=`${direction}-${i}`;texture.add(name,0,x,y,w,h);return {key:asset.key,frame:name};});this.anims.create({key:`${asset.key}-${direction}`,frames,frameRate:asset.fps,repeat:-1});});}
  for(const asset of characterAssets){
@@ -36,12 +37,13 @@ class Elderwood extends Phaser.Scene {
  for(const [id,s] of Object.entries(spells)){const button=document.createElement('button');button.dataset.spell=id;button.addEventListener('click',()=>this.economyAction({kind:'learn',spell:id}));document.querySelector('#spell-shop')!.append(button);}
  for(const asset of terrainAssets){if(!this.textures.exists(asset.key))continue;const texture=this.textures.get(asset.key);for(const [kind,y] of Object.entries(asset.rows))asset.columns.forEach((x,i)=>texture.add(`${kind}-${i}`,0,x,y,asset.size,asset.size));}
  this.drawMap();
+ this.drawPortraits();
  this.avatar=this.makeAvatar(0xf0cc80,'You');this.bodySprite=this.avatar.getData('sprite');this.avatar.setPosition(this.local.x*64,this.local.y*64);
  if(characterSprite&&this.textures.exists(characterSprite.key)){this.avatar.removeAll(true);this.bodySprite=this.add.sprite(0,0,characterSprite.key).setOrigin(characterSprite.anchor.x,characterSprite.anchor.y).setScale(characterSprite.scale);this.avatar.add(this.bodySprite);for(const [action,directions] of Object.entries(characterSprite.animations))for(const [direction,a] of Object.entries(directions!)){this.anims.create({key:`${action}-${direction}`,frames:a.frames.map(frame=>({key:characterSprite!.key,frame})),frameRate:a.fps,repeat:-1});}}
  this.cameras.main.setBounds(0,0,WORLD.width*64,WORLD.height*64).startFollow(this.avatar,true,.12,.12).setZoom(.85);
  this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,LEFT,DOWN,RIGHT,SHIFT,SPACE,ONE,TWO,THREE,I,E,ESC') as typeof this.keys;
  this.input.mouse?.disableContextMenu();this.input.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target!==this.game.canvas)return;if(!p.rightButtonDown()&&Array.from(this.dropViews.values()).some(v=>Phaser.Math.Distance.Between(p.worldX,p.worldY,v.x,v.y)<32))return;if(this.region==='woods'&&!p.rightButtonDown()&&Array.from(this.wolfViews.values()).some(v=>Phaser.Math.Distance.Between(p.worldX,p.worldY,v.x,v.y-24)<48))return;if(p.rightButtonDown()||p.wasTouch){this.route=pathfind(this.local,{x:p.worldX/64,y:p.worldY/64},this.region);if(!this.route.length)notice('Choose a clear path through town.');}});
- this.input.keyboard!.removeCapture(Phaser.Input.Keyboard.KeyCodes.SPACE);
+ this.input.keyboard!.removeCapture([Phaser.Input.Keyboard.KeyCodes.SPACE,Phaser.Input.Keyboard.KeyCodes.ESC]);
  this.keys.SPACE.on('down',()=>{if(document.activeElement?.matches('button,summary'))return;if(this.selected&&this.region==='woods')this.cast('bolt');else this.interact();});
  document.querySelector('#choose-class')!.addEventListener('click',()=>this.openClasses());document.querySelector('#close-class')!.addEventListener('click',()=>document.querySelector<HTMLDialogElement>('#class-dialog')!.close());document.querySelector('#weapon-select')!.addEventListener('change',event=>this.economyAction({kind:'equip',weapon:(event.target as HTMLSelectElement).value}));
  this.keys.I.on('down',()=>this.openInventory(false));this.keys.E.on('down',()=>this.pickupNearest());this.keys.THREE.on('down',()=>this.economyAction({kind:'potion'}));
@@ -62,10 +64,17 @@ class Elderwood extends Phaser.Scene {
  window.addEventListener('blur',()=>{release();this.sprinting=false;this.route=[];this.input.keyboard?.resetKeys();});
  void this.connect();
  }
+ drawPortraits(){
+ const frame=this.textures.getFrame('citizen-idle','idle-down-0');if(!frame)return;
+ for(const id of ['profile-portrait','character-portrait']){const canvas=document.querySelector<HTMLCanvasElement>(`#${id}`)!,context=canvas.getContext('2d');if(!context)continue;const scale=Math.min(canvas.width/frame.cutWidth,canvas.height/frame.cutHeight);const w=frame.cutWidth*scale,h=frame.cutHeight*scale;context.clearRect(0,0,canvas.width,canvas.height);context.drawImage(frame.source.image as HTMLImageElement,frame.cutX,frame.cutY,frame.cutWidth,frame.cutHeight,(canvas.width-w)/2,canvas.height-h,w,h);}
+ }
+ openCharacter(){
+ if(this.traveling)return;for(const dialog of Array.from(document.querySelectorAll<HTMLDialogElement>('dialog[open]')))dialog.close();this.route=[];this.touch={x:0,y:0};this.input.keyboard?.resetKeys();document.querySelector<HTMLDialogElement>('#character-dialog')!.showModal();
+ }
  openClasses(){
  const bag=this.bag;if(!bag||bag.classId!=='citizen'||bag.level<classRules.unlockLevel||this.fighter.hp<=0)return;
  const list=document.querySelector('#class-options')!;list.replaceChildren();for(const [id,definition] of Object.entries(classes)){const button=document.createElement('button');button.type='button';const name=document.createElement('strong');name.textContent=definition.name;const text=document.createElement('span');text.textContent=definition.description;button.append(name,text);button.addEventListener('click',()=>this.economyAction({kind:'class',classId:id}));list.append(button);}
- document.querySelector<HTMLDialogElement>('#class-dialog')!.showModal();this.route=[];this.input.keyboard?.resetKeys();
+ document.querySelector<HTMLDialogElement>('#character-dialog')!.close();document.querySelector<HTMLDialogElement>('#class-dialog')!.showModal();this.route=[];this.input.keyboard?.resetKeys();
  }
  economyAction(request:{kind:string;drop?:string;weapon?:string;classId?:string;spell?:string}){
  if(this.preview){Object.assign(this.fighter,{x:this.local.x,y:this.local.y,region:this.region});const message=this.economy.act('local',this.fighter,request,this.sim.time);this.bag=this.economy.snapshot('local',this.sim.time);document.querySelector<HTMLSelectElement>('#weapon-select')!.value=this.bag.weapon;notice(message);document.querySelector('#inventory-feedback')!.textContent=message;this.renderInventory();}
@@ -74,7 +83,7 @@ class Elderwood extends Phaser.Scene {
  pickupNearest(){const nearest=this.bag?.drops.filter(d=>this.region==='woods').sort((a,b)=>Math.hypot(a.x-this.local.x,a.y-this.local.y)-Math.hypot(b.x-this.local.x,b.y-this.local.y))[0];if(nearest)this.economyAction({kind:'pickup',drop:nearest.id});else notice('No loot nearby. Defeat a wolf to earn EXP and leave a bundle.');}
  openInventory(shop:boolean){
  if(shop&&(this.region!=='elderwood'||Math.hypot(this.local.x-merchant.x,this.local.y-merchant.y)>merchant.range)){notice('Walk closer to Mara the Trader.');return;}
- if(this.fighter.hp<=0)return;const dialog=document.querySelector<HTMLDialogElement>('#inventory-dialog')!;document.querySelector<HTMLDialogElement>('#portal-dialog')!.close();this.shopOpen=shop;this.route=[];this.touch={x:0,y:0};this.input.keyboard?.resetKeys();document.querySelector('#inventory-title')!.textContent=shop?merchant.name:'Your inventory';document.querySelector<HTMLElement>('#shop-controls')!.hidden=!shop;document.querySelector('#inventory-feedback')!.textContent='';this.renderInventory();if(!dialog.open)dialog.showModal();
+ if(this.fighter.hp<=0)return;const dialog=document.querySelector<HTMLDialogElement>('#inventory-dialog')!;document.querySelector<HTMLDialogElement>('#portal-dialog')!.close();document.querySelector<HTMLDialogElement>('#character-dialog')!.close();this.shopOpen=shop;this.route=[];this.touch={x:0,y:0};this.input.keyboard?.resetKeys();document.querySelector('#inventory-title')!.textContent=shop?merchant.name:'Your inventory';document.querySelector<HTMLElement>('#shop-controls')!.hidden=!shop;document.querySelector('#inventory-feedback')!.textContent='';this.renderInventory();if(!dialog.open)dialog.showModal();
  }
  renderInventory(){
  const bag=this.bag;if(!bag)return;document.querySelector('#inventory-summary')!.textContent=`${bag.gold} gold · ${bag.inventory.length} / ${bag.capacity} slots · Level ${bag.level}`;
@@ -82,7 +91,7 @@ class Elderwood extends Phaser.Scene {
  }
  renderRewards(){
  const bag=this.bag;if(!bag)return;
- document.querySelector('#level-label')!.textContent=`Level ${bag.level} · ${bag.classId==='citizen'?'Citizen':classes[bag.classId].name}`;document.querySelector('#gold-label')!.textContent=`${bag.gold} gold`;
+ document.querySelector('#level-label')!.textContent=`Level ${bag.level} · ${bag.classId==='citizen'?'Citizen':classes[bag.classId].name}`;document.querySelector('#gold-label')!.textContent=`${bag.gold} gold`;document.querySelector('#profile-level')!.textContent=`Level ${bag.level} · ${bag.classId==='citizen'?'Citizen':classes[bag.classId].name}`;
  const weapon=weapons[bag.weapon];document.querySelector('#attack-name')!.textContent=weapon.kind==='melee'?'Melee attack':weapon.kind==='arrow'?'Shoot arrow':'Arc Bolt';const spellSelect=document.querySelector<HTMLSelectElement>('#spell-select')!;if(spellSelect.dataset.known!==bag.learnedSpells.join(',')){const previous=spellSelect.value;spellSelect.replaceChildren();for(const id of bag.learnedSpells){const option=document.createElement('option');option.value=id;option.textContent=`${spells[id].name} · ${spells[id].cost} mana`;spellSelect.append(option);}if(bag.learnedSpells.includes(previous as typeof bag.learnedSpells[number]))spellSelect.value=previous;spellSelect.dataset.known=bag.learnedSpells.join(',');}spellSelect.hidden=bag.learnedSpells.length===0;document.querySelector<HTMLElement>('#nova')!.hidden=spellSelect.hidden;document.querySelector<HTMLElement>('#no-spells')!.hidden=!spellSelect.hidden;
  for(const button of Array.from(document.querySelectorAll<HTMLButtonElement>('#spell-shop button'))){const id=button.dataset.spell;if(!isSpell(id))continue;const s=spells[id],known=bag.learnedSpells.includes(id);button.hidden=s.classId!=='shared'&&s.classId!==bag.classId;button.disabled=known||!canLearnSpell(id,bag)||bag.gold<s.price;button.textContent=`${s.name} · ${known?'Learned':`${s.price} gold · Level ${s.level} · ${s.cost} mana · ${s.cooldown}s cooldown`}`;}
  const selector=document.querySelector<HTMLSelectElement>('#weapon-select')!;if(selector.dataset.weapons!==bag.ownedWeapons.join(',')){selector.replaceChildren();for(const id of bag.ownedWeapons){const option=document.createElement('option');option.value=id;option.textContent=weapons[id].name;selector.append(option);}selector.dataset.weapons=bag.ownedWeapons.join(',');}if(document.activeElement!==selector)selector.value=bag.weapon;
@@ -119,7 +128,7 @@ class Elderwood extends Phaser.Scene {
  });
  for(const [id,view] of this.wolfViews)if(!visible.has(id)){view.destroy();this.wolfViews.delete(id);if(this.selected===id)this.selected='';}
  const target=wolves?.get(this.selected);document.querySelector('#combat-target')!.textContent=target&&target.hp>0?`Forest Wolf · ${Math.ceil(target.hp)} / ${C.wolf.hp}`:'Select a wolf in Whispering Woods';
- (document.querySelector('#health') as HTMLMeterElement).value=this.fighter.hp;(document.querySelector('#mana') as HTMLMeterElement).value=this.fighter.mana;
+ (document.querySelector('#health') as HTMLMeterElement).value=this.fighter.hp;(document.querySelector('#mana') as HTMLMeterElement).value=this.fighter.mana;document.querySelector('#character-health')!.textContent=`${Math.ceil(this.fighter.hp)} / ${C.playerHp} HP`;document.querySelector('#character-mana')!.textContent=`${Math.floor(this.fighter.mana)} / ${C.mana} MP`;
  document.querySelector('#death-notice')!.textContent=this.fighter.hp<=0?'Defeated · Returning to Elderwood…':'';
  this.avatar?.setAlpha(this.fighter.hp<=0?.35:1);
  }
@@ -146,10 +155,6 @@ class Elderwood extends Phaser.Scene {
  if(this.region==='elderwood'){const trader=this.makeAvatar(0xddc79b,merchant.name);trader.setPosition(merchant.x*64,merchant.y*64).setDepth(merchant.y*64);const sprite=trader.getData('sprite') as Phaser.GameObjects.Sprite|undefined;if(sprite&&this.textures.exists(maraAsset.key))sprite.setTexture(maraAsset.key,'idle-down-0').setOrigin(.5,maraAsset.origin).setScale(maraAsset.scale).play('mara-idle-down');const tradeZone=this.add.zone(merchant.x*64,merchant.y*64-30,100,110).setInteractive({useHandCursor:true}).setDepth(merchant.y*64+1);tradeZone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target===this.game.canvas&&!pointer.rightButtonDown())this.openInventory(true);});}
  this.worldObjects=this.children.list.filter(obj=>!existing.has(obj));
  document.querySelector('h1')!.textContent=config.name;
- document.querySelector('footer')!.firstChild!.textContent=config.name.toUpperCase()+' ';
- document.querySelector('#welcome h2')!.textContent=this.region==='elderwood'?'Every journey begins beneath these branches.':config.name;
- document.querySelector('#welcome p')!.textContent=this.region==='elderwood'?'Visit the portal in the square to explore new places.':config.description;
- document.querySelector('.badge')!.textContent=this.region==='elderwood'?'SAFE HAVEN':'EXPLORATION';
  }
  openPortal(){
  if(this.fighter.hp<=0)return;
