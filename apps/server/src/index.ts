@@ -8,8 +8,8 @@ import {WORLD,PORTAL,equipmentArmor,canTravel,type RegionId,type WeaponId} from 
 import {move,CombatSimulation,Economy,type Input,type Fighter} from '@realm/shared';
 class Player extends Schema {appearance='';armor=0;weapon:WeaponId='wand';meleeXp=0;distanceXp=0;magicXp=0;x=WORLD.spawn.x;y=WORLD.spawn.y;stamina=100;seq=0;region:RegionId='elderwood';hp=100;mana=100;deadUntil=0;shotAt=0;spellAt=0;target='';auto=false;}
 defineTypes(Player,{appearance:'string',armor:'number',weapon:'string',meleeXp:'number',distanceXp:'number',magicXp:'number',x:'number',y:'number',stamina:'number',seq:'number',region:'string',hp:'number',mana:'number',deadUntil:'number',shotAt:'number',spellAt:'number',target:'string',auto:'boolean'});
-class WolfState extends Schema{kind='wolf';x=0;y=0;hp=65;mode='idle';facing='down';}
-defineTypes(WolfState,{kind:'string',x:'number',y:'number',hp:'number',mode:'string',facing:'string'});
+class WolfState extends Schema{kind='wolf';x=0;y=0;hp=65;mode='idle';facing='down';aimX=0;aimY=0;}
+defineTypes(WolfState,{kind:'string',x:'number',y:'number',hp:'number',mode:'string',facing:'string',aimX:'number',aimY:'number'});
 class State extends Schema {players=new MapSchema<Player>();wolves=new MapSchema<WolfState>();}
 defineTypes(State,{players:{map:Player},wolves:{map:WolfState}});
 class Elderwood extends Room<State>{
@@ -33,7 +33,7 @@ class Elderwood extends Room<State>{
  for(const [id,p] of this.state.players)this.economy.sync(id,p);
  this.economy.process(this.simulation.kills.splice(0),this.state.players,this.simulation.time);if(++this.rewardTicks%4===0)for(const client of this.clients)this.sendSnapshot(client);
  if(this.rewardTicks%100===0)for(const client of this.clients)void this.savePlayer(client);
- for(const [id,w] of this.simulation.wolves){if(!this.state.wolves.has(id))this.state.wolves.set(id,new WolfState());const state=this.state.wolves.get(id)!;state.kind=w.kind;state.x=w.x;state.y=w.y;state.hp=w.hp;state.mode=w.mode;state.facing=w.facing;}
+ for(const [id,w] of this.simulation.wolves){if(!this.state.wolves.has(id))this.state.wolves.set(id,new WolfState());const state=this.state.wolves.get(id)!;state.kind=w.kind;state.x=w.x;state.y=w.y;state.hp=w.hp;state.mode=w.mode;state.facing=w.facing;state.aimX=w.aimX;state.aimY=w.aimY;}
  for(const event of this.simulation.events.splice(0))for(const client of this.clients)if(this.state.players.get(client.sessionId)?.region===event.region)client.send('combat-event',event);
  },50);
  }

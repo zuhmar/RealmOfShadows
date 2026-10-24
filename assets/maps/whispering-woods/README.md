@@ -9,11 +9,16 @@ The central portal connects four habitats: wolves north, Thorn Spiders west,
 Wild Boars east, and the Forest Bear arena south. Eight enemies spawn on clear
 land. Water, cliffs, tree trunks, boulders, logs and ruin bases use the same
 collision geometry in the client and server. Broad paths remain open between
-habitats. The two side bridges cross the boundary streams; they are scenery
+habitats. The island has winding tracks, irregular river banks, cascades and river reeds,
+layered oak/pine/ancient tree canopies, a wolf den and camp, spider egg nests,
+boar camp fencing and a cart, and a cracked stone bear arena with torch pillars.
+The portal has its own carved stone arch, runes, crystals and moss.
+
+The two side bridges cross the boundary streams; they are scenery
 and walkable decks, not additional travel portals.
 
 Edit `packages/game-data/src/woods.ts` for terrain, props and collision;
-`scripts/build-woods-svg.ts` for the ground and vector artwork. Run
+`scripts/build-woods-svg.ts` for the ground, and `scripts/woods-prefabs.ts` for biome-specific vector props. Run
 `npm run art:woods` to regenerate. Do not overwrite the supplied PNG.
 
 Monster spawn locations, levels and stats live in

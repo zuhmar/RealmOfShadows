@@ -3,20 +3,21 @@ import {legal,pathfind,type Point} from './index';
 export interface Fighter extends Point{armor:number;weapon:WeaponId;meleeXp:number;distanceXp:number;magicXp:number;region:RegionId;hp:number;mana:number;deadUntil:number;shotAt:number;spellAt:number;target:string;auto:boolean}
 // Retain the existing Wolf/wolves API and wire collection for compatibility;
 // kind selects the definition for every Whispering Woods monster.
-export interface Wolf extends Point{kind:MonsterKind;id:string;hp:number;mode:string;facing:Facing;target:string;attackAt:number;respawnAt:number;spawnX:number;spawnY:number}
+export interface Wolf extends Point{kind:MonsterKind;id:string;hp:number;mode:string;facing:Facing;target:string;attackAt:number;respawnAt:number;spawnX:number;spawnY:number;windupUntil:number;aimX:number;aimY:number}
 export interface Kill {kind?:MonsterKind;id:number;owner:string;x:number;y:number}
 export interface Projectile extends Point{id:string;owner:string;target:string;region:RegionId;expires:number;weapon:WeaponId;damage:number;speed:number;skill:SkillId}
-export interface CombatEvent{kind:'bolt'|'arrow'|'melee'|'nova'|'hit'|'death'|'respawn'|'heal';region:RegionId;x:number;y:number;toX?:number;toY?:number;damage?:number;speed?:number;radius?:number}
+export interface CombatEvent{kind:'bolt'|'arrow'|'melee'|'nova'|'hit'|'death'|'respawn'|'heal'|'warning'|'venom'|'charge';region:RegionId;x:number;y:number;toX?:number;toY?:number;damage?:number;speed?:number;radius?:number}
 export function newFighter():Fighter{return {armor:0,weapon:'wand',meleeXp:0,distanceXp:0,magicXp:0,x:16.5,y:14.5,region:'elderwood',hp:C.playerHp,mana:C.mana,deadUntil:0,shotAt:0,spellAt:0,target:'',auto:false};}
 const distance=(a:Point,b:Point)=>Math.hypot(a.x-b.x,a.y-b.y);
 export function sight(a:Point,b:Point):boolean{const n=Math.ceil(distance(a,b)*8);for(let i=0;i<=n;i++){if(!legal({x:a.x+(b.x-a.x)*i/Math.max(1,n),y:a.y+(b.y-a.y)*i/Math.max(1,n)},'woods'))return false;}return true;}
 export class CombatSimulation{
+ enemyShots:{x:number;y:number;toX:number;toY:number;remaining:number;damage:number}[]=[];
  spellCooldowns=new Map<string,Partial<Record<SpellId,number>>>();
  kills:Kill[]=[];time=0;serial=0;wolves=new Map<string,Wolf>();projectiles=new Map<string,Projectile>();events:CombatEvent[]=[];
- constructor(){for(const s of monsterSpawns)this.wolves.set(s.id,{...s,hp:monsters[s.kind].hp,mode:'idle',facing:'down',target:'',attackAt:0,respawnAt:0,spawnX:s.x,spawnY:s.y});}
+ constructor(){for(const s of monsterSpawns)this.wolves.set(s.id,{...s,hp:monsters[s.kind].hp,mode:'idle',facing:'down',target:'',attackAt:0,respawnAt:0,spawnX:s.x,spawnY:s.y,windupUntil:0,aimX:s.x,aimY:s.y});}
  safe(p:Point){return distance(p,PORTAL)<C.portalSafeRadius;}
  clear(p:Fighter){p.target='';p.auto=false;}
- damage(w:Wolf,amount:number,attacker?:string){const stats=monsters[monsterKind(w.kind)];if(w.hp<=0||w.mode==='return')return;w.hp=Math.max(0,w.hp-amount);if(w.hp>0&&attacker){w.target=attacker;if(w.mode==='idle')w.mode='chase';}this.events.push({kind:'hit',region:'woods',x:w.x,y:w.y,damage:amount});if(!w.hp){if(attacker)this.kills.push({id:++this.serial,owner:attacker,kind:w.kind,x:w.x,y:w.y});w.mode='dead';w.target='';w.respawnAt=this.time+stats.respawn;this.events.push({kind:'death',region:'woods',x:w.x,y:w.y});}}
+ damage(w:Wolf,amount:number,attacker?:string){const stats=monsters[monsterKind(w.kind)];if(w.hp<=0||w.mode==='return')return;w.hp=Math.max(0,w.hp-amount);if(w.hp>0&&attacker){w.target=attacker;if(w.mode==='idle')w.mode='chase';}this.events.push({kind:'hit',region:'woods',x:w.x,y:w.y,damage:amount});if(!w.hp){if(attacker)this.kills.push({id:++this.serial,owner:attacker,kind:w.kind,x:w.x,y:w.y});w.mode='dead';w.target='';w.windupUntil=0;w.respawnAt=this.time+stats.respawn;this.events.push({kind:'death',region:'woods',x:w.x,y:w.y});}}
  action(id:string,p:Fighter,kind:unknown,target:unknown):boolean{
  if(kind==='stop'){this.clear(p);return true;}
  if(p.hp<=0||p.region!=='woods')return false;
@@ -49,17 +50,47 @@ export class CombatSimulation{
  for(const [id,p] of actors){if(p.hp<=0){if(this.time>=p.deadUntil){p.hp=C.playerHp;p.mana=C.mana;p.region='elderwood';p.x=PORTAL.arrival.x;p.y=PORTAL.arrival.y;this.clear(p);this.events.push({kind:'respawn',region:'elderwood',x:p.x,y:p.y});}continue;}p.mana=Math.min(C.mana,p.mana+dt*5);if(p.region!=='woods'||this.safe(p)){if(p.region==='elderwood')p.hp=Math.min(C.playerHp,p.hp+dt*10);if(p.region!=='woods')this.clear(p);continue;}if(p.auto)this.shoot(id,p);}
  for(const w of this.wolves.values()){
  const stats=monsters[monsterKind(w.kind)];
- if(w.hp<=0){if(this.time>=w.respawnAt){w.hp=stats.hp;w.x=w.spawnX;w.y=w.spawnY;w.mode='idle';w.target='';}continue;}
+ if(w.hp<=0){if(this.time>=w.respawnAt){w.hp=stats.hp;w.x=w.spawnX;w.y=w.spawnY;w.mode='idle';w.target='';w.windupUntil=0;}continue;}
  const spawn={x:w.spawnX,y:w.spawnY};let victim=actors.get(w.target);
- if(distance(w,spawn)>stats.leash||(w.target&&(!victim||victim.hp<=0||victim.region!=='woods'||this.safe(victim)||distance(victim,spawn)>stats.leash))) {w.mode='return';w.target='';victim=undefined;}
+ if(distance(w,spawn)>stats.leash||(w.target&&(!victim||victim.hp<=0||victim.region!=='woods'||this.safe(victim)||distance(victim,spawn)>stats.leash))) {w.mode='return';w.target='';w.windupUntil=0;victim=undefined;}
  if(w.mode==='return'){if(distance(w,spawn)<.15){w.x=spawn.x;w.y=spawn.y;w.hp=stats.hp;w.mode='idle';}else this.step(w,spawn,dt);continue;}
  if(!victim){let best:number=stats.detect;for(const [id,p] of actors){const d=distance(w,p);if(p.hp>0&&p.region==='woods'&&!this.safe(p)&&d<best&&sight(w,p)){best=d;w.target=id;victim=p;}}}
- if(victim){if(distance(w,victim)<=stats.range&&sight(w,victim)){w.mode='attack';if(this.time>=w.attackAt){w.attackAt=this.time+stats.cooldown;if(w.kind==='bear')this.events.push({kind:'nova',region:'woods',x:w.x,y:w.y,radius:1.8});
- const victims=w.kind==='bear'?[...actors.values()].filter(p=>p.hp>0&&p.region==='woods'&&!this.safe(p)&&distance(w,p)<=1.8&&sight(w,p)):[victim];
- for(const actor of victims){const damage=Math.max(1,stats.damage-actor.armor);actor.hp=Math.max(0,actor.hp-damage);this.events.push({kind:'hit',region:'woods',x:actor.x,y:actor.y,damage});if(!actor.hp){actor.deadUntil=this.time+C.playerRespawn;this.clear(actor);}}}}else{w.mode='chase';this.step(w,victim,dt);}}
+ if(victim){
+ const range=w.kind==='spider'?3.2:w.kind==='boar'?3:stats.range;
+ if(w.windupUntil){
+  w.mode='windup';
+  if(this.time>=w.windupUntil){
+   w.windupUntil=0;w.mode='attack';w.attackAt=this.time+stats.cooldown;
+   if(w.kind==='bear'){
+    this.events.push({kind:'nova',region:'woods',x:w.aimX,y:w.aimY,radius:1.8});
+    for(const actor of actors.values())if(actor.hp>0&&actor.region==='woods'&&!this.safe(actor)&&distance(actor,{x:w.aimX,y:w.aimY})<=1.8&&sight(w,actor))this.strike(actor,stats.damage);
+   }else if(w.kind==='spider'){
+    this.events.push({kind:'venom',region:'woods',x:w.x,y:w.y,toX:w.aimX,toY:w.aimY,speed:7});
+    this.enemyShots.push({x:w.x,y:w.y,toX:w.aimX,toY:w.aimY,remaining:distance(w,{x:w.aimX,y:w.aimY})/7+.05,damage:stats.damage});
+   }else if(w.kind==='boar'){
+    // Charge follows the warned line in collision-tested substeps and can be dodged.
+    this.events.push({kind:'charge',region:'woods',x:w.x,y:w.y,toX:w.aimX,toY:w.aimY});
+    const start={x:w.x,y:w.y},length=distance(start,{x:w.aimX,y:w.aimY}),hit=new Set<Fighter>();
+    for(let i=1;i<=Math.ceil(length*10);i++){const t=Math.min(1,i/(Math.ceil(length*10))),next={x:start.x+(w.aimX-start.x)*t,y:start.y+(w.aimY-start.y)*t};if(!legal(next,'woods'))break;w.x=next.x;w.y=next.y;
+     for(const actor of actors.values())if(!hit.has(actor)&&actor.hp>0&&actor.region==='woods'&&!this.safe(actor)&&distance(actor,next)<.65&&sight(w,actor)){hit.add(actor);this.strike(actor,stats.damage);}}
+   }
+  }
+ }else if(distance(w,victim)<=range&&sight(w,victim)){
+  w.mode='attack';
+  if(this.time>=w.attackAt){
+   if(w.kind==='wolf'){w.attackAt=this.time+stats.cooldown;this.strike(victim,stats.damage);}
+   else{const dx=victim.x-w.x,dy=victim.y-w.y;w.facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');w.mode='windup';w.aimX=w.kind==='bear'?w.x:victim.x;w.aimY=w.kind==='bear'?w.y:victim.y;w.windupUntil=this.time+(w.kind==='bear'?.85:w.kind==='boar'?.65:.45);
+    this.events.push({kind:'warning',region:'woods',x:w.x,y:w.y,toX:w.aimX,toY:w.aimY,radius:w.kind==='bear'?1.8:w.kind==='boar'?.65:.6,speed:w.windupUntil-this.time});}
+  }
+ }else{w.mode='chase';this.step(w,victim,dt);}
+ }
  else{w.mode='idle';}
  }
+ for(const shot of this.enemyShots)shot.remaining-=dt;
+ for(const shot of this.enemyShots.filter(s=>s.remaining<=0)){for(const actor of actors.values())if(actor.hp>0&&actor.region==='woods'&&!this.safe(actor)&&distance(actor,{x:shot.toX,y:shot.toY})<=.6&&sight(shot,actor))this.strike(actor,shot.damage);}
+ this.enemyShots=this.enemyShots.filter(s=>s.remaining>0);
  for(const [id,shot] of this.projectiles){const p=actors.get(shot.owner),w=this.wolves.get(shot.target);if(!p||p.hp<=0||p.region!==shot.region||!w||!w.hp||w.mode==='return'||this.time>=shot.expires){this.projectiles.delete(id);continue;}const d=distance(shot,w),step=shot.speed*dt;const next={x:shot.x+(w.x-shot.x)/Math.max(d,.001)*Math.min(d,step),y:shot.y+(w.y-shot.y)/Math.max(d,.001)*Math.min(d,step)};if(!sight(shot,next)){this.projectiles.delete(id);continue;}Object.assign(shot,next);if(d<=step+.2){this.hit(w,shot.damage,shot.owner,p,shot.skill);this.projectiles.delete(id);}}
  }
+ strike(actor:Fighter,power:number){const damage=Math.max(1,power-actor.armor);actor.hp=Math.max(0,actor.hp-damage);this.events.push({kind:'hit',region:'woods',x:actor.x,y:actor.y,damage});if(!actor.hp){actor.deadUntil=this.time+C.playerRespawn;this.clear(actor);}}
  step(w:Wolf,to:Point,dt:number){const route=sight(w,to)?[]:pathfind(w,to,'woods');const point=route[0]??to;const dx=point.x-w.x,dy=point.y-w.y,d=Math.hypot(dx,dy);if(d<.001)return;const amount=Math.min(d,monsters[monsterKind(w.kind)].speed*dt),next={x:w.x+dx/d*amount,y:w.y+dy/d*amount};if(legal(next,'woods')&&legal({x:next.x,y:w.y},'woods')&&legal({x:w.x,y:next.y},'woods')){w.x=next.x;w.y=next.y;w.facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}}
 }
