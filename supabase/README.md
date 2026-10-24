@@ -21,7 +21,10 @@ not transfer the current guest's progress.
 4. On Vercel, configure public `VITE_SUPABASE_URL`,
    `VITE_SUPABASE_PUBLISHABLE_KEY`, and
    `VITE_SERVER_URL=wss://realmofshadows.onrender.com`. Redeploy after changing
-   client variables: Vite embeds them at build time.
+   client variables: Vite embeds them at build time. The client trims pasted
+   whitespace and accepts a copied `/rest/v1/` path. Invalid account settings
+   disable sign-in with a visible warning while allowing the game to start;
+   they must not prevent Phaser from loading.
 5. Deploy the client and server. Open the profile and create an account. If email
    confirmation is enabled, confirm the email before signing in. Use your own
    email; the account UI does not ask for database or server credentials.
@@ -81,6 +84,10 @@ Email and save status are private room messages, not replicated to other players
 - `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:accounts:browser`:
   real Supabase client SDK against a local auth fixture, login/reload/sign-out,
   email-confirmation messaging and signed-in server failure behavior.
+
+- `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:startup`:
+  actual production builds with valid, malformed, API-path and missing account
+  settings; checks the game canvas, rendered portrait and working profile dialog.
 
 These fixtures use fake users/keys and do not access your production Supabase
 project. Normal gameplay suites remain available and should run sequentially

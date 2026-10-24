@@ -1,6 +1,16 @@
 import {createClient,type Session} from '@supabase/supabase-js';
-const url=import.meta.env.VITE_SUPABASE_URL,key=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-export const supabase=url&&key?createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):undefined;
+let configurationMessage='Account sign-in is not configured for this build.';
+// Account configuration must never stop the game module from loading. Vercel
+// values are copied manually, so handle whitespace, missing/invalid values and
+// the commonly copied /rest/v1 API path without leaking keys into diagnostics.
+function initializeAccounts(){
+ const value=import.meta.env.VITE_SUPABASE_URL?.trim(),key=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
+ if(!value||!key)return;
+ try{const url=new URL(value);if(!['https:','http:'].includes(url.protocol)||!/^\/(rest\/v1\/?)?$/.test(url.pathname)||url.username||url.password||url.search||url.hash)throw Error('Invalid project URL');
+ return createClient(url.origin,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ }catch{configurationMessage='Account sign-in is unavailable. You can still play as a guest.';console.warn('Account configuration is invalid. Check VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in the client deployment settings.');return;}
+}
+export const supabase=initializeAccounts();
 export interface AccountUI{
  session:()=>Promise<Session|null>;
  current:()=>Session|null;
@@ -14,7 +24,7 @@ export function setupAccounts(reconnect:()=>Promise<void>,leave:()=>Promise<void
  const message=(text:string)=>feedback.textContent=text;
  const render=()=>{form.hidden=Boolean(current);signout.hidden=!current;for(const control of Array.from(form.querySelectorAll<HTMLInputElement|HTMLButtonElement>('input,button')))control.disabled=!supabase||busy||connecting;signout.disabled=busy||connecting;document.querySelector('#account-label')!.textContent=current?`Signed in · ${current.user.email}`:'Guest · Progress is not saved';};
  const initialize=supabase?supabase.auth.getSession().then(({data,error})=>{if(error)message(error.message);current=data.session;lastUser=current?.user.id??null;ready=true;render();return current;}).catch(()=>{ready=true;message('Unable to restore sign-in. Please sign in again.');render();return null;}):Promise.resolve(null);
- if(!supabase)message('Account sign-in is not configured for this build.');render();
+ if(!supabase)message(configurationMessage);render();
  supabase?.auth.onAuthStateChange((_event,session)=>{
  current=session;render();const user=session?.user.id??null;if(ready&&user!==lastUser){lastUser=user;setTimeout(()=>void reconnect(),0);}
  });
