@@ -105,3 +105,15 @@ explicitly unsaved, including when it uses local preview. Failed account loads
 stay on the starting screen with Retry. Save & sign out returns to login;
 Return to login leaves a guest character. The fullscreen screen supports
 desktop, mobile and landscape layouts and cannot be dismissed with Escape.
+
+## Login artwork
+
+`assets/ui/login/Realm of Shadows Login Screen.png` is the original portrait
+login artwork, bundled through Vite CSS without changing the PNG. Real email
+and password inputs and sign-in/create-account/guest buttons align to the painted
+frames. The painted Username label is covered by the real Email placeholder.
+The decorative Remember Me/Forgot Password row is covered by an unsaved-guest
+notice because those controls are not implemented. Account errors and Retry
+remain interactive. Remembered accounts receive a readable Continue adventure
+panel. The portrait is fitted without cropping; small landscape screens scroll
+instead of shrinking the controls below usable sizes.

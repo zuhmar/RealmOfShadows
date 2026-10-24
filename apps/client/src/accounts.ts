@@ -29,6 +29,7 @@ export function setupAccounts(start:(mode:PlayMode)=>Promise<void>,leave:()=>Pro
  const render=()=>{
  form.hidden=Boolean(current);document.querySelector<HTMLElement>('#returning-account')!.hidden=!current;document.querySelector('#returning-label')!.textContent=current?`Welcome back, ${current.user.email}`:'';
  for(const control of Array.from(form.querySelectorAll<HTMLInputElement|HTMLButtonElement>('input,button')))control.disabled=!supabase||busy||connecting;
+ document.querySelector<HTMLButtonElement>('#create-account')!.disabled=!supabase||busy||connecting||Boolean(current);
  for(const id of ['continue-account','different-account'])document.querySelector<HTMLButtonElement>(`#${id}`)!.disabled=busy||connecting;
  guest.disabled=busy||connecting;retry.disabled=busy||connecting;signout.disabled=busy||connecting;
  signout.hidden=selected!=='account'||!current;document.querySelector<HTMLElement>('#open-login')!.hidden=selected==='account'&&Boolean(current);

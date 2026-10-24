@@ -72,7 +72,7 @@ class Elderwood extends Phaser.Scene {
  }
  drawPortraits(){
  const frame=this.textures.getFrame('citizen-idle','idle-down-0');if(!frame)return;
- for(const id of ['profile-portrait','character-portrait','login-portrait']){const canvas=document.querySelector<HTMLCanvasElement>(`#${id}`)!,context=canvas.getContext('2d');if(!context)continue;const scale=Math.min(canvas.width/frame.cutWidth,canvas.height/frame.cutHeight);const w=frame.cutWidth*scale,h=frame.cutHeight*scale;context.clearRect(0,0,canvas.width,canvas.height);context.drawImage(frame.source.image as HTMLImageElement,frame.cutX,frame.cutY,frame.cutWidth,frame.cutHeight,(canvas.width-w)/2,canvas.height-h,w,h);}
+ for(const id of ['profile-portrait','character-portrait']){const canvas=document.querySelector<HTMLCanvasElement>(`#${id}`)!,context=canvas.getContext('2d');if(!context)continue;const scale=Math.min(canvas.width/frame.cutWidth,canvas.height/frame.cutHeight);const w=frame.cutWidth*scale,h=frame.cutHeight*scale;context.clearRect(0,0,canvas.width,canvas.height);context.drawImage(frame.source.image as HTMLImageElement,frame.cutX,frame.cutY,frame.cutWidth,frame.cutHeight,(canvas.width-w)/2,canvas.height-h,w,h);}
  }
  openCharacter(){
  if(this.traveling||!this.entryReady)return;for(const dialog of Array.from(document.querySelectorAll<HTMLDialogElement>('dialog[open]')))dialog.close();this.route=[];this.touch={x:0,y:0};this.input.keyboard?.resetKeys();document.querySelector<HTMLDialogElement>('#character-dialog')!.showModal();
