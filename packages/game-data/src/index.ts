@@ -1,14 +1,12 @@
-import {elderwoodGround} from './elderwood';
-export {elderwoodGround,elderwoodPonds,type ElderwoodTerrain} from './elderwood';
+import {elderwoodBlocked} from './elderwood';
+export {elderwoodGround,elderwoodBlocked,elderwoodMap,elderwoodObjects,type ElderwoodTerrain} from './elderwood';
 export const WORLD = { tile:64, width:32, height:24, speed:4, sprint:1.5, capacity:32, spawn:{x:16.5,y:14.5} };
 export const landmarks = [
- {name:'The Copperleaf Bank',x:5,y:5,w:5,h:4,color:0x668ca0,description:'Your future vault. Banking arrives in Phase 5.'},
- {name:'Willow & Anvil',x:22,y:5,w:5,h:4,color:0xb78256,description:'The crafting district. Professions arrive in Phase 4.'},
- {name:'Adventurers’ Hall',x:5,y:17,w:5,h:4,color:0x8b77a3,description:'A home for future parties and guilds.'},
- {name:'Whispering Gate',x:23,y:17,w:4,h:3,color:0x668b72,description:'The woods await. Hunting opens in Phase 3.'},
+ {name:'The Copperleaf Tavern',x:335/48,y:105/48+4/3,w:230/48,h:110/48,color:0x668ca0,description:'A welcoming stop in Elderwood. Interiors are coming later.'},
+ {name:'Willow & Anvil',x:965/48,y:105/48+4/3,w:230/48,h:115/48,color:0xb78256,description:'The village blacksmith. Crafting is coming later.'},
 ];
 export function blocked(x:number,y:number,region:RegionId='elderwood'):boolean {
- return x<1||y<1||x>=WORLD.width-1||y>=WORLD.height-1||(region==='elderwood'?landmarks:regions[region].obstacles).some(b=>x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h)||(region==='elderwood'&&(elderwoodGround(x,y)==='water'||(x===16&&y===10)));
+ return x<1||y<1||x>=WORLD.width-1||y>=WORLD.height-1||(region==='elderwood'?elderwoodBlocked(x,y):regions[region].obstacles.some(b=>x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h));
 }
 export type Facing='down'|'left'|'right'|'up';
 export interface SpriteManifest {key:string;url:string;frameWidth:number;frameHeight:number;anchor:{x:number;y:number};scale:number;animations:Partial<Record<'idle'|'walk',Record<Facing,{frames:number[];fps:number}>>>}

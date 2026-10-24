@@ -1,14 +1,14 @@
 import Phaser from 'phaser';
 import {setupAccounts,type AccountUI} from './accounts';
 import {Client,type Room} from 'colyseus.js';
-import {WORLD,landmarks,characterSprite,regions,PORTAL,canTravel,combat as C,items,merchant,rewards,weapons,classes,classRules,skillRequirement,spells,canLearnSpell,isSpell,type RegionId,type Facing} from '@realm/game-data';
+import {WORLD,elderwoodMap,elderwoodObjects,landmarks,characterSprite,regions,PORTAL,canTravel,combat as C,items,merchant,rewards,weapons,classes,classRules,skillRequirement,spells,canLearnSpell,isSpell,type RegionId,type Facing} from '@realm/game-data';
 import {move,pathfind,CombatSimulation,newFighter,Economy,type EconomySnapshot,type Fighter,type Wolf,type CombatEvent,type Point,type Motion,type Input} from '@realm/shared';
 import './style.css';
 import {wolfAssets} from './wolf-assets';
 import {characterAssets} from './character-assets';
 import {maraAsset} from './mara-assets';
 import {elderwoodTerrain,elderwoodGround,woodsTerrain,woodsGround,terrainAssets,terrainVariant} from './terrain-assets';
-import elderwoodPortalUrl from '../../../assets/portals/elderwood/Magical Blue Portal Gate.png';
+import {elderwoodMapAssets} from './elderwood-map';
 let noticeTimer:ReturnType<typeof setTimeout>;
 const notice=(s:string)=>{const element=document.querySelector('#notice')!;element.textContent=s;element.classList.remove('is-quiet');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>element.classList.add('is-quiet'),5500);};
 class Elderwood extends Phaser.Scene {
@@ -20,7 +20,7 @@ class Elderwood extends Phaser.Scene {
  room?:Room; avatar!:Phaser.GameObjects.Container; bodySprite?:Phaser.GameObjects.Sprite;
  local:Motion={...WORLD.spawn,stamina:100}; keys!:Record<string,Phaser.Input.Keyboard.Key>;
  peers=new Map<string,Phaser.GameObjects.Container>();route:Point[]=[];seq=0;acc=0;online=false;preview=false;touch={x:0,y:0};sprinting=false;pending:Input[]=[];facing:Facing='down';walking=false;animationStyle=new Map<string,{scale:number;origin:number}>();
- preload(){this.load.image(maraAsset.key,maraAsset.url);this.load.image('elderwood-portal',elderwoodPortalUrl);for(const asset of terrainAssets)this.load.image(asset.key,asset.url);for(const asset of wolfAssets)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
+ preload(){this.load.image(maraAsset.key,maraAsset.url);for(const asset of elderwoodMapAssets)this.load.image(asset.key,asset.url);for(const asset of terrainAssets)this.load.image(asset.key,asset.url);for(const asset of wolfAssets)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
  create(){
  const drawers=Array.from(document.querySelectorAll<HTMLDetailsElement>('nav details'));for(const drawer of drawers)drawer.addEventListener('toggle',()=>{if(drawer.open)for(const other of drawers)if(other!==drawer)other.open=false;});
  if(this.textures.exists(maraAsset.key)){const texture=this.textures.get(maraAsset.key);for(const animation of maraAsset.animations){const frames=animation.frames.map(([x,y,w,h],i)=>{const name=`${animation.key}-${i}`;texture.add(name,0,x,y,w,h)?.setTrim(maraAsset.frameWidth,maraAsset.frameHeight,(maraAsset.frameWidth-w)/2,maraAsset.frameHeight-h,w,h);return {key:maraAsset.key,frame:name};});this.anims.create({key:`mara-${animation.key}`,frames,frameRate:animation.fps,repeat:-1});}}
@@ -142,21 +142,29 @@ class Elderwood extends Phaser.Scene {
  for(const obj of this.worldObjects)obj.destroy();
  const existing=new Set(this.children.list),config=regions[this.region];
  this.cameras.main.setBackgroundColor('#233c38');const g=this.add.graphics();const terrain=this.region==='elderwood'?elderwoodTerrain:this.region==='woods'?woodsTerrain:undefined;const ground=this.region==='woods'?woodsGround:elderwoodGround;
+ const illustratedMap=this.region==='elderwood'&&this.textures.exists('elderwood-base');
+ if(illustratedMap){
+ this.add.image(0,elderwoodMap.offsetY*64,'elderwood-base').setOrigin(0).setDisplaySize(elderwoodMap.worldWidth*64,elderwoodMap.worldHeight*64).setDepth(-2);
+ for(const object of elderwoodObjects){const sx=elderwoodMap.worldWidth*64/elderwoodMap.width,sy=elderwoodMap.worldHeight*64/elderwoodMap.height;
+ this.add.image(object.x*sx,object.y*sy+elderwoodMap.offsetY*64,object.key).setOrigin(0).setDisplaySize(object.w*sx,object.h*sy).setDepth(object.footY*sy+elderwoodMap.offsetY*64);}
+ }else{
  for(let y=0;y<WORLD.height;y++)for(let x=0;x<WORLD.width;x++){if(terrain&&this.textures.exists(terrain.key)){this.add.image(x*64+1,y*64+1,terrain.key,`${ground(x,y)}-${terrainVariant(x,y)}`).setOrigin(0).setDisplaySize(62,62).setDepth(-1);continue;}const road=Math.abs(x-16)<2||Math.abs(y-13)<2;const palette=road?config.road:config.ground;g.fillStyle(palette[(x+y)%2]);g.fillRoundedRect(x*64+1,y*64+1,62,62,8);if(!road&&(x*7+y*11)%9===0){g.fillStyle(0x749462,.6);g.fillCircle(x*64+22,y*64+25,4);}}
  for(let x=0;x<WORLD.width;x++)for(const y of [0,23])this.tree(x*64+32,y*64+32);
  for(let y=1;y<23;y++)for(const x of [0,31])this.tree(x*64+32,y*64+32);
- for(const b of this.region==='elderwood'?landmarks:[]){const x=b.x*64,y=b.y*64,w=b.w*64,h=b.h*64;const panel=this.add.graphics();panel.fillStyle(0x172f2d,.35);panel.fillRoundedRect(x+8,y+12,w,h,18);panel.fillStyle(b.color);panel.fillRoundedRect(x,y,w,h,18);panel.fillStyle(0xffffff,.12);panel.fillRoundedRect(x+8,y+8,w-16,26,10);panel.fillStyle(0x374b45);panel.fillRoundedRect(x+w/2-22,y+h-55,44,55,10);panel.setDepth((b.y+b.h)*64);this.add.text(x+w/2,y+40,b.name,{fontFamily:'Georgia',fontSize:'20px',color:'#fff4d6'}).setOrigin(.5).setDepth(panel.depth+1);}
- if(this.region==='elderwood'){const fountain=this.add.graphics();fountain.fillStyle(0x97b4aa);fountain.fillEllipse(16.5*64,10.5*64,64,40);fountain.fillStyle(0x76d6d3);fountain.fillEllipse(16.5*64,10.5*64-5,48,24);fountain.setDepth(10.5*64);}
- this.add.text(16.5*64,12.2*64,config.name.toUpperCase(),{fontFamily:'Georgia',fontSize:'18px',color:'#535d42',letterSpacing:3}).setOrigin(.5);
-
+ }
+ if(this.region!=='elderwood')this.add.text(16.5*64,12.2*64,config.name.toUpperCase(),{fontFamily:'Georgia',fontSize:'18px',color:'#535d42',letterSpacing:3}).setOrigin(.5);
  for(const b of config.obstacles){const rock=this.add.graphics();rock.fillStyle(config.accent,.45);rock.fillRoundedRect(b.x*64,b.y*64,b.w*64,b.h*64,24);rock.lineStyle(3,config.accent,.6);rock.strokeRoundedRect(b.x*64,b.y*64,b.w*64,b.h*64,24);rock.setDepth((b.y+b.h)*64);}
  const x=PORTAL.x*64,y=PORTAL.y*64;
  const illustratedPortal=this.region==='elderwood'&&this.textures.exists('elderwood-portal');
  const portal=this.add.graphics();
- if(illustratedPortal){portal.fillStyle(0x76d6ff,.18);portal.fillEllipse(x,y,160,48);portal.setDepth(y-.1);this.add.image(x,y,'elderwood-portal').setOrigin(.5,.82).setDisplaySize(224,224*1240/1269).setDepth(y);}
+ if(illustratedPortal){portal.fillStyle(0xc576ff,.12);portal.fillEllipse(x,y,160,48);portal.setDepth(-1);}
  else{portal.fillStyle(0x182f3c,.8);portal.fillEllipse(x,y,128,50);portal.lineStyle(5,0xd9c591);portal.strokeEllipse(x,y,128,50);portal.fillStyle(config.accent,.25);portal.fillEllipse(x,y-48,80,104);portal.lineStyle(5,config.accent);portal.strokeEllipse(x,y-48,80,104);portal.lineStyle(2,0xf0f6ff,.8);portal.strokeEllipse(x,y-48,60,86);portal.setDepth(y);}this.portalGlow=portal;
- const label=this.add.text(x,y-(illustratedPortal?194:120),'WAYFARER PORTAL',{fontFamily:'Georgia',fontSize:'14px',color:'#e9e4cb',backgroundColor:'#193b36'}).setOrigin(.5).setDepth(y+1);
- const target=this.add.zone(x,y-(illustratedPortal?70:45),illustratedPortal?224:140,illustratedPortal?220:140).setInteractive({useHandCursor:true}).setDepth(y+2);
+ const portalArt=elderwoodObjects.find(object=>object.key==='elderwood-portal')!;
+ const portalScale=elderwoodMap.worldWidth*64/elderwoodMap.width;
+ const portalCenterX=illustratedPortal?(portalArt.x+portalArt.w/2)*portalScale:x;
+ const portalTop=illustratedPortal?portalArt.y*portalScale+elderwoodMap.offsetY*64:y-120;
+ this.add.text(portalCenterX,portalTop-(illustratedPortal?18:0),'WAYFARER PORTAL',{fontFamily:'Georgia',fontSize:'14px',color:'#e9e4cb',backgroundColor:'#193b36'}).setOrigin(.5).setDepth(y+1);
+ const target=this.add.zone(portalCenterX,illustratedPortal?portalTop+portalArt.h*portalScale/2:y-45,illustratedPortal?portalArt.w*portalScale:140,illustratedPortal?portalArt.h*portalScale:140).setInteractive({useHandCursor:true}).setDepth(y+2);
  target.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target!==this.game.canvas)return;this.route=[];this.openPortal();});
  if(this.region==='elderwood'){const trader=this.makeAvatar(0xddc79b,merchant.name);trader.setPosition(merchant.x*64,merchant.y*64).setDepth(merchant.y*64);const sprite=trader.getData('sprite') as Phaser.GameObjects.Sprite|undefined;if(sprite&&this.textures.exists(maraAsset.key))sprite.setTexture(maraAsset.key,'idle-down-0').setOrigin(.5,maraAsset.origin).setScale(maraAsset.scale).play('mara-idle-down');const tradeZone=this.add.zone(merchant.x*64,merchant.y*64-30,100,110).setInteractive({useHandCursor:true}).setDepth(merchant.y*64+1);tradeZone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target===this.game.canvas&&!pointer.rightButtonDown())this.openInventory(true);});}
  this.worldObjects=this.children.list.filter(obj=>!existing.has(obj));
