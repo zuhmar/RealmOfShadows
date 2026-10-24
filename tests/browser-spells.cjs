@@ -2,7 +2,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const browser=await chromium.launch({executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--disable-gpu']});try{
  const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(k,...a){return ['webgl','webgl2','experimental-webgl'].includes(k)?null:get.call(this,k,...a);};});
- await page.route('**/matchmake/**',r=>r.abort());await page.goto(process.env.TEST_CLIENT_URL??'http://localhost:5173');await page.waitForFunction(()=>document.querySelector('#connection').textContent.includes('Local preview'));
+ await page.route('**/matchmake/**',r=>r.abort());await page.goto(process.env.TEST_CLIENT_URL??'http://localhost:5173');await page.locator('#play-guest').click();await page.waitForFunction(()=>document.querySelector('#connection').textContent.includes('Local preview'));
  await page.locator('#combat-panel>summary').click();assert.equal(await page.locator('#nova').isVisible(),false);assert.equal(await page.locator('#no-spells').isVisible(),true);
  // Preview fixture supplies lesson money and merchant proximity. Unit and multiplayer tests validate authority separately.
  await page.evaluate(async()=>{const {game}=await import(document.querySelector('script[src*="/src/main.ts"]').src),s=game.scene.scenes[0];s.economy.profiles.get('local').gold=100;s.local.x=20.5;s.local.y=13.5;s.openInventory(true);});

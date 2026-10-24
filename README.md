@@ -11,7 +11,7 @@ npm ci --cache /workspace/.npm-cache
 npm run dev
 ```
 
-Open the Vite address printed in the terminal in your local browser. Server defaults to port 2567; Vite defaults to 5173. For a remote deployment, set `VITE_SERVER_URL` to the public secure WebSocket backend address before building. The frontend and backend must both be running. Guest play needs no database or credentials. Supabase accounts and saving are optional; see `supabase/README.md` for configuration and required SQL migrations.
+Open the Vite address printed in the terminal in your local browser. Choose **Play as guest**, or sign in to a configured Supabase account, on the starting screen. Server defaults to port 2567; Vite defaults to 5173. For a remote deployment, set `VITE_SERVER_URL` to the public secure WebSocket backend address before building. The frontend and backend must both be running. Guest play needs no database or credentials. Supabase accounts and saving are optional; see `supabase/README.md` for configuration and required SQL migrations.
 
 ```sh
 npm test
@@ -45,7 +45,7 @@ Supabase email/password accounts and PostgreSQL character saves are available. N
 
 ## Frontend-only preview and multiplayer configuration
 
-A deployed frontend with no `VITE_SERVER_URL` runs **Local preview · No multiplayer**. Keyboard, click/tap navigation, collision, stamina, sprite animation and camera movement work locally. If an initial server connection fails, the same labeled preview is enabled. Preview movement is not sent to a server and is not saved. A lost established multiplayer connection stops movement and asks you to reload; it does not silently convert a shared session to local play.
+A deployed frontend with no `VITE_SERVER_URL` runs **Local preview · No multiplayer** after you explicitly choose **Play as guest** on the login screen. Keyboard, click/tap navigation, collision, stamina, sprite animation and camera movement work locally. If an explicitly chosen guest connection fails, the same labeled preview is enabled. Account failures remain on the login screen with Retry. Preview movement is not sent to a server and is not saved. A lost established multiplayer connection stops movement and returns to the login screen with Retry; it does not silently convert a shared session to local play.
 
 For multiplayer on Vercel, deploy `apps/server` to a WebSocket-capable Node host, then set `VITE_SERVER_URL=wss://your-backend-host` in the Vercel project and redeploy. Vercel serves the client; it does not run the long-lived Colyseus process on port 2567. Local development still attempts the server at the browser hostname on port 2567. Walk animations now depend on simulated displacement, so disconnected or collision-blocked characters stay idle.
 
@@ -94,3 +94,14 @@ Mara uses `assets/characters/Mara the Trader RPG Sprite Sheet.png`, unchanged. `
 ## Whispering Woods terrain
 
 `assets/tilesets/whispering-woods/Whispering Woods Fantasy Tileset.png` supplies forest grass, leafy dirt paths and the mossy stone portal clearing. `apps/client/src/terrain-assets.ts` defines interior crop frames and stable coordinate-based variation. The original PNG and two-pixel tile gaps are preserved. Wolves, spawn locations, obstacles, combat, and portal sanctuary/travel remain unchanged. Water frames are available but not placed; adding forest ponds will require shared collision changes.
+
+## Starting screen
+
+Each launch starts with Sign in, Create account and Play as guest. Remembered
+accounts show Continue adventure; they do not join the world automatically.
+The game preloads artwork behind the starting screen but does not advance its
+simulation or connect to multiplayer until a mode is chosen. Guest mode is
+explicitly unsaved, including when it uses local preview. Failed account loads
+stay on the starting screen with Retry. Save & sign out returns to login;
+Return to login leaves a guest character. The fullscreen screen supports
+desktop, mobile and landscape layouts and cannot be dismissed with Escape.

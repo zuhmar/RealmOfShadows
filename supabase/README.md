@@ -25,7 +25,7 @@ not transfer the current guest's progress.
    whitespace and accepts a copied `/rest/v1/` path. Invalid account settings
    disable sign-in with a visible warning while allowing the game to start;
    they must not prevent Phaser from loading.
-5. Deploy the client and server. Open the profile and create an account. If email
+5. Deploy the client and server. Use the starting screen to create an account. If email
    confirmation is enabled, confirm the email before signing in. Use your own
    email; the account UI does not ask for database or server credentials.
 
@@ -59,9 +59,13 @@ purchase or sign-out. A failed cloud save disconnects the account; the game neve
 silently switches a signed-in character into unsaved local preview. Reload to
 reconnect. Invalid saved data is rejected rather than reset or overwritten.
 
-Signed-out and unconfigured builds can still use guest/local preview mode, which
-is explicitly unsaved. Signing out saves, leaves the account's room, and opens a
-fresh guest character. Sessions persist in browser storage and refresh through
+Every launch begins at the login screen, including when a saved Supabase login
+exists. Choose Sign in/Create account, Continue adventure for a remembered
+account, or Play as guest. No simulation or multiplayer join begins before that
+choice. Signed-out and unconfigured builds can still explicitly choose guest/local
+preview mode, which is unsaved. Account loading failures stay on the login screen
+with Retry; they never select guest mode automatically. Guests may use Return to
+login in their profile; leaving discards that guest character. Signing out saves, leaves the account's room, and returns to the login screen; it does not automatically start a guest character. Sessions persist in browser storage and refresh through
 Supabase Auth. Passwords go only to Supabase. Password reset UI and multiple
 character slots are not implemented yet.
 
