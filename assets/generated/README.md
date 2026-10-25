@@ -70,3 +70,7 @@ roughly twice the preceding expanded ground area. Its generated ground is painte
 shared trail/clearing guide, with the portal retained at its original coordinates.
 See `packages/game-data/src/woods.ts` for all eight clearings, trails, shoreline
 collision and prop placement. Both client and server must deploy this expansion.
+
+The current Woods ground separates three equally sized six-spawn habitats into
+small dirt pockets with branch trails. The boss arena has painted stone walls
+and one northern opening; collision uses `woodsBossWalls` from the same layout.

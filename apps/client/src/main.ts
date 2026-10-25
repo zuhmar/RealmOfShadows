@@ -261,7 +261,9 @@ class Elderwood extends Phaser.Scene {
  interact(){if(this.region==='elderwood'&&Math.hypot(this.local.x-merchant.x,this.local.y-merchant.y)<=merchant.range&&Math.hypot(this.local.x-merchant.x,this.local.y-merchant.y)<Math.hypot(this.local.x-PORTAL.x,this.local.y-PORTAL.y)){this.openInventory(true);return;}if(Math.hypot(this.local.x-PORTAL.x,this.local.y-PORTAL.y)<=PORTAL.radius){this.openPortal();return;}const b=landmarks.find(b=>Math.hypot(this.local.x-(b.x+b.w/2),this.local.y-(b.y+b.h))<3.5);notice(this.region==='elderwood'&&b?`${b.name} — ${b.description}`:'Walk close to the portal or a village entrance, then interact.');}
  update(_time:number,delta:number){if(!this.keys||!this.entryReady)return;let x=Number(this.keys.D.isDown||this.keys.RIGHT.isDown)-Number(this.keys.A.isDown||this.keys.LEFT.isDown),y=Number(this.keys.S.isDown||this.keys.DOWN.isDown)-Number(this.keys.W.isDown||this.keys.UP.isDown);if(x||y){this.route=[];this.pendingInteraction=undefined;if(this.selected){this.selected='';this.cast('stop');}}else {x=this.touch.x;y=this.touch.y;}
  if(this.autoAttack&&this.selected&&!x&&!y&&this.region==='woods'&&!this.traveling&&!document.querySelector('dialog[open]')){
- const target=(this.preview?this.sim.wolves:this.room?.state?.wolves)?.get(this.selected),range=weapons[this.bag?.weapon??this.fighter.weapon].range;
+ const target=(this.preview?this.sim.wolves:this.room?.state?.wolves)?.get(this.selected),weaponRange=weapons[this.bag?.weapon??this.fighter.weapon].range;
+ // Stay inside the encounter leash so ranged approaches can actually engage.
+ const range=target?Math.min(weaponRange,monsters[monsterKind(target.kind)].leash-.5):weaponRange;
  if(!target||target.hp<=0||target.mode==='return'){this.route=[];this.selected='';this.cast('stop');}
  else if(Math.hypot(target.x-this.local.x,target.y-this.local.y)<=range&&Math.hypot(this.local.x-PORTAL.x,this.local.y-PORTAL.y)>C.portalSafeRadius&&sight(this.local,target))this.route=[];
  else if(this.time.now>=this.chaseAt){this.chaseAt=this.time.now+400;this.route=attackPath(this.local,target,range);}

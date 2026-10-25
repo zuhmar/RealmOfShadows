@@ -50,7 +50,7 @@ test('expanded woods supports distant exploration and retains town bounds',()=>{
 });
 
 test('expanded habitats have spaced populations outside the portal sanctuary',()=>{
- assert.deepEqual(Object.fromEntries(Object.keys(monsters).map(kind=>[kind,monsterSpawns.filter(s=>s.kind===kind).length])),{wolf:6,spider:5,boar:5,bear:1});
+ assert.deepEqual(Object.fromEntries(Object.keys(monsters).map(kind=>[kind,monsterSpawns.filter(s=>s.kind===kind).length])),{wolf:6,spider:6,boar:6,bear:1});
  for(let i=0;i<monsterSpawns.length;i++){const a=monsterSpawns[i];assert.ok(Math.hypot(a.x-PORTAL.x,a.y-PORTAL.y)>3.5,a.id);
  for(const b of monsterSpawns.slice(i+1))assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>=3.5,`${a.id} overlaps ${b.id}`);}
  const den=woodsClearings.find(c=>c.name==='Wolf den')!;assert.ok(den.rx>=300&&den.ry>=200);

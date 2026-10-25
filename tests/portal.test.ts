@@ -12,7 +12,7 @@ test('all portal arrivals are walkable and can return home',()=>{
  for(const region of Object.keys(regions) as RegionId[]){assert.equal(legal(PORTAL.arrival,region),true);assert.ok(pathfind(PORTAL.arrival,PORTAL,region).length);if(region!=='elderwood')assert.equal(canTravel(PORTAL.arrival,region,'elderwood'),true);}
 });
 test('movement and pathfinding use the selected destination collision map',()=>{
- const position={x:3,y:4.5,stamina:100},input={x:1,y:0,sprint:false,seq:1};
+ const position={x:4.3,y:4,stamina:100},input={x:1,y:0,sprint:false,seq:1};
  assert.equal(move(position,input,.05,'woods').x,position.x);
  assert.ok(move({x:5.7,y:7.5,stamina:100},input,.05,'swamp').x===5.7);
  assert.ok(pathfind({x:5.5,y:7.5},{x:11.5,y:7.5},'woods').every(p=>legal(p,'woods')));

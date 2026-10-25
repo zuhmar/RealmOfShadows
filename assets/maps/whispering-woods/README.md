@@ -7,15 +7,16 @@ is a complete assembled review export.
 
 The expanded source layout is 3264×2176, with 68×48 world bounds: roughly twice
 the preceding expanded ground area. The portal and arrival coordinates stay unchanged.
-Eight clearings connect through looped trails: portal sanctuary, wolf den,
-web hollow, distant boar grounds, Forest Bear arena, overgrown lookout, ancient
-grove and old crossroads. The enlarged wolf clearing is over twice its earlier
-area. Eastern and southern trails, scenery and spawns are farther apart while props
-retain their original gameplay size. Seventeen enemies are distributed across the habitats: six wolves, five
-spiders, five boars and one Forest Bear. Every spawn is at least 3.5 tiles from
-its nearest neighbor and outside the portal sanctuary. Spider and boar clearings
-also have extra room; quiet exploration routes remain between encounters. No new loot or quests
-are attached to the scenic landmarks yet.
+Eight landmarks connect through the main trail network. Wolves occupy the northwest,
+spiders the southwest, boars the northeast and the Forest Bear the southeast.
+The normal habitats have identical 360×240 source-unit territory radii and six
+spawns each. Each spawn has a small dirt pocket and an explicit branch path;
+forest bands separate the wolf and spider areas instead of merging their clearings.
+There are nineteen enemies total, including one boss. Spawns stay at least 3.5
+tiles apart and outside the portal sanctuary. The boss has a continuous stone
+boundary with one northern entrance. Shared wall collision blocks movement and
+sight through its sides and bottom. No doors lock players into the arena.
+Quiet lookout, grove and crossroads areas remain available for exploration.
 
 `packages/game-data/src/woods.ts` owns ground dimensions, clearing/trail guides,
 props and full-footprint collision. Water, cliffs and solid props remain blocked
@@ -39,3 +40,9 @@ position using equipped weapon range and cancels on manual movement or Escape.
 `npm run test:auto-approach:browser` checks melee/ranged approaches on desktop
 and mobile, including server-confirmed melee damage. `tests/passive.integration.ts`
 checks ordinary-monster passivity and retaliation on the multiplayer server.
+
+`woodsHabitats`, `woodsEncounterSpawns` and `woodsSpawnTrails` define the balanced
+habitat and pocket layout directly in source pixels. There is no incremental
+stretch transform. Monster world coordinates derive from those same pocket
+coordinates. `tests/woods-layout.test.ts` validates equal populations, pocket
+access trails, forest separation and the boss wall/entrance collision.

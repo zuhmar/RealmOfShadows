@@ -1,58 +1,62 @@
 import {islandCollision,mapObject,rectangle,type IslandObject,type MapPolygon} from './island-layout';
 export const woodsMap={width:3264,height:2176,worldWidth:68,worldHeight:136/3,offsetY:4/3};
-// Ground guide, foliage exclusion and navigation landmarks share these coordinates.
+export const woodsHabitats=[
+ {kind:'wolf',name:'Wolf den',x:600,y:300,rx:360,ry:240},
+ {kind:'spider',name:'Web hollow',x:600,y:1590,rx:360,ry:240},
+ {kind:'boar',name:'Boar grounds',x:2600,y:300,rx:360,ry:240},
+ {kind:'bear',name:'Forest Bear arena',x:2600,y:1590,rx:360,ry:240},
+] as const;
 export const woodsClearings=[
- {name:'Portal sanctuary',x:792,y:584,rx:180,ry:145},
- {name:'Wolf den',x:768,y:250,rx:310,ry:210},
- {name:'Web hollow',x:330,y:430,rx:245,ry:230},
- {name:'Boar grounds',x:1870,y:900,rx:300,ry:230},
- {name:'Forest Bear arena',x:1550,y:1290,rx:220,ry:155},
- {name:'Overgrown lookout',x:1810,y:290,rx:170,ry:130},
- {name:'Ancient grove',x:500,y:1210,rx:165,ry:130},
- {name:'Old crossroads',x:1200,y:1000,rx:140,ry:110},
+ {name:'Portal sanctuary',x:792,y:584,rx:180,ry:145},...woodsHabitats,
+ {name:'Overgrown lookout',x:1632,y:300,rx:150,ry:110},
+ {name:'Ancient grove',x:1632,y:1850,rx:150,ry:110},
+ {name:'Old crossroads',x:1632,y:800,rx:160,ry:115},
 ];
-export let woodsTrails:readonly (readonly (readonly [number,number])[])[]=[
- [[792,584],[768,215]],[[792,584],[330,584],[330,430]],
- [[792,584],[1200,584],[1500,450],[1810,290]],
- [[1200,584],[1540,720],[1870,900]],
- [[792,584],[900,820],[1200,1000],[1550,1290]],
- [[330,430],[330,1000],[500,1210],[1200,1000]],
- [[1200,1000],[1600,1050],[1870,900]],
- [[100,510],[330,584]],[[1870,900],[2200,800]],
+const offsets=[[0,0],[-240,-80],[240,-80],[-240,100],[240,100],[0,-170]] as const;
+// Spawns and their painted access trails come from the same source coordinates.
+export const woodsEncounterSpawns=woodsHabitats.flatMap(h=>
+ (h.kind==='bear'?[[0,0] as const]:offsets).map(([dx,dy],i)=>({id:`${h.kind}-${i+1}`,kind:h.kind,x:h.x+dx,y:h.y+dy})),
+);
+export const woodsTrails:readonly (readonly (readonly [number,number])[])[]=[
+ [[792,584],[1050,800],[1632,800],[2150,800]],
+ [[600,300],[1050,300],[1050,1590],[600,1590]],
+ [[2600,300],[2150,300],[2150,800],[2600,1100],[2600,1590]],
+ [[1632,800],[1632,300]],[[1050,1590],[1632,1850],[1990,1590],[2150,800]],
+ [[100,510],[792,584]],[[3160,800],[2150,800]],
 ];
-const leftBank=Array.from({length:25},(_,i)=>[104+Math.sin(i*1.15)*19,i*64] as const);
-const rightBank=Array.from({length:25},(_,i)=>[2200+Math.sin(i*.95)*19,i*64] as const);
-const southBank=Array.from({length:37},(_,i)=>[i*64,1460+Math.sin(i*.8)*13] as const);
-export const woodsGeometry={rivers:[[[0,0],...leftBank,[0,1536]] as MapPolygon,[[2304,0],...rightBank,[2304,1536]] as MapPolygon,[...southBank,[2304,1536],[0,1536]] as MapPolygon],cliffs:[rectangle(0,0,2304,45)],bridges:[rectangle(35,480,125,65),rectangle(2140,770,125,65)]};
+export const woodsSpawnTrails=woodsEncounterSpawns.filter(s=>s.kind!=='bear').map(s=>{
+ const h=woodsHabitats.find(h=>h.kind===s.kind)!;
+ return [[h.x,h.y],[s.x,s.y]] as const;
+}).filter(([a,b])=>a[0]!==b[0]||a[1]!==b[1]);
+export const woodsBossBoundary={left:2160,right:3040,top:1280,bottom:1920,thickness:36,gateLeft:2520,gateRight:2680};
+const wall=woodsBossBoundary;
+export const woodsBossWalls=[rectangle(wall.left,wall.top,wall.gateLeft-wall.left,wall.thickness),rectangle(wall.gateRight,wall.top,wall.right-wall.gateRight,wall.thickness),rectangle(wall.left,wall.top,wall.thickness,wall.bottom-wall.top),rectangle(wall.right-wall.thickness,wall.top,wall.thickness,wall.bottom-wall.top),rectangle(wall.left,wall.bottom-wall.thickness,wall.right-wall.left,wall.thickness)];
+const leftBank=Array.from({length:35},(_,i)=>[104+Math.sin(i*1.15)*19,i*64] as const);
+const rightBank=Array.from({length:35},(_,i)=>[3160+Math.sin(i*.95)*19,i*64] as const);
+const southBank=Array.from({length:52},(_,i)=>[i*64,2100+Math.sin(i*.8)*13] as const);
+export const woodsGeometry={rivers:[[[0,0],...leftBank,[0,2176]] as MapPolygon,[[3264,0],...rightBank,[3264,2176]] as MapPolygon,[...southBank,[3264,2176],[0,2176]] as MapPolygon],cliffs:[rectangle(0,0,3264,45),...woodsBossWalls],bridges:[rectangle(35,480,125,65),rectangle(3100,770,125,65)]};
 export const woodsObjects:IslandObject[]=[];
 const add=(kind:string,x:number,y:number,w:number,h:number,solid=true)=>woodsObjects.push(mapObject(`woods-${kind}`,x,y,w,h,solid?(kind==='boulder'?[[.08,.4],[.88,.4],[.96,.93],[.08,.93]]:kind==='log'?[[.05,.5],[.95,.5],[.95,.95],[.05,.95]]:kind==='fence'?[[.03,.65],[.98,.65],[.98,.98],[.03,.98]]:kind==='ruin'||kind==='torch'||kind==='stump'||kind==='cart'||kind==='den'?[[.12,.75],[.88,.75],[.88,.98],[.12,.98]]:[[.36,.83],[.64,.83],[.64,.98],[.36,.98]]):[]));
-
 const segmentDistance=(x:number,y:number,a:readonly [number,number],b:readonly [number,number])=>{const dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy)));return Math.hypot(x-a[0]-t*dx,y-a[1]-t*dy);};
-const open=(x:number,y:number,padding=0)=>woodsClearings.some(c=>((x-c.x)/(c.rx+padding))**2+((y-c.y)/(c.ry+padding))**2<1)||woodsTrails.some(trail=>trail.some((p,i)=>i>0&&segmentDistance(x,y,trail[i-1],p)<76+padding));
+const open=(x:number,y:number,padding=0)=>
+ woodsClearings.filter(c=>!woodsHabitats.some(h=>h.name===c.name)||c.name==='Forest Bear arena').some(c=>((x-c.x)/(c.rx+padding))**2+((y-c.y)/(c.ry+padding))**2<1)||
+ woodsEncounterSpawns.some(s=>((x-s.x)/(105+padding))**2+((y-s.y)/(85+padding))**2<1)||
+ [...woodsTrails,...woodsSpawnTrails].some(trail=>trail.some((p,i)=>i>0&&segmentDistance(x,y,trail[i-1],p)<(woodsTrails.includes(trail)?60:38)+padding))||
+ (x>wall.left-65&&x<wall.right+65&&y>wall.top-65&&y<wall.bottom+65);
 let seed=71;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
-for(let y=85;y<1440;y+=62)for(let x=140;x<2170;x+=58){const px=x+random()*24,py=y+random()*18;if(!open(px,py,30))add(random()>.55?'oak':random()>.17?'pine':'ancient',px-38,py-95,80+random()*25,110+random()*15);}
-// Scenery frames the clearings rather than occupying spawn or travel lanes.
-for(let i=0;i<180;i++){const x=160+random()*1960,y=100+random()*1300;if(open(x,y,35))continue;add(i%5===0?'boulder':i%5===1?'stump':i%5===2?'log':i%5===3?'fern':'mushrooms',x-20,y-30,i%5===2?85:42,i%5===2?38:42,i%5<3);}
-for(let i=0;i<160;i++){const x=160+random()*1960,y=100+random()*1300;if(open(x,y,-25))continue;add(i%3===0?'flowers':i%3===1?'mushrooms':'fern',x,y,28,30,false);}
-for(const [x,y]of [[610,365],[935,365],[610,685],[935,685],[1110,875],[1290,1080]])add('lamp',x,y,28,90);
-for(const [x,y]of [[175,300],[420,330],[200,495]])add('web',x,y,100,95,false);
-for(const [x,y]of [[165,460],[410,490],[230,520]])add('egg-nest',x,y,64,48,false);
-for(const [x,y]of [[1700,745],[1980,760],[1720,1050],[2010,1010]])add('fence',x,y,90,45);
-for(const [x,y]of [[1740,1070],[1995,1080]])add('log',x,y,95,42);
-for(const [x,y]of [[1330,1150],[1750,1150],[1330,1360],[1750,1360]])add('torch',x,y,38,95);
-for(const [x,y]of [[1360,1170],[1700,1170],[1370,1350],[1700,1350],[1690,190],[1900,210],[1750,360],[1900,355]])add('ruin',x,y,48,95);
-for(const [x,y]of [[1430,1340],[1630,1360]])add('bones',x,y,50,35,false);
-for(const [x,y]of [[340,1110],[570,1100],[380,1295],[590,1280]])add('ancient',x,y,120,155);
-for(const [x,y]of [[600,65],[880,65],[585,275],[920,275]])add('fence',x,y,85,45);
-for(const [x,y]of [[615,365],[930,365]])add('banner',x,y,38,125);
-add('den',718,36,120,95);add('cart',2010,760,85,80);
-for(const [x,y]of [[985,505],[555,505],[1280,625],[1100,1050],[1660,930]])add('sign',x,y,60,58);
+for(let y=95;y<2060;y+=62)for(let x=145;x<3110;x+=58){const px=x+random()*24,py=y+random()*18;if(!open(px,py,35))add(random()>.55?'oak':random()>.17?'pine':'ancient',px-38,py-95,80+random()*25,110+random()*15);}
+for(let i=0;i<320;i++){const x=170+random()*2880,y=120+random()*1880;if(open(x,y,50))continue;add(i%5===0?'boulder':i%5===1?'stump':i%5===2?'log':i%5===3?'fern':'mushrooms',x-20,y-30,i%5===2?85:42,i%5===2?38:42,i%5<3);}
+for(let i=0;i<250;i++){const x=170+random()*2880,y=120+random()*1880;if(open(x,y,0))continue;add(i%3===0?'flowers':i%3===1?'mushrooms':'fern',x,y,28,30,false);}
+// Landmark props stay on pocket edges, leaving the shared access routes clear.
+add('den',545,175,110,90,false);
+for(const s of woodsEncounterSpawns.filter(s=>s.kind==='spider')){add('web',s.x-90,s.y-50,68,65,false);add('egg-nest',s.x+45,s.y+20,50,38,false);}
+for(const s of woodsEncounterSpawns.filter(s=>s.kind==='boar'))add('log',s.x+55,s.y+35,65,30,false);
+for(const [x,y]of [[2180,1250],[3000,1250],[2180,1850],[3000,1850]])add('ruin',x,y,48,95,false);
+for(const x of [2480,2700]){add('torch',x,1240,38,95,false);add('banner',x,1120,38,125,false);}
+for(const [x,y]of [[2350,1750],[2790,1750]])add('bones',x,y,50,35,false);
+for(const [x,y]of [[1490,230],[1730,230],[1480,1880],[1750,1880]])add('ruin',x,y,48,95,false);
+for(const [x,y]of [[620,440],[940,440],[1450,710],[1770,710],[1100,1100],[2040,1100]])add('lamp',x,y,28,90,false);
+for(const [x,y]of [[950,650],[1200,810],[1960,810],[1800,1690]])add('sign',x,y,60,58,false);
 add('portal',700,420,184,164,false);
-// Keep the established portal fixed while opening up the eastern/southern forest.
-export function expandWoodsPoint(x:number,y:number):[number,number]{return [x<=792?x:792+(x-792)*(3264-792)/(2304-792),y<=584?y:584+(y-584)*(2176-584)/(1536-584)];}
-for(const c of woodsClearings){const [x,y]=expandWoodsPoint(c.x,c.y),[right,bottom]=expandWoodsPoint(c.x+c.rx,c.y+c.ry),[left,top]=expandWoodsPoint(c.x-c.rx,c.y-c.ry);Object.assign(c,{x,y,rx:(right-left)/2,ry:(bottom-top)/2});}
-woodsTrails=woodsTrails.map(trail=>trail.map(([x,y])=>expandWoodsPoint(x,y)));
-for(const key of ['rivers','cliffs','bridges'] as const)woodsGeometry[key]=woodsGeometry[key].map(poly=>poly.map(([x,y])=>expandWoodsPoint(x,y)));
-for(const object of woodsObjects){const [x,y]=expandWoodsPoint(object.x,object.y),dx=x-object.x,dy=y-object.y;object.x=x;object.y=y;object.footY+=dy;object.collision=object.collision.map(([px,py])=>[px+dx,py+dy]);}
 const collision=islandCollision(woodsMap.width,woodsMap.height,woodsGeometry,woodsObjects);
 export function woodsFootprintBlocked(x:number,y:number,r=0){return collision(x*48,(y-woodsMap.offsetY)*48,r*48);}

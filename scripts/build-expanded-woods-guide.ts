@@ -1,10 +1,12 @@
 import {writeFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
-import {woodsMap,woodsClearings,woodsTrails,woodsGeometry} from '../packages/game-data/src/woods';
+import {woodsMap,woodsClearings,woodsTrails,woodsGeometry,woodsHabitats,woodsEncounterSpawns,woodsSpawnTrails} from '../packages/game-data/src/woods';
 const polygon=(points:readonly (readonly [number,number])[],fill:string)=>`<polygon points="${points.map(p=>p.join(',')).join(' ')}" fill="${fill}"/>`;
 export function expandedWoodsGuide(){let body=`<rect width="${woodsMap.width}" height="${woodsMap.height}" fill="#256747"/>`;
-for(const trail of woodsTrails)body+=`<polyline points="${trail.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#d3a056" stroke-width="145" stroke-linecap="round" stroke-linejoin="round"/>`;
-for(const c of woodsClearings)body+=`<ellipse cx="${c.x}" cy="${c.y}" rx="${c.rx}" ry="${c.ry}" fill="#d3a056"/>`;
+for(const trail of woodsTrails)body+=`<polyline points="${trail.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#d3a056" stroke-width="110" stroke-linecap="round" stroke-linejoin="round"/>`;
+for(const trail of woodsSpawnTrails)body+=`<polyline points="${trail.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#d3a056" stroke-width="72" stroke-linecap="round"/>`;
+for(const c of woodsClearings.filter(c=>!woodsHabitats.some(h=>h.name===c.name)||c.name==='Forest Bear arena'))body+=`<ellipse cx="${c.x}" cy="${c.y}" rx="${c.rx}" ry="${c.ry}" fill="#d3a056"/>`;
+for(const s of woodsEncounterSpawns.filter(s=>s.kind!=='bear'))body+=`<ellipse cx="${s.x}" cy="${s.y}" rx="95" ry="75" fill="#d3a056"/>`;
 for(const river of woodsGeometry.rivers)body+=polygon(river,'#178aa9');
 for(const cliff of woodsGeometry.cliffs)body+=polygon(cliff,'#778384');
 for(const bridge of woodsGeometry.bridges)body+=polygon(bridge,'#946639');
