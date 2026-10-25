@@ -3,9 +3,9 @@ export const woodsMap={width:2304,height:1536,worldWidth:48,worldHeight:32,offse
 // Ground guide, foliage exclusion and navigation landmarks share these coordinates.
 export const woodsClearings=[
  {name:'Portal sanctuary',x:792,y:584,rx:180,ry:145},
- {name:'Wolf den',x:768,y:215,rx:190,ry:155},
- {name:'Web hollow',x:330,y:430,rx:190,ry:150},
- {name:'Boar grounds',x:1870,y:900,rx:205,ry:170},
+ {name:'Wolf den',x:768,y:250,rx:310,ry:210},
+ {name:'Web hollow',x:330,y:430,rx:245,ry:230},
+ {name:'Boar grounds',x:1870,y:900,rx:300,ry:230},
  {name:'Forest Bear arena',x:1550,y:1290,rx:220,ry:155},
  {name:'Overgrown lookout',x:1810,y:290,rx:170,ry:130},
  {name:'Ancient grove',x:500,y:1210,rx:165,ry:130},

@@ -6,9 +6,14 @@ export const monsters={
 } as const;
 export type MonsterKind=keyof typeof monsters;
 export const monsterKind=(value:unknown):MonsterKind=>typeof value==='string'&&Object.hasOwn(monsters,value)?value as MonsterKind:'wolf';
+// Open space between patrol starts keeps encounters separate while the portal
+// remains a sanctuary. Keep the named boss as one encounter.
 export const monsterSpawns=[
- {id:'wolf-1',kind:'wolf',x:16,y:5.8},{id:'wolf-2',kind:'wolf',x:14.4,y:4.2},{id:'wolf-3',kind:'wolf',x:17.6,y:4.2},
- {id:'spider-1',kind:'spider',x:6.5,y:10},{id:'spider-2',kind:'spider',x:8,y:11},
- {id:'boar-1',kind:'boar',x:38,y:19.7},{id:'boar-2',kind:'boar',x:40,y:21},
+ {id:'wolf-1',kind:'wolf',x:16,y:5.8},{id:'wolf-2',kind:'wolf',x:11.8,y:4.4},{id:'wolf-3',kind:'wolf',x:20.5,y:4.4},
+ {id:'wolf-4',kind:'wolf',x:11.5,y:8},{id:'wolf-5',kind:'wolf',x:21,y:8.5},{id:'wolf-6',kind:'wolf',x:16,y:9.4},
+ {id:'spider-1',kind:'spider',x:6.5,y:10},{id:'spider-2',kind:'spider',x:9.5,y:12},
+ {id:'spider-3',kind:'spider',x:3.2,y:7.8},{id:'spider-4',kind:'spider',x:6.5,y:5.8},{id:'spider-5',kind:'spider',x:6.5,y:14.2},
+ {id:'boar-1',kind:'boar',x:38,y:19.7},{id:'boar-2',kind:'boar',x:42.2,y:19.7},
+ {id:'boar-3',kind:'boar',x:34,y:19.7},{id:'boar-4',kind:'boar',x:38,y:15.5},{id:'boar-5',kind:'boar',x:38.5,y:24.6},
  {id:'bear-1',kind:'bear',x:32.3,y:28.2}
 ] satisfies {id:string;kind:MonsterKind;x:number;y:number}[];

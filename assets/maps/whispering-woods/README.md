@@ -9,8 +9,11 @@ The expanded source layout is 2304×1536, with 48×36 world bounds: 2.25 times
 the previous ground area. The portal and arrival coordinates stay unchanged.
 Eight clearings connect through looped trails: portal sanctuary, wolf den,
 web hollow, distant boar grounds, Forest Bear arena, overgrown lookout, ancient
-grove and old crossroads. There are still eight enemies; extra space comes from
-spreading encounters and adding quiet exploration routes. No new loot or quests
+grove and old crossroads. The enlarged wolf clearing is over twice its earlier
+area. Seventeen enemies are distributed across the habitats: six wolves, five
+spiders, five boars and one Forest Bear. Every spawn is at least 3.5 tiles from
+its nearest neighbor and outside the portal sanctuary. Spider and boar clearings
+also have extra room; quiet exploration routes remain between encounters. No new loot or quests
 are attached to the scenic landmarks yet.
 
 `packages/game-data/src/woods.ts` owns ground dimensions, clearing/trail guides,
