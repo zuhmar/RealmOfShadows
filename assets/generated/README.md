@@ -42,13 +42,24 @@ village atlas for common trees, rocks and fixtures. Its unique props and ground
 are repainted to match those materials; changing a forest crop does not change
 these shared sources.
 
-The three painted monster cutouts remain in `assets/monsters/generated/`.
-Those are single-pose images with motion feedback, not directional sprite sheets.
-The uploaded animated wolf, citizen and Mara sheets remain unchanged.
+Monster artwork lives in `assets/monsters/generated/`. The generated wolf and
+Thorn Spider now use separate 32-pose PNG atlases. Rows face down, left, right
+and up; columns contain two idle poses, four walking poses, one attack pose and
+one defeated pose. The attack sequence holds the lunge between neutral frames;
+defeat holds the collapsed pose then fades. These are initial short cycles.
+`monster-frames.ts` records alpha-bound crops with a constant scale and directional
+baseline on 256px canvases; `monster-animations.ts` installs the runtime textures.
+No individual pose is independently stretched to fill its canvas.
+
+Boar and bear still use single painted poses with procedural motion feedback.
+The previous spider cutout and all uploaded wolf, citizen and Mara sheets remain
+preserved. The client now loads the generated wolf instead of the uploaded wolf.
 
 Validation: `npm test`, `npm run build`, `npm run test:generated-art:browser`,
 `npm run test:paper-doll:browser`, `npm run test:island:browser`, and
 `npm run test:woods:browser` (browser checks require a running client/server).
+`npm run test:monsters:browser` checks directional animation frame changes,
+noninteractive defeat poses, cleanup and mobile loading.
 
 The shared visual rules and canonical reference are documented in
 `assets/ART_DIRECTION.md`. Review `previews/character-turnaround.png` alongside the
