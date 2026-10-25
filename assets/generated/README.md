@@ -36,6 +36,12 @@ Future paint updates should retain crop order or update the corresponding atlas
 coordinates. Keep collision footprints and prop placements in the shared game-data
 files; rendering changes must not silently change the authoritative map geometry.
 
+Common environment sprites are mapped by `sharedEnvironmentSprites` in the
+manifest. The forest keeps its own logical sizes and offsets while sampling the
+village atlas for common trees, rocks and fixtures. Its unique props and ground
+are repainted to match those materials; changing a forest crop does not change
+these shared sources.
+
 The three painted monster cutouts remain in `assets/monsters/generated/`.
 Those are single-pose images with motion feedback, not directional sprite sheets.
 The uploaded animated wolf, citizen and Mara sheets remain unchanged.

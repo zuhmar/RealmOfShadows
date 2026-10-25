@@ -19,6 +19,14 @@ identities and silhouettes, and preserve alpha. Grounds retain exact geography;
 props retain their registered footprint and baseline. The original uploaded
 PNGs remain intact. The classic sprite appearance remains an optional comparison.
 
+Elderwood is the environment material reference: broad emerald leaf clusters,
+warm ochre paths, cool slate facets and restrained wood grain. Whispering Woods
+uses the same construction with deeper greens and denser placement, rather than
+finer texture or different lighting. Shared oaks, pines, boulders, banners, lamps
+and gate pillars sample the same village atlas in both regions; destination
+canvases and placements remain region-specific. Forest-only props use the same
+outline weight and broad shading. Keep clearing interiors readable and quiet.
+
 The live adventurer rig has overlapping neck/shoulder/hip attachments, a proper
 cape, direction-specific torsos/tunics/boots and fitted equipped hooded heads.
 Painted equipment uses the same materials as those body parts. Preview actual

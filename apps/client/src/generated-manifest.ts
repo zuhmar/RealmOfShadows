@@ -7,6 +7,11 @@ import itemsUrl from '../../../assets/generated/items.png?url';
 import characterUrl from '../../../assets/generated/character.png?url';
 import hoodedUrl from '../../../assets/generated/hooded.png?url';
 export interface GeneratedSheet {key:string;url:string;scale:number;frames:Record<string,GeneratedFrame>}
+// Common materials use the same painted source in both regions. Each destination
+// retains its own logical canvas and placement, so world footprints stay intact.
+export const sharedEnvironmentSprites:Record<string,string>=Object.fromEntries(
+ ['oak','pine','boulder','banner','lamp','gate-pier'].map(name=>[`woods-${name}`,`elderwood-${name}`]),
+);
 export const generatedSheets:GeneratedSheet[]=[
  {key:'generated-buildings',url:buildingsUrl,scale:2,frames:generatedFrames.buildings},
  {key:'generated-village',url:villageUrl,scale:2,frames:generatedFrames.village},

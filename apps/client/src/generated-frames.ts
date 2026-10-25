@@ -476,9 +476,9 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
   "forest": {
     "woods-oak": {
       "source": [
-        7,
-        6,
-        276,
+        10,
+        9,
+        273,
         279
       ],
       "size": [
@@ -494,10 +494,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-pine": {
       "source": [
-        275,
-        7,
-        230,
-        283
+        281,
+        10,
+        223,
+        285
       ],
       "size": [
         96,
@@ -512,10 +512,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-ancient": {
       "source": [
-        500,
-        12,
-        280,
-        273
+        502,
+        10,
+        272,
+        279
       ],
       "size": [
         105,
@@ -530,10 +530,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-boulder": {
       "source": [
-        771,
-        52,
-        251,
-        230
+        772,
+        57,
+        247,
+        232
       ],
       "size": [
         80,
@@ -548,10 +548,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-log": {
       "source": [
-        1032,
-        84,
-        251,
-        197
+        1031,
+        106,
+        254,
+        183
       ],
       "size": [
         110,
@@ -566,10 +566,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-stump": {
       "source": [
-        1292,
-        88,
-        240,
-        193
+        1295,
+        104,
+        236,
+        186
       ],
       "size": [
         52,
@@ -584,10 +584,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-web": {
       "source": [
-        8,
-        288,
-        265,
-        228
+        9,
+        293,
+        266,
+        222
       ],
       "size": [
         100,
@@ -602,10 +602,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-egg-nest": {
       "source": [
-        278,
-        341,
+        280,
+        339,
         243,
-        166
+        176
       ],
       "size": [
         72,
@@ -620,9 +620,9 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-mushrooms": {
       "source": [
-        535,
-        295,
-        221,
+        532,
+        299,
+        230,
         210
       ],
       "size": [
@@ -638,10 +638,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-fern": {
       "source": [
-        766,
-        286,
-        276,
-        243
+        769,
+        299,
+        274,
+        238
       ],
       "size": [
         38,
@@ -656,10 +656,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-flowers": {
       "source": [
-        1052,
-        338,
-        223,
-        174
+        1054,
+        340,
+        228,
+        180
       ],
       "size": [
         42,
@@ -674,10 +674,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-bones": {
       "source": [
-        1299,
-        319,
+        1300,
+        331,
         227,
-        183
+        178
       ],
       "size": [
         60,
@@ -692,10 +692,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-ruin": {
       "source": [
-        21,
-        506,
-        227,
-        259
+        24,
+        501,
+        226,
+        266
       ],
       "size": [
         60,
@@ -710,10 +710,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-torch": {
       "source": [
-        313,
-        512,
-        147,
-        249
+        308,
+        516,
+        153,
+        251
       ],
       "size": [
         44,
@@ -728,10 +728,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-banner": {
       "source": [
-        579,
-        506,
-        119,
-        250
+        571,
+        505,
+        133,
+        254
       ],
       "size": [
         40,
@@ -746,10 +746,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-fence": {
       "source": [
-        742,
+        744,
         595,
-        296,
-        163
+        293,
+        167
       ],
       "size": [
         110,
@@ -764,10 +764,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-sign": {
       "source": [
-        1052,
-        537,
-        218,
-        228
+        1043,
+        533,
+        225,
+        234
       ],
       "size": [
         85,
@@ -782,10 +782,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-cart": {
       "source": [
-        1291,
-        540,
-        235,
-        215
+        1292,
+        542,
+        231,
+        217
       ],
       "size": [
         95,
@@ -800,10 +800,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-den": {
       "source": [
-        4,
+        7,
         768,
-        275,
-        234
+        271,
+        236
       ],
       "size": [
         130,
@@ -818,10 +818,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-portal": {
       "source": [
-        276,
+        278,
         767,
-        277,
-        241
+        274,
+        242
       ],
       "size": [
         192,
@@ -836,10 +836,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-lamp": {
       "source": [
-        601,
-        747,
-        91,
-        266
+        597,
+        751,
+        96,
+        262
       ],
       "size": [
         24,
@@ -854,10 +854,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-gate-pier": {
       "source": [
-        813,
-        762,
-        151,
-        251
+        811,
+        765,
+        155,
+        246
       ],
       "size": [
         40,

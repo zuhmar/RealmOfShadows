@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import {generatedSheets,type GeneratedFrame} from './generated-manifest';
+import {generatedSheets,sharedEnvironmentSprites,type GeneratedFrame} from './generated-manifest';
 export {generatedSheets};
 // Atlas extraction is normal game texture preparation. No generated source PNG
 // is rewritten; original logical canvases and transparent rig offsets are retained.
@@ -7,7 +7,12 @@ export function installGeneratedArt(scene:Phaser.Scene){
  for(const sheet of generatedSheets){const source=scene.textures.get(sheet.key).getSourceImage() as HTMLImageElement;
   for(const [key,frame]of Object.entries(sheet.frames)){if(scene.textures.exists(key))continue;
    const [w,h]=frame.size,scale=sheet.scale,texture=scene.textures.createCanvas(key,w*scale,h*scale)!;
-   paintFrame(texture.getContext(),source,frame,scale);texture.refresh();
+   const sharedKey=sharedEnvironmentSprites[key],sharedFrame=generatedSheets.find(s=>s.frames[sharedKey]);
+   if(sharedFrame){
+    paintFrame(texture.getContext(),scene.textures.get(sharedFrame.key).getSourceImage() as HTMLImageElement,
+     {...frame,source:sharedFrame.frames[sharedKey].source},scale);
+   }else paintFrame(texture.getContext(),source,frame,scale);
+   texture.refresh();
   }
  }
 }
