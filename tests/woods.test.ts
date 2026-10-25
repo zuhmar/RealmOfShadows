@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {monsters,monsterSpawns,PORTAL,woodsObjects,woodsGeometry} from '@realm/game-data';
+import {monsters,monsterSpawns,PORTAL,woodsObjects,woodsGeometry,woodsMap,woodsClearings,regionSize} from '@realm/game-data';
 import {CombatSimulation,newFighter,Economy,legal,pathfind} from '@realm/shared';
 import {woodsSvgFiles} from '../scripts/build-woods-svg';
 test('all four woods habitats connect to the portal and spawn on walkable land',()=>{
@@ -39,4 +39,12 @@ test('warned spider shots and boar charges aim at a fixed point and can be dodge
 });
 test('returning to the portal cancels monster windups',()=>{
  const sim=new CombatSimulation(),w=sim.wolves.get('bear-1')!;const p={...newFighter(),region:'woods' as const,x:w.x+.4,y:w.y};sim.tick(.05,[['a',p]]);assert.equal(w.mode,'windup');p.x=PORTAL.x;p.y=PORTAL.y;sim.tick(1,[['a',p]]);assert.equal(p.hp,100);assert.equal(w.windupUntil,0);assert.equal(w.mode,'idle');assert.equal(sim.events.filter(e=>e.kind==='nova').length,0);
+});
+
+test('expanded woods supports distant exploration and retains town bounds',()=>{
+ assert.deepEqual(regionSize('woods'),{width:48,height:36});assert.equal(regionSize('elderwood').width,32);
+ assert.equal(woodsMap.worldWidth,48);assert.equal(woodsMap.width/woodsMap.height,1.5);
+ for(const clearing of woodsClearings){const target={x:clearing.x/48,y:clearing.y/48+woodsMap.offsetY};assert.ok(legal(target,'woods'),clearing.name);assert.ok(pathfind(PORTAL.arrival,target,'woods').length,clearing.name);}
+ const boar=monsterSpawns.find(s=>s.kind==='boar')!,bear=monsterSpawns.find(s=>s.kind==='bear')!;
+ assert.ok(boar.x>32);assert.ok(bear.y>24);assert.ok(!legal(boar,'elderwood'));assert.ok(!legal({x:47.9,y:20},'woods'));
 });

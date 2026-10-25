@@ -42,8 +42,8 @@ village atlas for common trees, rocks and fixtures. Its unique props and ground
 are repainted to match those materials; changing a forest crop does not change
 these shared sources.
 
-Monster artwork lives in `assets/monsters/generated/`. The generated wolf and
-Thorn Spider now use separate 32-pose PNG atlases. Rows face down, left, right
+Monster artwork lives in `assets/monsters/generated/`. All four Whispering Woods monsters
+(wolf, Thorn Spider, Wild Boar and Forest Bear) use separate 32-pose PNG atlases. Rows face down, left, right
 and up; columns contain two idle poses, four walking poses, one attack pose and
 one defeated pose. The attack sequence holds the lunge between neutral frames;
 defeat holds the collapsed pose then fades. These are initial short cycles.
@@ -51,8 +51,7 @@ defeat holds the collapsed pose then fades. These are initial short cycles.
 baseline on 256px canvases; `monster-animations.ts` installs the runtime textures.
 No individual pose is independently stretched to fill its canvas.
 
-Boar and bear still use single painted poses with procedural motion feedback.
-The previous spider cutout and all uploaded wolf, citizen and Mara sheets remain
+The previous single-pose monster atlas and all uploaded wolf, citizen and Mara sheets remain
 preserved. The client now loads the generated wolf instead of the uploaded wolf.
 
 Validation: `npm test`, `npm run build`, `npm run test:generated-art:browser`,
@@ -64,3 +63,9 @@ noninteractive defeat poses, cleanup and mobile loading.
 The shared visual rules and canonical reference are documented in
 `assets/ART_DIRECTION.md`. Review `previews/character-turnaround.png` alongside the
 complete maps when extending the art set.
+
+Whispering Woods now uses a 2304×1536 source layout (48×36 world bounds),
+2.25 times its previous ground area. Its generated ground is painted from the
+shared trail/clearing guide, with the portal retained at its original coordinates.
+See `packages/game-data/src/woods.ts` for all eight clearings, trails, shoreline
+collision and prop placement. Both client and server must deploy this expansion.

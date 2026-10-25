@@ -26,7 +26,8 @@
     "test:woods:browser": "node tests/browser-woods.cjs",
     "test:generated-art:browser": "node tests/browser-generated-art.cjs",
     "test:character-style:browser": "node tests/browser-character-style.cjs",
-    "test:monsters:browser": "node tests/browser-monster-animations.cjs"
+    "test:monsters:browser": "node tests/browser-monster-animations.cjs",
+    "test:woods-exploration:browser": "node tests/browser-woods-exploration.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

@@ -7,7 +7,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  await page.locator('#interact').click();await page.locator('#destinations button').filter({has:page.locator('strong',{hasText:'Whispering Woods'})}).click();
  const result=await page.evaluate(async()=>{
   const {game}=await import(document.querySelector('script[src*="/src/main.ts"]').src),s=game.scene.scenes[0];game.loop.sleep();const checks=[];
-  try{for(const [id,kind]of [['wolf-1','wolf'],['spider-1','spider']]){
+  try{for(const [id,kind]of [['wolf-1','wolf'],['spider-1','spider'],['boar-1','boar'],['bear-1','bear']]){
    const monster=s.sim.wolves.get(id),view=s.wolfViews.get(id),sprite=view.getData('sprite');
    for(const facing of ['down','left','right','up'])for(const [mode,action]of [['idle','idle'],['chase','walk'],['attack','attack']]){
     Object.assign(monster,{mode,facing});view.setData('attackUntil',0).setData('animationMode','idle');s.renderCombat(16);
@@ -23,5 +23,5 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  assert.equal(c.key,`painted-${c.kind}-${c.action}-${c.facing}`);assert.equal(c.flip,false);assert.ok(c.frames.length>=2,JSON.stringify(c));}
  await page.waitForTimeout(1200);const corpses=await page.evaluate(async()=>{const {game}=await import(document.querySelector('script[src*="/src/main.ts"]').src);return [...game.scene.scenes[0].fxObjects].filter(o=>o.anims?.currentAnim?.key?.includes('-death-')).length;});assert.equal(corpses,0);
  assert.ok(!requests.some(url=>/wolf_(?:idle|walk)|wolf-(?:idle|walk)/i.test(url)));assert.deepEqual(errors,[]);
- console.log('PASS generated wolf/spider: four directions, changing idle/walk/attack frames, single noninteractive death with cleanup, mobile loading, no legacy wolf requests or runtime errors');
+ console.log('PASS all four generated monsters: four directions, changing idle/walk/attack frames, single noninteractive death with cleanup, mobile loading, no legacy wolf requests or runtime errors');
  }finally{await browser.close()}})();

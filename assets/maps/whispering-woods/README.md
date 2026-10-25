@@ -1,29 +1,29 @@
 # Whispering Woods
 
-`Reference(1).png` is the original supplied layout and remains unchanged.
-The playable map now uses `assets/generated/woods-ground.png` and the painted
-`assets/generated/forest.png` atlas. See `assets/generated/README.md`. The `svg/`
-files remain preserved vector references. `svg/full-map.svg` is a
-standalone vector export for review; the game loads the base and shared props
-separately so trees, ruins and enemies sort correctly around players.
+The original uploaded reference is preserved. The live map uses the generated
+PNG ground in `assets/generated/woods-ground.png` and separate generated props
+for correct depth around players. `assets/generated/previews/whispering-woods-full-map.png`
+is a complete assembled review export.
 
-The central portal connects four habitats: wolves north, Thorn Spiders west,
-Wild Boars east, and the Forest Bear arena south. Eight enemies spawn on clear
-land. Water, cliffs, tree trunks, boulders, logs and ruin bases use the same
-collision geometry in the client and server. Broad paths remain open between
-habitats. The island has winding tracks, irregular river banks, cascades and river reeds,
-layered oak/pine/ancient tree canopies, a wolf den and camp, spider egg nests,
-boar camp fencing and a cart, and a cracked stone bear arena with torch pillars.
-The portal has its own carved stone arch, runes, crystals and moss.
+The expanded source layout is 2304×1536, with 48×36 world bounds: 2.25 times
+the previous ground area. The portal and arrival coordinates stay unchanged.
+Eight clearings connect through looped trails: portal sanctuary, wolf den,
+web hollow, distant boar grounds, Forest Bear arena, overgrown lookout, ancient
+grove and old crossroads. There are still eight enemies; extra space comes from
+spreading encounters and adding quiet exploration routes. No new loot or quests
+are attached to the scenic landmarks yet.
 
-The two side bridges cross the boundary streams; they are scenery
-and walkable decks, not additional travel portals.
+`packages/game-data/src/woods.ts` owns ground dimensions, clearing/trail guides,
+props and full-footprint collision. Water, cliffs and solid props remain blocked
+on both client and server. The two side bridges are walkable scenic decks, not
+travel portals. `packages/game-data/src/monsters.ts` owns monster stats/spawns.
 
-Edit `packages/game-data/src/woods.ts` for terrain, props and collision;
-`scripts/build-woods-svg.ts` for the ground, and `scripts/woods-prefabs.ts` for biome-specific vector props. Run
-`npm run art:woods` to regenerate. Do not overwrite the supplied PNG.
+`scripts/build-expanded-woods-guide.ts` generates the code-native ground guide
+used as an image-generation reference. `npm run art:woods` regenerates legacy
+vector ground/prop guides and a composed SVG review; it does not repaint live PNGs.
+All four monster species use generated directional animation atlases.
 
-Monster spawn locations, levels and stats live in
-`packages/game-data/src/monsters.ts`. The SVG monster generation workflow is
-documented in `assets/monsters/svg/README.md`. Other islands keep their current
-maps until their reference-driven versions are built.
+Validate with `npm test`, `npm run build`, `npm run test:woods:browser`,
+`npm run test:monsters:browser`, `npm run test:woods-exploration:browser` and
+`tests/monsters.integration.ts`. Browser/integration checks need local services.
+Deploy both Vercel and Render together when geometry or spawns change.

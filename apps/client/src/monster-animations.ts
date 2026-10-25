@@ -1,10 +1,12 @@
 import type Phaser from 'phaser';
 import wolfUrl from '../../../assets/monsters/generated/wolf-animations.png?url';
 import spiderUrl from '../../../assets/monsters/generated/spider-animations.png?url';
+import boarUrl from '../../../assets/monsters/generated/boar-animations.png?url';
+import bearUrl from '../../../assets/monsters/generated/bear-animations.png?url';
 import {monsterFrames} from './monster-frames';
 import type {Facing} from '@realm/game-data';
-export type AnimatedMonster='wolf'|'spider';
-export const animatedMonsters=[{kind:'wolf',key:'painted-wolf',url:wolfUrl,scale:.48,width:112,height:106},{kind:'spider',key:'painted-spider',url:spiderUrl,scale:.55,width:130,height:112}] as const;
+export type AnimatedMonster='wolf'|'spider'|'boar'|'bear';
+export const animatedMonsters=[{kind:'wolf',key:'painted-wolf',url:wolfUrl,scale:.48,width:112,height:106},{kind:'spider',key:'painted-spider',url:spiderUrl,scale:.55,width:130,height:112},{kind:'boar',key:'painted-boar',url:boarUrl,scale:.62,width:140,height:130},{kind:'bear',key:'painted-bear',url:bearUrl,scale:1,width:220,height:220}] as const;
 export function installMonsterAnimations(scene:Phaser.Scene){
  for(const sheet of animatedMonsters){
   const image=scene.textures.get(sheet.key).getSourceImage() as HTMLImageElement;

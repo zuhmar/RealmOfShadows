@@ -8,7 +8,7 @@ export type MonsterKind=keyof typeof monsters;
 export const monsterKind=(value:unknown):MonsterKind=>typeof value==='string'&&Object.hasOwn(monsters,value)?value as MonsterKind:'wolf';
 export const monsterSpawns=[
  {id:'wolf-1',kind:'wolf',x:16,y:5.8},{id:'wolf-2',kind:'wolf',x:14.4,y:4.2},{id:'wolf-3',kind:'wolf',x:17.6,y:4.2},
- {id:'spider-1',kind:'spider',x:6.5,y:11},{id:'spider-2',kind:'spider',x:8,y:12},
- {id:'boar-1',kind:'boar',x:24.5,y:11},{id:'boar-2',kind:'boar',x:26,y:12},
- {id:'bear-1',kind:'bear',x:16.5,y:18.3}
+ {id:'spider-1',kind:'spider',x:6.5,y:10},{id:'spider-2',kind:'spider',x:8,y:11},
+ {id:'boar-1',kind:'boar',x:38,y:19.7},{id:'boar-2',kind:'boar',x:40,y:21},
+ {id:'bear-1',kind:'bear',x:32.3,y:28.2}
 ] satisfies {id:string;kind:MonsterKind;x:number;y:number}[];
