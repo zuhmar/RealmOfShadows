@@ -197,3 +197,18 @@ All generated world/item/monster sheets reference the same hero model, palette,
 outline/shading treatment and light direction. Uploaded classic sprites remain
 preserved. `npm run test:character-style:browser` checks the equipped/base
 turnarounds, neck continuity, native facing directions and cape layering.
+
+## Edit monster and portal placements
+
+Open `/map-editor.html` on the deployed client, or run `npm run map:editor` and
+open `http://localhost:5190/map-editor.html`. This is a placement editor, with
+zoom/pan, draggable monster/portal markers, approach-monster additions/removal,
+undo and JSON import/export. It does not write to GitHub or modify the live game.
+
+Export `woods-placement.json`, then replace
+`packages/game-data/src/woods-placement.json` with the downloaded file (or send
+it back for application). Run `npm test` and `npm run build`, commit, and deploy
+both Vercel and Render. Terrain, painted paths/plazas and walls need separate
+artwork/collision edits; the editor background shows the last painted version.
+New approach spurs and collision clearances derive from the placement data, but
+painting their appearance still requires a ground-art pass when moved substantially.

@@ -1,8 +1,9 @@
-import {PORTAL,combat as C} from '@realm/game-data';
+import {portalFor,combat as C} from '@realm/game-data';
 import {pathfind,type Point} from './index';
 import {sight} from './combat';
 // Plan toward a clear firing/melee position, never toward a monster's center.
 export function attackPath(start:Point,target:Point,range:number):Point[]{
+ const PORTAL=portalFor('woods');
  const angle=Math.atan2(start.y-target.y,start.x-target.x),candidates:Point[]=[];
  for(const radius of [Math.max(.5,range-.5),Math.min(.6,range-.5)])for(let i=0;i<16;i++){const a=angle+i*Math.PI/8;candidates.push({x:target.x+Math.cos(a)*radius,y:target.y+Math.sin(a)*radius});}
  candidates.sort((a,b)=>Math.hypot(a.x-start.x,a.y-start.y)-Math.hypot(b.x-start.x,b.y-start.y));

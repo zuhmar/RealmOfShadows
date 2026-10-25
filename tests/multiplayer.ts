@@ -1,3 +1,4 @@
+import {portalFor} from '@realm/game-data';
 import {walkTo} from './helpers/walk';
 import {Client} from 'colyseus.js';
 import assert from 'node:assert/strict';
@@ -13,7 +14,7 @@ const before=own.x;a.send('input',{x:999,y:0,sprint:false,seq:100});await wait(1
 const floodStarted=performance.now();for(let i=101;i<201;i++)a.send('input',{x:1,y:0,sprint:false,seq:i});await wait(160);assert.ok(a.state.players.get(a.sessionId).x-before<=4*(performance.now()-floodStarted)/1000+.2);
 for(let i=201;i<250&&a.state.players.get(a.sessionId).x>17.5;i++){a.send('input',{x:-1,y:0,sprint:false,seq:i});await wait(55);}await wait(150);
 a.send('travel','unknown');await wait(120);assert.equal(a.state.players.get(a.sessionId).region,'elderwood');assert.equal(travelErrors,1);
-a.send('travel','woods');await wait(180);assert.equal(a.state.players.get(a.sessionId).region,'woods');assert.equal(b.state.players.get(a.sessionId).region,'woods');assert.equal(b.state.players.get(b.sessionId).region,'elderwood');assert.equal(a.state.players.get(a.sessionId).x,16.5);
+a.send('travel','woods');await wait(180);assert.equal(a.state.players.get(a.sessionId).region,'woods');assert.equal(b.state.players.get(a.sessionId).region,'woods');assert.equal(b.state.players.get(b.sessionId).region,'elderwood');assert.equal(a.state.players.get(a.sessionId).x,portalFor('woods').arrival.x);
 a.send('travel','caverns');await wait(180);assert.equal(a.state.players.get(a.sessionId).region,'caverns');
 a.send('travel','elderwood');await wait(180);assert.equal(a.state.players.get(a.sessionId).region,'elderwood');
 await walkTo(a,{x:23.5,y:13.5},301);await wait(100);

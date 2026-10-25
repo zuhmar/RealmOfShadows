@@ -29,7 +29,10 @@
     "test:monsters:browser": "node tests/browser-monster-animations.cjs",
     "test:woods-exploration:browser": "node tests/browser-woods-exploration.cjs",
     "test:click-hud:browser": "node tests/browser-click-hud.cjs",
-    "test:auto-approach:browser": "node tests/browser-auto-approach.cjs && node tests/browser-auto-approach-online.cjs"
+    "test:auto-approach:browser": "node tests/browser-auto-approach.cjs && node tests/browser-auto-approach-online.cjs",
+    "map:editor": "npm run dev -w @realm/client -- --port 5190",
+    "test:map-editor:browser": "node tests/browser-map-editor.cjs",
+    "test:woods-portal:browser": "node tests/browser-woods-portal.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

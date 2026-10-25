@@ -14,7 +14,8 @@
       "node"
     ],
     "noEmit": true,
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "resolveJsonModule": true
   },
   "include": [
     "apps",

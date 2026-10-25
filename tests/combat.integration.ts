@@ -1,4 +1,4 @@
-import {merchant} from '@realm/game-data';
+import {merchant,portalFor,monsterSpawns} from '@realm/game-data';
 import {walkTo} from './helpers/walk';
 import {Client} from 'colyseus.js';
 import assert from 'node:assert/strict';
@@ -7,7 +7,7 @@ const a=await new Client(endpoint).joinOrCreate('elderwood'),b=await new Client(
 for(const room of [a,b])for(const name of ['combat-event','combat-error','travel-complete','travel-error','economy-state','economy-result'])room.onMessage(name,()=>{});
 let bag:any,observerBag:any;a.onMessage('economy-state',state=>bag=state);b.onMessage('economy-state',state=>observerBag=state);
 try{
- await wait(200);assert.equal(a.roomId,b.roomId);assert.equal(a.state.wolves.size,8);
+ await wait(200);assert.equal(a.roomId,b.roomId);assert.equal(a.state.wolves.size,monsterSpawns.length);
  a.send('travel','woods');b.send('travel','woods');await wait(200);
  a.send('combat',{kind:'bolt',target:'wolf-1',damage:99999});await wait(150);assert.equal(a.state.wolves.get('wolf-1').hp,65);
  a.send('combat',{kind:'stop'});await wait(150);
@@ -24,7 +24,7 @@ try{
  a.send('economy',{kind:'award',gold:99999,xp:99999});await wait(150);a.send('economy',{kind:'sell',quantity:99999});await wait(150);assert.equal(bag.gold,6);assert.equal(bag.xp,35);
  a.send('combat',{kind:'bolt',target:'wolf-3'});for(let i=0;i<70&&a.state.wolves.get('wolf-3').hp>0;i++)await wait(100);assert.equal(a.state.wolves.get('wolf-3').hp,0);await wait(250);assert.equal(bag.xp,70);
  a.send('economy',{kind:'pickup',drop:bag.drops[0].id});await wait(200);assert.equal(bag.gold,12);assert.equal(bag.inventory[0].quantity,2);
- await walkTo(a,{x:16.5,y:15.5},1001);await wait(150);a.send('travel','elderwood');await wait(200);assert.equal(a.state.players.get(a.sessionId).region,'elderwood');
+ await walkTo(a,portalFor('woods').arrival,1001);await wait(150);a.send('travel','elderwood');await wait(200);assert.equal(a.state.players.get(a.sessionId).region,'elderwood');
  await walkTo(a,merchant,2000);
  a.send('economy',{kind:'sell',quantity:99999,price:99999});await wait(200);assert.equal(bag.gold,20);assert.equal(bag.inventory.length,0);
  a.send('economy',{kind:'buy',quantity:99999,price:0});await wait(200);a.send('economy',{kind:'buy',quantity:99999,price:0});await wait(200);assert.equal(bag.gold,8);assert.equal(bag.inventory[0].item,'potion');assert.equal(bag.inventory[0].quantity,1);assert.equal(observerBag.gold,0);

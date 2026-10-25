@@ -4,7 +4,7 @@ import {writeProgress} from '../../../packages/shared/src/saves';
 import {Server,Room,Client} from '@colyseus/core';
 import {WebSocketTransport} from '@colyseus/ws-transport';
 import {Schema,MapSchema,defineTypes} from '@colyseus/schema';
-import {WORLD,PORTAL,equipmentArmor,canTravel,type RegionId,type WeaponId} from '@realm/game-data';
+import {WORLD,portalFor,equipmentArmor,canTravel,type RegionId,type WeaponId} from '@realm/game-data';
 import {move,CombatSimulation,Economy,type Input,type Fighter} from '@realm/shared';
 class Player extends Schema {appearance='';armor=0;weapon:WeaponId='wand';meleeXp=0;distanceXp=0;magicXp=0;x=WORLD.spawn.x;y=WORLD.spawn.y;stamina=100;seq=0;region:RegionId='elderwood';hp=100;mana=100;deadUntil=0;shotAt=0;spellAt=0;target='';auto=false;}
 defineTypes(Player,{appearance:'string',armor:'number',weapon:'string',meleeXp:'number',distanceXp:'number',magicXp:'number',x:'number',y:'number',stamina:'number',seq:'number',region:'string',hp:'number',mana:'number',deadUntil:'number',shotAt:'number',spellAt:'number',target:'string',auto:'boolean'});
@@ -20,7 +20,7 @@ class Elderwood extends Room<State>{
  const p=this.state.players.get(client.sessionId);
  if(this.saveFailed.has(client.sessionId)||!p||p.hp<=0||!canTravel(p,p.region,destination)){client.send('travel-error','Walk closer to the portal and choose another destination.');return;}
  this.inputs.delete(client.sessionId);p.seq=this.received.get(client.sessionId)??p.seq;
- this.simulation.clear(p);p.region=destination;p.x=PORTAL.arrival.x;p.y=PORTAL.arrival.y;
+ this.simulation.clear(p);p.region=destination;p.x=portalFor(destination).arrival.x;p.y=portalFor(destination).arrival.y;
  client.send('travel-complete',{region:p.region,x:p.x,y:p.y,stamina:p.stamina,seq:p.seq});
  });
  this.onMessage('economy',(client:Client,request:unknown)=>{const now=this.simulation.time;const budget=this.economyReceived.get(client.sessionId)??{tokens:4,time:now};budget.tokens=Math.min(4,budget.tokens+(now-budget.time)*10);budget.time=now;this.economyReceived.set(client.sessionId,budget);if(budget.tokens<1)return;budget.tokens--; const p=this.state.players.get(client.sessionId);if(!p||this.saveFailed.has(client.sessionId))return;const message=this.economy.act(client.sessionId,p,request,now);p.appearance=JSON.stringify(this.economy.profiles.get(client.sessionId)!.equipment);client.send('economy-result',message);this.sendSnapshot(client);void this.savePlayer(client);});

@@ -1,0 +1,205 @@
+{
+  "version": 1,
+  "portal": {
+    "x": 1632,
+    "y": 960
+  },
+  "spawns": [
+    {
+      "id": "wolf-1",
+      "kind": "wolf",
+      "x": 600,
+      "y": 300,
+      "area": "habitat"
+    },
+    {
+      "id": "wolf-2",
+      "kind": "wolf",
+      "x": 360,
+      "y": 220,
+      "area": "habitat"
+    },
+    {
+      "id": "wolf-3",
+      "kind": "wolf",
+      "x": 840,
+      "y": 220,
+      "area": "habitat"
+    },
+    {
+      "id": "wolf-4",
+      "kind": "wolf",
+      "x": 360,
+      "y": 400,
+      "area": "habitat"
+    },
+    {
+      "id": "wolf-5",
+      "kind": "wolf",
+      "x": 840,
+      "y": 400,
+      "area": "habitat"
+    },
+    {
+      "id": "wolf-6",
+      "kind": "wolf",
+      "x": 600,
+      "y": 130,
+      "area": "habitat"
+    },
+    {
+      "id": "spider-1",
+      "kind": "spider",
+      "x": 600,
+      "y": 1590,
+      "area": "habitat"
+    },
+    {
+      "id": "spider-2",
+      "kind": "spider",
+      "x": 360,
+      "y": 1510,
+      "area": "habitat"
+    },
+    {
+      "id": "spider-3",
+      "kind": "spider",
+      "x": 840,
+      "y": 1510,
+      "area": "habitat"
+    },
+    {
+      "id": "spider-4",
+      "kind": "spider",
+      "x": 360,
+      "y": 1690,
+      "area": "habitat"
+    },
+    {
+      "id": "spider-5",
+      "kind": "spider",
+      "x": 840,
+      "y": 1690,
+      "area": "habitat"
+    },
+    {
+      "id": "spider-6",
+      "kind": "spider",
+      "x": 600,
+      "y": 1420,
+      "area": "habitat"
+    },
+    {
+      "id": "boar-1",
+      "kind": "boar",
+      "x": 2600,
+      "y": 300,
+      "area": "habitat"
+    },
+    {
+      "id": "boar-2",
+      "kind": "boar",
+      "x": 2360,
+      "y": 220,
+      "area": "habitat"
+    },
+    {
+      "id": "boar-3",
+      "kind": "boar",
+      "x": 2840,
+      "y": 220,
+      "area": "habitat"
+    },
+    {
+      "id": "boar-4",
+      "kind": "boar",
+      "x": 2360,
+      "y": 400,
+      "area": "habitat"
+    },
+    {
+      "id": "boar-5",
+      "kind": "boar",
+      "x": 2840,
+      "y": 400,
+      "area": "habitat"
+    },
+    {
+      "id": "boar-6",
+      "kind": "boar",
+      "x": 2600,
+      "y": 130,
+      "area": "habitat"
+    },
+    {
+      "id": "bear-1",
+      "kind": "bear",
+      "x": 2600,
+      "y": 1590,
+      "area": "habitat"
+    },
+    {
+      "kind": "wolf",
+      "x": 1140,
+      "y": 500,
+      "id": "wolf-7",
+      "area": "approach"
+    },
+    {
+      "kind": "wolf",
+      "x": 960,
+      "y": 690,
+      "id": "wolf-8",
+      "area": "approach"
+    },
+    {
+      "kind": "wolf",
+      "x": 1632,
+      "y": 400,
+      "id": "wolf-9",
+      "area": "approach"
+    },
+    {
+      "kind": "spider",
+      "x": 1140,
+      "y": 1150,
+      "id": "spider-7",
+      "area": "approach"
+    },
+    {
+      "kind": "spider",
+      "x": 960,
+      "y": 1370,
+      "id": "spider-8",
+      "area": "approach"
+    },
+    {
+      "kind": "spider",
+      "x": 1500,
+      "y": 1850,
+      "id": "spider-9",
+      "area": "approach"
+    },
+    {
+      "kind": "boar",
+      "x": 2060,
+      "y": 500,
+      "id": "boar-7",
+      "area": "approach"
+    },
+    {
+      "kind": "boar",
+      "x": 2240,
+      "y": 690,
+      "id": "boar-8",
+      "area": "approach"
+    },
+    {
+      "kind": "boar",
+      "x": 2860,
+      "y": 800,
+      "id": "boar-9",
+      "area": "approach"
+    }
+  ]
+}

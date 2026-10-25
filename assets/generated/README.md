@@ -67,10 +67,13 @@ complete maps when extending the art set.
 
 Whispering Woods now uses a 3264×2176 source layout (68×48 world bounds),
 roughly twice the preceding expanded ground area. Its generated ground is painted from the
-shared trail/clearing guide, with the portal retained at its original coordinates.
+shared trail/clearing guide, with an independent central Woods portal.
 See `packages/game-data/src/woods.ts` for all eight clearings, trails, shoreline
 collision and prop placement. Both client and server must deploy this expansion.
 
 The current Woods ground separates three equally sized six-spawn habitats into
-small dirt pockets with branch trails. The boss arena has painted stone walls
+small dirt pockets with branch trails and nine additional approach encounters. The boss arena has painted stone walls
 and one northern opening; collision uses `woodsBossWalls` from the same layout.
+
+`previews/whispering-woods-editor.webp` is a lightweight rendered map overview
+for the standalone placement editor. It is not loaded by the game scene.

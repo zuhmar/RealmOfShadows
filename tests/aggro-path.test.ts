@@ -1,7 +1,8 @@
+const PORTAL=portalFor('woods');
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {CombatSimulation,newFighter,attackPath,legal,sight} from '@realm/shared';
-import {monsterSpawns,weapons,PORTAL,woodsMap} from '@realm/game-data';
+import {monsterSpawns,weapons,portalFor,woodsMap} from '@realm/game-data';
 test('normal monsters ignore passersby, retaliate against their attacker and reset on return',()=>{
  for(const kind of ['wolf','spider'] as const){const sim=new CombatSimulation(),w=[...sim.wolves.values()].find(w=>w.kind===kind)!;sim.wolves.clear();sim.wolves.set(w.id,w);const p:ReturnType<typeof newFighter>={...newFighter(),region:'woods' as const,x:w.x+.5,y:w.y};
  for(let i=0;i<20;i++)sim.tick(.05,[['p',p]]);assert.equal(p.hp,100);assert.equal(w.mode,'idle');assert.equal(w.target,'');

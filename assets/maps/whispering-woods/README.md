@@ -6,13 +6,13 @@ for correct depth around players. `assets/generated/previews/whispering-woods-fu
 is a complete assembled review export.
 
 The expanded source layout is 3264×2176, with 68×48 world bounds: roughly twice
-the preceding expanded ground area. The portal and arrival coordinates stay unchanged.
+the preceding expanded ground area. The Woods portal and arrival sit near the map center; Elderwood keeps its original portal.
 Eight landmarks connect through the main trail network. Wolves occupy the northwest,
 spiders the southwest, boars the northeast and the Forest Bear the southeast.
 The normal habitats have identical 360×240 source-unit territory radii and six
 spawns each. Each spawn has a small dirt pocket and an explicit branch path;
 forest bands separate the wolf and spider areas instead of merging their clearings.
-There are nineteen enemies total, including one boss. Spawns stay at least 3.5
+There are twenty-eight enemies total: six core and three approach encounters per normal species, plus one boss. Spawns stay at least 3.5
 tiles apart and outside the portal sanctuary. The boss has a continuous stone
 boundary with one northern entrance. Shared wall collision blocks movement and
 sight through its sides and bottom. No doors lock players into the arena.
@@ -41,8 +41,16 @@ position using equipped weapon range and cancels on manual movement or Escape.
 and mobile, including server-confirmed melee damage. `tests/passive.integration.ts`
 checks ordinary-monster passivity and retaliation on the multiplayer server.
 
-`woodsHabitats`, `woodsEncounterSpawns` and `woodsSpawnTrails` define the balanced
+`woodsHabitats`, editable `woods-placement.json` and `woodsSpawnTrails` define the balanced
 habitat and pocket layout directly in source pixels. There is no incremental
 stretch transform. Monster world coordinates derive from those same pocket
 coordinates. `tests/woods-layout.test.ts` validates equal populations, pocket
 access trails, forest separation and the boss wall/entrance collision.
+
+Open `/map-editor.html` for draggable monster and portal placements. Export the
+JSON and replace `packages/game-data/src/woods-placement.json`; the editor does
+not publish edits. The Woods portal source position and arrival/sanctuary come
+from this same file through `portalFor(region)`. Painted plazas and ground trails
+need repainting after substantial layout edits; the editor does not paint terrain
+or alter boss walls. Editor/portal tests: `test:map-editor:browser` and
+`test:woods-portal:browser`.

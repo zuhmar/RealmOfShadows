@@ -1,4 +1,4 @@
-import {monsterSpawns} from '@realm/game-data';
+import {monsterSpawns,portalFor} from '@realm/game-data';
 const wolfSpawn=monsterSpawns.find(s=>s.id==='wolf-1')!;
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,7 +10,7 @@ test('auto attack waits for range and sight without moving, resumes, and stops',
  const sim=new CombatSimulation(),p={...newFighter(),region:'woods' as const,weapon:'sword' as const,x:29,y:20};
  assert.equal(sim.action('p',p,'bolt','wolf-1'),true);sim.tick(.05,[['p',p]]);assert.equal(p.auto,true);assert.equal(p.x,29);assert.equal(p.y,20);assert.equal(sim.wolves.get('wolf-1')!.hp,65);
  p.x=wolfSpawn.x-.8;p.y=wolfSpawn.y;sim.tick(.05,[['p',p]]);assert.ok(sim.wolves.get('wolf-1')!.hp<65);
- p.x=16.5;p.y=15.5;sim.tick(.05,[['p',p]]);assert.equal(p.auto,true);const hp=sim.wolves.get('wolf-1')!.hp;sim.tick(.05,[['p',p]]);assert.equal(sim.wolves.get('wolf-1')!.hp,hp);
+ p.x=portalFor('woods').arrival.x;p.y=portalFor('woods').arrival.y;sim.tick(.05,[['p',p]]);assert.equal(p.auto,true);const hp=sim.wolves.get('wolf-1')!.hp;sim.tick(.05,[['p',p]]);assert.equal(sim.wolves.get('wolf-1')!.hp,hp);
  assert.equal(sim.action('p',p,'stop',''),true);assert.equal(p.auto,false);
 });
 test('learning requires proximity, class, level and gold; repeated requests cannot charge twice',()=>{

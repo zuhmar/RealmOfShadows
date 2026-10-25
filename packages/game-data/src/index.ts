@@ -1,4 +1,4 @@
-import {woodsFootprintBlocked} from './woods';
+import {woodsFootprintBlocked,woodsPortal} from './woods';
 export * from './woods';
 import {elderwoodBlocked,elderwoodObjects} from './elderwood';
 export {elderwoodGround,elderwoodBlocked,elderwoodFootprintBlocked,elderwoodPositionBlocked,elderwoodTerrainGeometry,elderwoodMap,elderwoodObjects,type ElderwoodTerrain} from './elderwood';
@@ -22,7 +22,8 @@ export const regions = {
 export type RegionId=keyof typeof regions;
 export const PORTAL={x:16.5,y:13.5,radius:2.5,arrival:{x:16.5,y:15.5}};
 export function isRegion(value:unknown):value is RegionId{return typeof value==='string'&&Object.hasOwn(regions,value);}
-export function canTravel(position:{x:number;y:number},from:RegionId,to:unknown):to is RegionId{return isRegion(to)&&from!==to&&Math.hypot(position.x-PORTAL.x,position.y-PORTAL.y)<=PORTAL.radius;}
+export const portalFor=(region:RegionId)=>region==='woods'?woodsPortal:PORTAL;
+export function canTravel(position:{x:number;y:number},from:RegionId,to:unknown):to is RegionId{return isRegion(to)&&from!==to&&Math.hypot(position.x-portalFor(from).x,position.y-portalFor(from).y)<=portalFor(from).radius;}
 export {combat,wolfSpawns} from './combat';
 export {items,rewards,merchant,totalXp,levelForXp,type ItemId} from './economy';
 export * from './classes';

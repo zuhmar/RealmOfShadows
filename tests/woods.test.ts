@@ -1,7 +1,8 @@
+const PORTAL=portalFor('woods');
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {monsters,monsterSpawns,PORTAL,woodsObjects,woodsGeometry,woodsMap,woodsClearings,regionSize} from '@realm/game-data';
+import {monsters,monsterSpawns,portalFor,woodsObjects,woodsGeometry,woodsMap,woodsClearings,regionSize} from '@realm/game-data';
 import {CombatSimulation,newFighter,Economy,legal,pathfind} from '@realm/shared';
 import {woodsSvgFiles} from '../scripts/build-woods-svg';
 test('all four woods habitats connect to the portal and spawn on walkable land',()=>{
@@ -50,7 +51,7 @@ test('expanded woods supports distant exploration and retains town bounds',()=>{
 });
 
 test('expanded habitats have spaced populations outside the portal sanctuary',()=>{
- assert.deepEqual(Object.fromEntries(Object.keys(monsters).map(kind=>[kind,monsterSpawns.filter(s=>s.kind===kind).length])),{wolf:6,spider:6,boar:6,bear:1});
+ for(const kind of ['wolf','spider','boar'])assert.ok(monsterSpawns.filter(s=>s.kind===kind).length>=7);assert.equal(monsterSpawns.filter(s=>s.kind==='bear').length,1);
  for(let i=0;i<monsterSpawns.length;i++){const a=monsterSpawns[i];assert.ok(Math.hypot(a.x-PORTAL.x,a.y-PORTAL.y)>3.5,a.id);
  for(const b of monsterSpawns.slice(i+1))assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>=3.5,`${a.id} overlaps ${b.id}`);}
  const den=woodsClearings.find(c=>c.name==='Wolf den')!;assert.ok(den.rx>=300&&den.ry>=200);

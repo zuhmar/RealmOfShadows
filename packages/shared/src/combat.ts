@@ -1,4 +1,4 @@
-import {combat as C,monsters,monsterAggressive,monsterKind,monsterSpawns,type MonsterKind,PORTAL,weapons,weaponDamage,skillRules,spells,isSpell,canLearnSpell,skillLevel,type SpellAccess,type SpellId,type WeaponId,type SkillId,type RegionId,type Facing} from '@realm/game-data';
+import {combat as C,monsters,monsterAggressive,monsterKind,monsterSpawns,type MonsterKind,PORTAL,portalFor,weapons,weaponDamage,skillRules,spells,isSpell,canLearnSpell,skillLevel,type SpellAccess,type SpellId,type WeaponId,type SkillId,type RegionId,type Facing} from '@realm/game-data';
 import {legal,pathfind,type Point} from './index';
 export interface Fighter extends Point{armor:number;weapon:WeaponId;meleeXp:number;distanceXp:number;magicXp:number;region:RegionId;hp:number;mana:number;deadUntil:number;shotAt:number;spellAt:number;target:string;auto:boolean}
 // Retain the existing Wolf/wolves API and wire collection for compatibility;
@@ -15,7 +15,7 @@ export class CombatSimulation{
  spellCooldowns=new Map<string,Partial<Record<SpellId,number>>>();
  kills:Kill[]=[];time=0;serial=0;wolves=new Map<string,Wolf>();projectiles=new Map<string,Projectile>();events:CombatEvent[]=[];
  constructor(){for(const s of monsterSpawns)this.wolves.set(s.id,{...s,hp:monsters[s.kind].hp,mode:'idle',facing:'down',target:'',attackAt:0,respawnAt:0,spawnX:s.x,spawnY:s.y,windupUntil:0,aimX:s.x,aimY:s.y});}
- safe(p:Point){return distance(p,PORTAL)<C.portalSafeRadius;}
+ safe(p:Point & {region?:RegionId}){return distance(p,portalFor(p.region??'woods'))<C.portalSafeRadius;}
  clear(p:Fighter){p.target='';p.auto=false;}
  damage(w:Wolf,amount:number,attacker?:string){const stats=monsters[monsterKind(w.kind)];if(w.hp<=0||w.mode==='return')return;w.hp=Math.max(0,w.hp-amount);if(w.hp>0&&attacker){w.target=attacker;if(w.mode==='idle')w.mode='chase';}this.events.push({kind:'hit',region:'woods',x:w.x,y:w.y,damage:amount});if(!w.hp){if(attacker)this.kills.push({id:++this.serial,owner:attacker,kind:w.kind,x:w.x,y:w.y});w.mode='dead';w.target='';w.windupUntil=0;w.respawnAt=this.time+stats.respawn;this.events.push({kind:'death',region:'woods',x:w.x,y:w.y});}}
  action(id:string,p:Fighter,kind:unknown,target:unknown):boolean{

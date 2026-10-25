@@ -1,3 +1,4 @@
+import placements from './woods-placement.json';
 import {islandCollision,mapObject,rectangle,type IslandObject,type MapPolygon} from './island-layout';
 export const woodsMap={width:3264,height:2176,worldWidth:68,worldHeight:136/3,offsetY:4/3};
 export const woodsHabitats=[
@@ -7,26 +8,34 @@ export const woodsHabitats=[
  {kind:'bear',name:'Forest Bear arena',x:2600,y:1590,rx:360,ry:240},
 ] as const;
 export const woodsClearings=[
- {name:'Portal sanctuary',x:792,y:584,rx:180,ry:145},...woodsHabitats,
+ {name:'Portal sanctuary',x:placements.portal.x,y:placements.portal.y,rx:180,ry:145},...woodsHabitats,
  {name:'Overgrown lookout',x:1632,y:300,rx:150,ry:110},
  {name:'Ancient grove',x:1632,y:1850,rx:150,ry:110},
  {name:'Old crossroads',x:1632,y:800,rx:160,ry:115},
 ];
-const offsets=[[0,0],[-240,-80],[240,-80],[-240,100],[240,100],[0,-170]] as const;
-// Spawns and their painted access trails come from the same source coordinates.
-export const woodsEncounterSpawns=woodsHabitats.flatMap(h=>
- (h.kind==='bear'?[[0,0] as const]:offsets).map(([dx,dy],i)=>({id:`${h.kind}-${i+1}`,kind:h.kind,x:h.x+dx,y:h.y+dy})),
-);
+export const woodsPortal={x:placements.portal.x/48,y:placements.portal.y/48+woodsMap.offsetY,radius:2.5,arrival:{x:placements.portal.x/48,y:(placements.portal.y+96)/48+woodsMap.offsetY}};
+export type WoodsMonsterKind=typeof woodsHabitats[number]['kind'];
+export interface WoodsEncounter {id:string;kind:WoodsMonsterKind;x:number;y:number;area:'habitat'|'approach'}
+const seen=new Set<string>();
+export const woodsEncounterSpawns:WoodsEncounter[]=placements.spawns.map(s=>{
+ if(!s.id||seen.has(s.id)||!woodsHabitats.some(h=>h.kind===s.kind)||!Number.isFinite(s.x)||!Number.isFinite(s.y)||s.x<120||s.x>3140||s.y<70||s.y>2070)throw Error(`Invalid Woods placement: ${s.id}`);
+ seen.add(s.id);return {...s,kind:s.kind as WoodsMonsterKind,area:s.area==='approach'?'approach':'habitat'};
+});
 export const woodsTrails:readonly (readonly (readonly [number,number])[])[]=[
  [[792,584],[1050,800],[1632,800],[2150,800]],
  [[600,300],[1050,300],[1050,1590],[600,1590]],
  [[2600,300],[2150,300],[2150,800],[2600,1100],[2600,1590]],
- [[1632,800],[1632,300]],[[1050,1590],[1632,1850],[1990,1590],[2150,800]],
+ [[1632,800],[1632,300]],[[1632,800],[placements.portal.x,placements.portal.y],[1632,1850]],[[1050,1590],[1632,1850],[1990,1590],[2150,800]],
  [[100,510],[792,584]],[[3160,800],[2150,800]],
 ];
+const nearestRoad=(s:WoodsEncounter):[number,number]=>{
+ let best:[number,number]=[s.x,s.y],distance=Infinity;
+ for(const trail of woodsTrails)for(let i=1;i<trail.length;i++){const a=trail[i-1],b=trail[i],dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((s.x-a[0])*dx+(s.y-a[1])*dy)/(dx*dx+dy*dy))),p:[number,number]=[a[0]+dx*t,a[1]+dy*t],d=Math.hypot(p[0]-s.x,p[1]-s.y);if(d<distance){distance=d;best=p;}}
+ return best;
+};
 export const woodsSpawnTrails=woodsEncounterSpawns.filter(s=>s.kind!=='bear').map(s=>{
- const h=woodsHabitats.find(h=>h.kind===s.kind)!;
- return [[h.x,h.y],[s.x,s.y]] as const;
+ const h=woodsHabitats.find(h=>h.kind===s.kind)!,start=s.area==='approach'?nearestRoad(s):[h.x,h.y];
+ return [start,[s.x,s.y]] as readonly (readonly [number,number])[];
 }).filter(([a,b])=>a[0]!==b[0]||a[1]!==b[1]);
 export const woodsBossBoundary={left:2160,right:3040,top:1280,bottom:1920,thickness:36,gateLeft:2520,gateRight:2680};
 const wall=woodsBossBoundary;
@@ -56,7 +65,7 @@ for(const x of [2480,2700]){add('torch',x,1240,38,95,false);add('banner',x,1120,
 for(const [x,y]of [[2350,1750],[2790,1750]])add('bones',x,y,50,35,false);
 for(const [x,y]of [[1490,230],[1730,230],[1480,1880],[1750,1880]])add('ruin',x,y,48,95,false);
 for(const [x,y]of [[620,440],[940,440],[1450,710],[1770,710],[1100,1100],[2040,1100]])add('lamp',x,y,28,90,false);
-for(const [x,y]of [[950,650],[1200,810],[1960,810],[1800,1690]])add('sign',x,y,60,58,false);
-add('portal',700,420,184,164,false);
+for(const [x,y]of [[1030,590],[1200,810],[1960,810],[1800,1690]])add('sign',x,y,60,58,false);
+add('portal',placements.portal.x-92,placements.portal.y-164,184,164,false);
 const collision=islandCollision(woodsMap.width,woodsMap.height,woodsGeometry,woodsObjects);
 export function woodsFootprintBlocked(x:number,y:number,r=0){return collision(x*48,(y-woodsMap.offsetY)*48,r*48);}
