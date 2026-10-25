@@ -4,7 +4,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()));
  await page.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(k,...a){return ['webgl','webgl2','experimental-webgl'].includes(k)?null:get.call(this,k,...a)}});
  await page.route('**/matchmake/**',r=>r.abort());await page.goto(process.env.TEST_CLIENT_URL??'http://localhost:5173');await page.locator('#play-guest').click();await page.waitForFunction(()=>document.querySelector('#connection').textContent.includes('Local preview'));
- await page.locator('#interact').click();await page.locator('#destinations button').filter({has:page.locator('strong',{hasText:'Whispering Woods'})}).click();
+ await page.evaluate(async()=>{const {game}=await import(document.querySelector('script[src*="/src/main.ts"]').src);game.scene.scenes[0].interact();});await page.locator('#destinations button').filter({has:page.locator('strong',{hasText:'Whispering Woods'})}).click();
  const result=await page.evaluate(async()=>{
   const {game}=await import(document.querySelector('script[src*="/src/main.ts"]').src),s=game.scene.scenes[0];game.loop.sleep();const checks=[];
   try{for(const [id,kind]of [['wolf-1','wolf'],['spider-1','spider'],['boar-1','boar'],['bear-1','bear']]){

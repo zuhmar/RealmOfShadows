@@ -20,7 +20,7 @@ npm run build
 npm run test:integration
 ```
 
-WASD/arrows move; Shift sprints; right-click or tap a destination for A* navigation; Space or Interact examines a nearby landmark. Touch devices have a joystick and sprint button. The +/− buttons adjust camera zoom. Two tabs join a shared capacity-limited town. Reload after disconnecting.
+Click or tap the ground for A* walking. WASD/arrows remain available; Shift sprints. Click a trader or portal to approach an open interaction point and use it. The profile Settings tab contains sprint, camera zoom and control hints. Two tabs join a shared capacity-limited town. Reload after disconnecting.
 
 ## Architecture
 
@@ -53,7 +53,7 @@ Movement browser regression: with Vite and the game server running, run `npm run
 
 ## Village portal
 
-The Wayfarer Portal is in the middle of Elderwood square. Walk nearby and click/tap it, press Space, or use Interact. Choose Whispering Woods, Crystal Caverns, or Murkmire Swamp. Each destination has the same portal near arrival, with Elderwood available as a return destination. Close the picker with × or Escape.
+The Wayfarer Portal is in the middle of Elderwood square. Click/tap it to approach and open destinations. Choose Whispering Woods, Crystal Caverns, or Murkmire Swamp. Each region has a return portal. Close the picker with × or Escape.
 
 Travel works in local preview and multiplayer. Connected travel is validated by the server against the current player position and allowed destination IDs; arrivals and map collisions come from shared configuration. The client only renders players in its own region. Regions currently share the room's total 32-player capacity; this is not independent regional sharding. Region selection is temporary and resets to Elderwood on a fresh session. Both the client and server must be deployed together for the updated region state/message protocol.
 
@@ -61,7 +61,7 @@ The three destinations have distinct palettes and collision layouts. Whispering 
 
 ## Wolf combat
 
-Travel to Whispering Woods, leave the glowing portal sanctuary, and click/tap a wolf. Clicking enables repeating attacks with the equipped weapon when in range and sight; it does not chase. **1 / the weapon attack button** or **Space** also enables attacks. New characters know no spells. Learn shared **Spark** and **Mend**, or your class spell, from **Mara → Learn spells** using gold. Choose a learned spell in Actions and cast with **2 / Cast spell**; Mend needs no target. Class spells unlock at level 5: Knight **Cleave**, Archer **Power Shot**, Mage **Moon Nova**, Rogue **Shadow Strike**. Learning is explicit, including after choosing a class. **Escape / Stop** cancels attacks. The on-screen buttons support touch. Watch health and mana; defeated players return to Elderwood, and wolves respawn. No attack sprite sheet is needed: wolves use supplied idle/walk sheets, and player attacks use effects.
+Travel to Whispering Woods, leave the portal sanctuary, and click/tap a monster. The equipped weapon attacks automatically when in range and sight; it does not chase. New characters know no spells. Learn Spark, Mend or class spells from Mara → Learn spells using gold. Learned spell buttons appear above the bottom icons while a living monster is selected. Click a spell to cast, or press 2 for the selected spell. Class spells unlock at level 5: Knight Cleave, Archer Power Shot, Mage Moon Nova and Rogue Shadow Strike. Click the ground or press Escape to clear the target and stop attacks. Potion and nearby loot remain on the bottom bar. Defeated players return to Elderwood; monsters respawn.
 
 See `docs/COMBAT.md` for authority, lifecycle, balance configuration, tests and limits. Run `npm test`, then (with services running) `npm run test:integration` and `npm run test:browser` sequentially. Browser combat checks use the Canvas renderer to avoid software-WebGL stalls in headless CI. Real device and production deployment checks remain separate.
 
@@ -73,7 +73,7 @@ All connected rewards and transactions are server-controlled. **Signed-in charac
 
 ## Compact HUD
 
-A compact top-left profile button shows the player sprite, level, health, mana and EXP bars. Click/tap it to open the detailed character popup with a larger sprite, vitals, gold, stamina, equipment, skills and class choice. Area info has been removed; the smaller world title stays below the profile, and connection status appears inside the character popup. **Actions** opens spell, potion and loot buttons, and opens automatically when selecting a wolf. **Controls** contains sprint, zoom and control hints. Actions and Controls open one at a time and collapse after portal travel. **Bag** and **Interact** remain on the small bottom bar; existing keyboard shortcuts still work. Notices fade after a few seconds. Panels support click/tap and native keyboard toggling.
+A compact top-left profile button shows the player sprite, level, health, mana and EXP. Its popup has Character and Settings tabs. Character contains vitals, gold, equipment, skills, class choice and account status. Settings contains appearance, sprint, zoom and control hints. The bottom bar contains a generated bag sprite button, potion and loot. Learned spells appear above it only when a living monster is selected. There is no joystick, Actions drawer or Interact button. World interactions are clickable; keyboard shortcuts remain available. Notices fade after a few seconds.
 
 ## Citizen and class progression
 
@@ -85,7 +85,7 @@ Elderwood now uses the complete layout from the latest `assets/maps/elderwood/Re
 
 ## Elderwood portal artwork
 
-Elderwood's portal uses `assets/maps/elderwood/svg/portal.svg`, with a separate pulsing ground glow and its existing interaction zone. Click/tap it or use Interact/Space in range to travel. The original portal PNGs are retained; other regions keep their existing portals.
+Elderwood's portal uses the generated village PNG atlas, with a separate pulsing ground glow and interaction zone. Click/tap it to approach and travel. Original portal PNGs and legacy SVG sources are retained.
 
 ## Mara artwork
 

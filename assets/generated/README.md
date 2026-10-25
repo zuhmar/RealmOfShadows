@@ -9,6 +9,7 @@ are preserved in their existing folders.
 - `buildings.png`: seven Elderwood buildings.
 - `village.png`: nineteen village props, plants, stalls, gates and portal.
 - `forest.png`: twenty-two Whispering Woods props, plants, ruins and portal.
+- `bag-icon.png`: standalone transparent satchel sprite for the bottom inventory button.
 - `items.png`: fifteen equipment, weapon, material and potion icons.
 - `character.png`: twenty-three coordinated body/clothing pieces, including capes and real
   side-view torsos, tunics and boots; a shoulder crop supports correct side layering.

@@ -3,7 +3,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  const page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(k,...a){return ['webgl','webgl2','experimental-webgl'].includes(k)?null:get.call(this,k,...a)}});
  await page.route('**/matchmake/**',r=>r.abort());await page.goto(process.env.TEST_CLIENT_URL??'http://localhost:5173');await page.locator('#play-guest').click();await page.waitForFunction(()=>document.querySelector('#connection').textContent.includes('Local preview'));
- await page.locator('#interact').click();await page.locator('#destinations button').filter({has:page.locator('strong',{hasText:'Whispering Woods'})}).click();
+ await page.evaluate(async()=>{const {game}=await import(document.querySelector('script[src*="/src/main.ts"]').src);game.scene.scenes[0].interact();});await page.locator('#destinations button').filter({has:page.locator('strong',{hasText:'Whispering Woods'})}).click();
  const result=await page.evaluate(async()=>{const {game}=await import(document.querySelector('script[src*="/src/main.ts"]').src),s=game.scene.scenes[0],data=await import('/@fs/workspace/RealmOfShadows/packages/game-data/src/index.ts'),{pathfind}=await import('/@fs/workspace/RealmOfShadows/packages/shared/src/index.ts');
  const bounds={width:s.cameras.main.getBounds().width,height:s.cameras.main.getBounds().height},routes=[];game.loop.sleep();s.sim.wolves.clear();
  try{for(const c of data.woodsClearings){const target={x:c.x/48,y:c.y/48+data.woodsMap.offsetY};s.route=pathfind(s.local,target,'woods');const initial=s.route.length;
