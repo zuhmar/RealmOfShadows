@@ -1,5 +1,5 @@
 import {islandCollision,mapObject,rectangle,type IslandObject,type MapPolygon} from './island-layout';
-export const woodsMap={width:2304,height:1536,worldWidth:48,worldHeight:32,offsetY:4/3};
+export const woodsMap={width:3264,height:2176,worldWidth:68,worldHeight:136/3,offsetY:4/3};
 // Ground guide, foliage exclusion and navigation landmarks share these coordinates.
 export const woodsClearings=[
  {name:'Portal sanctuary',x:792,y:584,rx:180,ry:145},
@@ -11,7 +11,7 @@ export const woodsClearings=[
  {name:'Ancient grove',x:500,y:1210,rx:165,ry:130},
  {name:'Old crossroads',x:1200,y:1000,rx:140,ry:110},
 ];
-export const woodsTrails:readonly (readonly (readonly [number,number])[])[]=[
+export let woodsTrails:readonly (readonly (readonly [number,number])[])[]=[
  [[792,584],[768,215]],[[792,584],[330,584],[330,430]],
  [[792,584],[1200,584],[1500,450],[1810,290]],
  [[1200,584],[1540,720],[1870,900]],
@@ -48,5 +48,11 @@ for(const [x,y]of [[615,365],[930,365]])add('banner',x,y,38,125);
 add('den',718,36,120,95);add('cart',2010,760,85,80);
 for(const [x,y]of [[985,505],[555,505],[1280,625],[1100,1050],[1660,930]])add('sign',x,y,60,58);
 add('portal',700,420,184,164,false);
+// Keep the established portal fixed while opening up the eastern/southern forest.
+export function expandWoodsPoint(x:number,y:number):[number,number]{return [x<=792?x:792+(x-792)*(3264-792)/(2304-792),y<=584?y:584+(y-584)*(2176-584)/(1536-584)];}
+for(const c of woodsClearings){const [x,y]=expandWoodsPoint(c.x,c.y),[right,bottom]=expandWoodsPoint(c.x+c.rx,c.y+c.ry),[left,top]=expandWoodsPoint(c.x-c.rx,c.y-c.ry);Object.assign(c,{x,y,rx:(right-left)/2,ry:(bottom-top)/2});}
+woodsTrails=woodsTrails.map(trail=>trail.map(([x,y])=>expandWoodsPoint(x,y)));
+for(const key of ['rivers','cliffs','bridges'] as const)woodsGeometry[key]=woodsGeometry[key].map(poly=>poly.map(([x,y])=>expandWoodsPoint(x,y)));
+for(const object of woodsObjects){const [x,y]=expandWoodsPoint(object.x,object.y),dx=x-object.x,dy=y-object.y;object.x=x;object.y=y;object.footY+=dy;object.collision=object.collision.map(([px,py])=>[px+dx,py+dy]);}
 const collision=islandCollision(woodsMap.width,woodsMap.height,woodsGeometry,woodsObjects);
 export function woodsFootprintBlocked(x:number,y:number,r=0){return collision(x*48,(y-woodsMap.offsetY)*48,r*48);}

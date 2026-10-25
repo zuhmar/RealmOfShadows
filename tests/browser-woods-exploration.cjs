@@ -9,7 +9,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  try{for(const c of data.woodsClearings){const target={x:c.x/48,y:c.y/48+data.woodsMap.offsetY};s.route=pathfind(s.local,target,'woods');const initial=s.route.length;
  for(let i=0;i<1000&&s.route.length;i++)s.update(i*100,100);
  routes.push({name:c.name,initial,remaining:s.route.length,distance:Math.hypot(s.local.x-target.x,s.local.y-target.y),x:s.local.x,y:s.local.y});}}finally{game.loop.wake();}return {bounds,routes};});
- assert.deepEqual(result.bounds,{width:3072,height:2304});for(const r of result.routes){assert.ok(r.initial>0,r.name);assert.equal(r.remaining,0,r.name);assert.ok(r.distance<.5,JSON.stringify(r));}
+ assert.deepEqual(result.bounds,{width:4352,height:3072});for(const r of result.routes){assert.ok(r.initial>0,r.name);assert.equal(r.remaining,0,r.name);assert.ok(r.distance<.5,JSON.stringify(r));}
  assert.ok(result.routes.some(r=>r.x>32));assert.ok(result.routes.some(r=>r.y>24));assert.deepEqual(errors,[]);
  console.log('PASS expanded woods: region camera bounds, fixed-tick walking to all eight clearings, routes beyond former east/south limits, no runtime errors');
  }finally{await browser.close()}})();

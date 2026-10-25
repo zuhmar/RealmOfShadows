@@ -1,4 +1,4 @@
-import {combat as C,monsters,monsterKind,monsterSpawns,type MonsterKind,PORTAL,weapons,weaponDamage,skillRules,spells,isSpell,canLearnSpell,skillLevel,type SpellAccess,type SpellId,type WeaponId,type SkillId,type RegionId,type Facing} from '@realm/game-data';
+import {combat as C,monsters,monsterAggressive,monsterKind,monsterSpawns,type MonsterKind,PORTAL,weapons,weaponDamage,skillRules,spells,isSpell,canLearnSpell,skillLevel,type SpellAccess,type SpellId,type WeaponId,type SkillId,type RegionId,type Facing} from '@realm/game-data';
 import {legal,pathfind,type Point} from './index';
 export interface Fighter extends Point{armor:number;weapon:WeaponId;meleeXp:number;distanceXp:number;magicXp:number;region:RegionId;hp:number;mana:number;deadUntil:number;shotAt:number;spellAt:number;target:string;auto:boolean}
 // Retain the existing Wolf/wolves API and wire collection for compatibility;
@@ -54,7 +54,7 @@ export class CombatSimulation{
  const spawn={x:w.spawnX,y:w.spawnY};let victim=actors.get(w.target);
  if(distance(w,spawn)>stats.leash||(w.target&&(!victim||victim.hp<=0||victim.region!=='woods'||this.safe(victim)||distance(victim,spawn)>stats.leash))) {w.mode='return';w.target='';w.windupUntil=0;victim=undefined;}
  if(w.mode==='return'){if(distance(w,spawn)<.15){w.x=spawn.x;w.y=spawn.y;w.hp=stats.hp;w.mode='idle';}else this.step(w,spawn,dt);continue;}
- if(!victim){let best:number=stats.detect;for(const [id,p] of actors){const d=distance(w,p);if(p.hp>0&&p.region==='woods'&&!this.safe(p)&&d<best&&sight(w,p)){best=d;w.target=id;victim=p;}}}
+ if(!victim&&monsterAggressive(monsterKind(w.kind))){let best:number=stats.detect;for(const [id,p] of actors){const d=distance(w,p);if(p.hp>0&&p.region==='woods'&&!this.safe(p)&&d<best&&sight(w,p)){best=d;w.target=id;victim=p;}}}
  if(victim){
  const range=w.kind==='spider'?3.2:w.kind==='boar'?3:stats.range;
  if(w.windupUntil){

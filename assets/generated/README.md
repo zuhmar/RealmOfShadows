@@ -65,8 +65,8 @@ The shared visual rules and canonical reference are documented in
 `assets/ART_DIRECTION.md`. Review `previews/character-turnaround.png` alongside the
 complete maps when extending the art set.
 
-Whispering Woods now uses a 2304×1536 source layout (48×36 world bounds),
-2.25 times its previous ground area. Its generated ground is painted from the
+Whispering Woods now uses a 3264×2176 source layout (68×48 world bounds),
+roughly twice the preceding expanded ground area. Its generated ground is painted from the
 shared trail/clearing guide, with the portal retained at its original coordinates.
 See `packages/game-data/src/woods.ts` for all eight clearings, trails, shoreline
 collision and prop placement. Both client and server must deploy this expansion.

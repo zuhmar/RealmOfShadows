@@ -33,3 +33,7 @@ export function pathfind(start:Point,end:Point,region:RegionId='elderwood'):Poin
 }
 export {CombatSimulation,newFighter,type Fighter,type Wolf,type CombatEvent} from './combat';
 export {Economy,type EconomySnapshot,type Drop} from './economy';
+
+export {attackPath} from './attack-path';
+
+export {sight} from "./combat";
