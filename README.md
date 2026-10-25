@@ -188,3 +188,12 @@ map previews. The previous SVG files/generators remain as source references;
 they are no longer loaded by the client. All map geometry, collisions, gear
 layering, monster mechanics and saved progress retain their existing behavior.
 This art update requires a Vercel client deployment; no server update is needed.
+
+
+The coordinated blue-cape character/style pass is documented in
+`assets/ART_DIRECTION.md`. The live adventurer now uses connected joint overlaps,
+a fitted cape, proper side-view clothing and boots, and fitted hooded heads.
+All generated world/item/monster sheets reference the same hero model, palette,
+outline/shading treatment and light direction. Uploaded classic sprites remain
+preserved. `npm run test:character-style:browser` checks the equipped/base
+turnarounds, neck continuity, native facing directions and cape layering.

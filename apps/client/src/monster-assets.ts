@@ -1,7 +1,7 @@
 import generatedUrl from '../../../assets/monsters/generated/whispering-woods-monsters.png?url';
-// Keep the generated PNG intact. Phaser extracts each alpha-padded region at runtime.
+// Three isolated painted poses share the hero's style guide; source PNG stays intact.
 export const generatedMonsters={key:'woods-monster-png',url:generatedUrl,frames:{
- spider:{x:30,y:204,w:690,h:467,width:120},
- boar:{x:787,y:168,w:514,h:499,width:108},
- bear:{x:1398,y:0,w:741,h:714,width:178}
+ spider:{x:20,y:190,w:683,h:468,width:120},
+ boar:{x:748,y:163,w:546,h:502,width:108},
+ bear:{x:1363,y:7,w:786,h:700,width:178},
 }};

@@ -24,7 +24,8 @@
     "art:woods": "tsx scripts/build-woods-svg.ts",
     "art:monsters": "tsx scripts/build-monsters-svg.ts",
     "test:woods:browser": "node tests/browser-woods.cjs",
-    "test:generated-art:browser": "node tests/browser-generated-art.cjs"
+    "test:generated-art:browser": "node tests/browser-generated-art.cjs",
+    "test:character-style:browser": "node tests/browser-character-style.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

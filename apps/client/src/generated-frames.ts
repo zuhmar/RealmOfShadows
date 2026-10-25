@@ -1,13 +1,13 @@
-// Original logical canvases and alpha placements preserve existing rig/collision alignment.
+// Logical canvases and attachment offsets for the cohesive blue-cape art set.
 export interface GeneratedFrame {source:number[];size:number[];placement:number[]}
 export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
   "buildings": {
     "elderwood-tavern": {
       "source": [
-        31,
-        57,
-        385,
-        358
+        25,
+        47,
+        396,
+        373
       ],
       "size": [
         240,
@@ -22,10 +22,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-blacksmith": {
       "source": [
-        472,
-        58,
-        386,
-        351
+        467,
+        47,
+        396,
+        368
       ],
       "size": [
         240,
@@ -40,10 +40,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-apothecary": {
       "source": [
-        918,
-        57,
-        384,
-        357
+        912,
+        47,
+        395,
+        372
       ],
       "size": [
         240,
@@ -58,10 +58,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-general-store": {
       "source": [
-        1356,
-        56,
-        393,
-        359
+        1354,
+        47,
+        398,
+        373
       ],
       "size": [
         240,
@@ -76,10 +76,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-workshop": {
       "source": [
-        30,
-        485,
-        382,
-        362
+        25,
+        479,
+        394,
+        371
       ],
       "size": [
         240,
@@ -94,10 +94,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-hall": {
       "source": [
-        474,
-        487,
-        383,
-        361
+        468,
+        478,
+        394,
+        373
       ],
       "size": [
         240,
@@ -112,10 +112,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-bank": {
       "source": [
-        918,
-        486,
-        385,
-        362
+        912,
+        478,
+        395,
+        373
       ],
       "size": [
         240,
@@ -132,10 +132,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
   "village": {
     "elderwood-oak": {
       "source": [
-        32,
-        29,
-        232,
-        244
+        28,
+        21,
+        267,
+        284
       ],
       "size": [
         72,
@@ -150,10 +150,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-pine": {
       "source": [
-        324,
-        19,
-        199,
-        259
+        316,
+        15,
+        232,
+        295
       ],
       "size": [
         72,
@@ -168,10 +168,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-boulder": {
       "source": [
-        590,
-        56,
-        218,
-        211
+        569,
+        92,
+        250,
+        214
       ],
       "size": [
         48,
@@ -186,10 +186,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-stall-red": {
       "source": [
-        862,
-        55,
-        233,
-        213
+        849,
+        76,
+        241,
+        222
       ],
       "size": [
         86,
@@ -204,10 +204,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-stall-blue": {
       "source": [
-        1145,
-        54,
-        233,
-        214
+        1118,
+        76,
+        246,
+        222
       ],
       "size": [
         86,
@@ -222,10 +222,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-stall-green": {
       "source": [
-        30,
-        327,
-        235,
-        216
+        28,
+        338,
+        255,
+        225
       ],
       "size": [
         86,
@@ -240,10 +240,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-barrel": {
       "source": [
-        327,
-        306,
-        196,
-        237
+        325,
+        342,
+        203,
+        233
       ],
       "size": [
         28,
@@ -258,10 +258,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-planter": {
       "source": [
-        597,
-        325,
-        209,
-        212
+        581,
+        353,
+        225,
+        219
       ],
       "size": [
         32,
@@ -276,10 +276,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-bench": {
       "source": [
-        862,
-        393,
-        231,
-        100
+        841,
+        415,
+        271,
+        124
       ],
       "size": [
         90,
@@ -294,10 +294,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-lamp": {
       "source": [
-        1227,
-        306,
-        70,
-        237
+        1198,
+        313,
+        100,
+        264
       ],
       "size": [
         24,
@@ -312,9 +312,9 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-banner": {
       "source": [
-        99,
-        586,
-        91,
+        98,
+        591,
+        110,
         234
       ],
       "size": [
@@ -330,10 +330,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-gate-pier": {
       "source": [
-        362,
-        581,
-        124,
-        239
+        345,
+        583,
+        152,
+        253
       ],
       "size": [
         40,
@@ -348,10 +348,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-gate": {
       "source": [
-        590,
+        566,
         636,
-        224,
-        145
+        255,
+        161
       ],
       "size": [
         210,
@@ -366,10 +366,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-gate-side": {
       "source": [
-        964,
-        598,
-        56,
-        206
+        925,
+        599,
+        77,
+        224
       ],
       "size": [
         80,
@@ -384,10 +384,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-fence-h": {
       "source": [
-        1138,
-        668,
-        250,
-        82
+        1099,
+        673,
+        290,
+        99
       ],
       "size": [
         120,
@@ -402,10 +402,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-fence-v": {
       "source": [
-        109,
-        858,
-        55,
-        245
+        114,
+        846,
+        65,
+        254
       ],
       "size": [
         22,
@@ -420,10 +420,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-crops": {
       "source": [
-        289,
-        918,
-        260,
-        146
+        267,
+        905,
+        296,
+        165
       ],
       "size": [
         80,
@@ -438,10 +438,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-dummy": {
       "source": [
-        617,
-        850,
-        167,
-        248
+        595,
+        837,
+        193,
+        255
       ],
       "size": [
         30,
@@ -456,10 +456,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "elderwood-portal": {
       "source": [
-        862,
-        847,
-        239,
-        251
+        841,
+        835,
+        269,
+        265
       ],
       "size": [
         200,
@@ -476,10 +476,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
   "forest": {
     "woods-oak": {
       "source": [
-        5,
-        3,
-        275,
-        270
+        7,
+        6,
+        276,
+        279
       ],
       "size": [
         105,
@@ -494,10 +494,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-pine": {
       "source": [
-        288,
-        8,
-        208,
-        264
+        275,
+        7,
+        230,
+        283
       ],
       "size": [
         96,
@@ -512,10 +512,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-ancient": {
       "source": [
-        514,
-        8,
-        263,
-        261
+        500,
+        12,
+        280,
+        273
       ],
       "size": [
         105,
@@ -530,10 +530,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-boulder": {
       "source": [
-        776,
-        41,
-        249,
-        218
+        771,
+        52,
+        251,
+        230
       ],
       "size": [
         80,
@@ -548,10 +548,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-log": {
       "source": [
-        1035,
-        69,
-        243,
-        181
+        1032,
+        84,
+        251,
+        197
       ],
       "size": [
         110,
@@ -566,10 +566,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-stump": {
       "source": [
-        1296,
-        70,
-        230,
-        184
+        1292,
+        88,
+        240,
+        193
       ],
       "size": [
         52,
@@ -584,10 +584,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-web": {
       "source": [
-        18,
-        286,
-        244,
-        221
+        8,
+        288,
+        265,
+        228
       ],
       "size": [
         100,
@@ -602,10 +602,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-egg-nest": {
       "source": [
-        280,
-        336,
-        241,
-        159
+        278,
+        341,
+        243,
+        166
       ],
       "size": [
         72,
@@ -620,10 +620,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-mushrooms": {
       "source": [
-        545,
-        294,
-        210,
-        198
+        535,
+        295,
+        221,
+        210
       ],
       "size": [
         40,
@@ -638,9 +638,9 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-fern": {
       "source": [
-        774,
-        272,
-        246,
+        766,
+        286,
+        276,
         243
       ],
       "size": [
@@ -656,10 +656,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-flowers": {
       "source": [
-        1059,
-        348,
-        196,
-        150
+        1052,
+        338,
+        223,
+        174
       ],
       "size": [
         42,
@@ -674,10 +674,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-bones": {
       "source": [
-        1304,
-        310,
-        217,
-        181
+        1299,
+        319,
+        227,
+        183
       ],
       "size": [
         60,
@@ -692,10 +692,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-ruin": {
       "source": [
-        43,
-        516,
-        185,
-        239
+        21,
+        506,
+        227,
+        259
       ],
       "size": [
         60,
@@ -710,10 +710,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-torch": {
       "source": [
-        320,
+        313,
         512,
-        125,
-        243
+        147,
+        249
       ],
       "size": [
         44,
@@ -728,10 +728,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-banner": {
       "source": [
-        586,
-        505,
-        107,
-        249
+        579,
+        506,
+        119,
+        250
       ],
       "size": [
         40,
@@ -746,10 +746,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-fence": {
       "source": [
-        753,
-        593,
-        276,
-        150
+        742,
+        595,
+        296,
+        163
       ],
       "size": [
         110,
@@ -764,10 +764,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-sign": {
       "source": [
-        1058,
-        530,
-        208,
-        225
+        1052,
+        537,
+        218,
+        228
       ],
       "size": [
         85,
@@ -782,10 +782,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-cart": {
       "source": [
-        1295,
-        539,
-        226,
-        212
+        1291,
+        540,
+        235,
+        215
       ],
       "size": [
         95,
@@ -801,9 +801,9 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     "woods-den": {
       "source": [
         4,
-        786,
-        264,
-        214
+        768,
+        275,
+        234
       ],
       "size": [
         130,
@@ -818,10 +818,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-portal": {
       "source": [
-        268,
-        776,
-        259,
-        232
+        276,
+        767,
+        277,
+        241
       ],
       "size": [
         192,
@@ -836,10 +836,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-lamp": {
       "source": [
-        606,
-        756,
-        73,
-        258
+        601,
+        747,
+        91,
+        266
       ],
       "size": [
         24,
@@ -854,10 +854,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "woods-gate-pier": {
       "source": [
-        819,
-        774,
-        140,
-        240
+        813,
+        762,
+        151,
+        251
       ],
       "size": [
         40,
@@ -874,10 +874,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
   "items": {
     "doll-item-sword": {
       "source": [
-        44,
-        32,
-        253,
-        280
+        43,
+        30,
+        256,
+        279
       ],
       "size": [
         64,
@@ -892,10 +892,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-item-knightSword": {
       "source": [
-        376,
-        18,
-        264,
-        294
+        377,
+        16,
+        266,
+        293
       ],
       "size": [
         64,
@@ -910,10 +910,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-item-dagger": {
       "source": [
-        723,
-        65,
-        195,
-        241
+        722,
+        67,
+        197,
+        239
       ],
       "size": [
         64,
@@ -928,10 +928,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-item-rogueDaggers": {
       "source": [
-        1019,
-        63,
-        266,
-        238
+        1011,
+        64,
+        276,
+        243
       ],
       "size": [
         64,
@@ -946,10 +946,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-item-wand": {
       "source": [
-        1371,
+        1369,
         47,
-        205,
-        256
+        206,
+        255
       ],
       "size": [
         64,
@@ -964,10 +964,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-item-mageStaff": {
       "source": [
-        47,
-        331,
-        259,
-        301
+        41,
+        328,
+        260,
+        304
       ],
       "size": [
         64,
@@ -983,9 +983,9 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     "doll-item-bow": {
       "source": [
         381,
-        357,
-        254,
-        277
+        353,
+        256,
+        281
       ],
       "size": [
         64,
@@ -1000,10 +1000,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-item-archerBow": {
       "source": [
-        711,
-        353,
-        269,
-        288
+        704,
+        348,
+        274,
+        294
       ],
       "size": [
         64,
@@ -1018,10 +1018,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-item-woodenShield": {
       "source": [
-        1056,
-        366,
-        223,
-        262
+        1047,
+        358,
+        235,
+        273
       ],
       "size": [
         64,
@@ -1036,10 +1036,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-item-clothHood": {
       "source": [
-        1355,
-        362,
-        225,
-        275
+        1351,
+        357,
+        235,
+        282
       ],
       "size": [
         64,
@@ -1054,10 +1054,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-item-clothTunic": {
       "source": [
-        32,
-        671,
-        298,
-        263
+        30,
+        662,
+        306,
+        271
       ],
       "size": [
         64,
@@ -1072,10 +1072,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-item-clothTrousers": {
       "source": [
-        382,
-        670,
-        246,
-        262
+        375,
+        664,
+        264,
+        265
       ],
       "size": [
         64,
@@ -1090,10 +1090,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-item-leatherBoots": {
       "source": [
-        694,
-        681,
-        285,
-        257
+        683,
+        677,
+        306,
+        259
       ],
       "size": [
         64,
@@ -1108,10 +1108,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-item-pelt": {
       "source": [
-        1032,
-        679,
-        264,
-        260
+        1024,
+        671,
+        282,
+        270
       ],
       "size": [
         64,
@@ -1126,10 +1126,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-item-potion": {
       "source": [
-        1364,
-        669,
-        201,
-        265
+        1366,
+        663,
+        204,
+        272
       ],
       "size": [
         64,
@@ -1146,10 +1146,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
   "character": {
     "doll-head-front": {
       "source": [
-        25,
-        16,
-        268,
-        280
+        2,
+        48,
+        258,
+        235
       ],
       "size": [
         64,
@@ -1164,10 +1164,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-head-side": {
       "source": [
-        344,
-        22,
-        278,
-        273
+        258,
+        39,
+        260,
+        241
       ],
       "size": [
         64,
@@ -1182,10 +1182,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-head-back": {
       "source": [
-        665,
-        22,
-        269,
-        273
+        518,
+        46,
+        254,
+        234
       ],
       "size": [
         64,
@@ -1200,10 +1200,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-hood-front": {
       "source": [
-        974,
-        33,
-        255,
-        276
+        791,
+        44,
+        239,
+        257
       ],
       "size": [
         64,
@@ -1218,10 +1218,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-hood-side": {
       "source": [
-        43,
-        344,
-        244,
-        265
+        1055,
+        54,
+        219,
+        244
       ],
       "size": [
         64,
@@ -1236,10 +1236,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-hood-back": {
       "source": [
-        348,
-        344,
-        256,
-        260
+        14,
+        302,
+        224,
+        239
       ],
       "size": [
         64,
@@ -1254,10 +1254,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-torso-front": {
       "source": [
-        670,
-        355,
-        241,
-        251
+        275,
+        331,
+        231,
+        200
       ],
       "size": [
         44,
@@ -1270,12 +1270,30 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
         45
       ]
     },
+    "doll-torso-side": {
+      "size": [
+        44,
+        46
+      ],
+      "placement": [
+        6,
+        0,
+        32,
+        46
+      ],
+      "source": [
+        586,
+        334,
+        135,
+        200
+      ]
+    },
     "doll-torso-back": {
       "source": [
-        976,
-        355,
-        245,
-        251
+        787,
+        331,
+        222,
+        198
       ],
       "size": [
         44,
@@ -1290,10 +1308,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-tunic-front": {
       "source": [
-        45,
-        649,
-        250,
-        267
+        1072,
+        331,
+        183,
+        210
       ],
       "size": [
         44,
@@ -1306,12 +1324,30 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
         46
       ]
     },
+    "doll-tunic-side": {
+      "size": [
+        44,
+        46
+      ],
+      "placement": [
+        6,
+        0,
+        32,
+        46
+      ],
+      "source": [
+        53,
+        562,
+        148,
+        209
+      ]
+    },
     "doll-tunic-back": {
       "source": [
-        360,
-        651,
-        247,
-        266
+        299,
+        558,
+        184,
+        210
       ],
       "size": [
         44,
@@ -1326,10 +1362,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-arm": {
       "source": [
-        733,
-        651,
-        113,
-        273
+        599,
+        554,
+        93,
+        228
       ],
       "size": [
         18,
@@ -1344,10 +1380,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-sleeve": {
       "source": [
-        1038,
-        650,
-        135,
-        187
+        836,
+        583,
+        121,
+        132
       ],
       "size": [
         18,
@@ -1362,10 +1398,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-leg": {
       "source": [
-        96,
-        939,
-        128,
-        287
+        1113,
+        562,
+        108,
+        229
       ],
       "size": [
         20,
@@ -1380,10 +1416,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-trousers": {
       "source": [
-        406,
-        942,
-        126,
-        265
+        78,
+        791,
+        103,
+        164
       ],
       "size": [
         20,
@@ -1398,10 +1434,46 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-boots": {
       "source": [
-        692,
-        975,
-        270,
-        246
+        324,
+        805,
+        113,
+        144
+      ],
+      "size": [
+        22,
+        19
+      ],
+      "placement": [
+        0,
+        0,
+        22,
+        19
+      ]
+    },
+    "doll-boots-side": {
+      "source": [
+        576,
+        812,
+        165,
+        135
+      ],
+      "size": [
+        22,
+        19
+      ],
+      "placement": [
+        0,
+        0,
+        22,
+        19
+      ]
+    },
+    "doll-boots-back": {
+      "source": [
+        852,
+        804,
+        110,
+        145
       ],
       "size": [
         22,
@@ -1416,10 +1488,10 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
     },
     "doll-neck": {
       "source": [
-        1016,
-        1009,
-        167,
-        165
+        1120,
+        846,
+        92,
+        84
       ],
       "size": [
         14,
@@ -1430,6 +1502,134 @@ export const generatedFrames:Record<string,Record<string,GeneratedFrame>>={
         0,
         14,
         16
+      ]
+    },
+    "doll-cape-front": {
+      "size": [
+        60,
+        84
+      ],
+      "placement": [
+        0,
+        0,
+        60,
+        84
+      ],
+      "source": [
+        13,
+        968,
+        254,
+        230
+      ]
+    },
+    "doll-cape-side": {
+      "size": [
+        60,
+        84
+      ],
+      "placement": [
+        0,
+        0,
+        60,
+        84
+      ],
+      "source": [
+        313,
+        967,
+        206,
+        231
+      ]
+    },
+    "doll-cape-back": {
+      "size": [
+        60,
+        84
+      ],
+      "placement": [
+        0,
+        0,
+        60,
+        84
+      ],
+      "source": [
+        529,
+        968,
+        277,
+        224
+      ]
+    },
+    "doll-side-shoulder": {
+      "source": [
+        599,
+        554,
+        93,
+        91
+      ],
+      "size": [
+        18,
+        19
+      ],
+      "placement": [
+        1,
+        0,
+        16,
+        19
+      ]
+    }
+  },
+  "hooded": {
+    "doll-hooded-front": {
+      "source": [
+        131,
+        48,
+        598,
+        604
+      ],
+      "size": [
+        64,
+        64
+      ],
+      "placement": [
+        0,
+        0,
+        64,
+        64
+      ]
+    },
+    "doll-hooded-back": {
+      "source": [
+        1491,
+        48,
+        572,
+        604
+      ],
+      "size": [
+        64,
+        64
+      ],
+      "placement": [
+        0,
+        0,
+        64,
+        64
+      ]
+    },
+    "doll-hooded-side": {
+      "source": [
+        836,
+        67,
+        575,
+        581
+      ],
+      "size": [
+        64,
+        64
+      ],
+      "placement": [
+        0,
+        0,
+        64,
+        64
       ]
     }
   }

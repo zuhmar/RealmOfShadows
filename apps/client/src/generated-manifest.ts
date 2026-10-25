@@ -5,6 +5,7 @@ import villageUrl from '../../../assets/generated/village.png?url';
 import forestUrl from '../../../assets/generated/forest.png?url';
 import itemsUrl from '../../../assets/generated/items.png?url';
 import characterUrl from '../../../assets/generated/character.png?url';
+import hoodedUrl from '../../../assets/generated/hooded.png?url';
 export interface GeneratedSheet {key:string;url:string;scale:number;frames:Record<string,GeneratedFrame>}
 export const generatedSheets:GeneratedSheet[]=[
  {key:'generated-buildings',url:buildingsUrl,scale:2,frames:generatedFrames.buildings},
@@ -12,4 +13,5 @@ export const generatedSheets:GeneratedSheet[]=[
  {key:'generated-forest',url:forestUrl,scale:2,frames:generatedFrames.forest},
  {key:'generated-items',url:itemsUrl,scale:1,frames:generatedFrames.items},
  {key:'generated-character',url:characterUrl,scale:1,frames:generatedFrames.character},
+ {key:'generated-hooded',url:hoodedUrl,scale:1,frames:generatedFrames.hooded},
 ];
