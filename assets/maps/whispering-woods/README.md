@@ -1,7 +1,9 @@
 # Whispering Woods
 
 `Reference(1).png` is the original supplied layout and remains unchanged.
-The playable map uses the generated `svg/` assets. `svg/full-map.svg` is a
+The playable map now uses `assets/generated/woods-ground.png` and the painted
+`assets/generated/forest.png` atlas. See `assets/generated/README.md`. The `svg/`
+files remain preserved vector references. `svg/full-map.svg` is a
 standalone vector export for review; the game loads the base and shared props
 separately so trees, ruins and enemies sort correctly around players.
 

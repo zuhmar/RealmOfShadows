@@ -179,3 +179,12 @@ navigation and clickable combat against a running client/server. See the map
 and monster asset READMEs for the editing workflow. Deploy both the client and
 server together because the layout, monster definitions and replicated state
 changed. Existing uploaded reference and sprite PNGs are preserved.
+
+
+The live art pipeline now uses generated painted PNGs throughout Elderwood,
+Whispering Woods, item/equipment icons and the modular character. See
+`assets/generated/README.md` for all seven sheets, atlas coordinates and complete
+map previews. The previous SVG files/generators remain as source references;
+they are no longer loaded by the client. All map geometry, collisions, gear
+layering, monster mechanics and saved progress retain their existing behavior.
+This art update requires a Vercel client deployment; no server update is needed.

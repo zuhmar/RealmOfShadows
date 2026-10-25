@@ -1,3 +1,7 @@
+> Legacy vector source: the live game now uses generated PNG artwork. See
+> `assets/generated/README.md` for the current asset pipeline. The instructions
+> below describe the preserved vector reference workflow.
+
 # SVG paper-doll prototype
 
 These transparent SVG parts form the trial player character. The original PNG

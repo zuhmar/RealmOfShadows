@@ -8,5 +8,5 @@ sizes; Phaser extracts them at runtime without rewriting the image.
 These are single-pose painted sprites, with subtle movement bobbing, attack
 pulsing, facing flips and hit flashes. They are not directional animation
 sheets. The Wolf keeps its uploaded PNG animations. The existing SVG frame
-sets remain available as fallback. Targeting, warning effects, movement,
+sets are preserved as legacy reference sources; the runtime loads PNG artwork. Targeting, warning effects, movement,
 server combat, loot and saving continue using the existing game logic.

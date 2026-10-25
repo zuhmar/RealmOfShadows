@@ -1,6 +1,3 @@
-const files=import.meta.glob('../../../assets/monsters/svg/*.svg',{eager:true,query:'?url&no-inline',import:'default'}) as Record<string,string>;
-export const monsterAssets=Object.entries(files).map(([p,url])=>({key:p.split('/').at(-1)!.replace('.svg',''),url}));
-
 import generatedUrl from '../../../assets/monsters/generated/whispering-woods-monsters.png?url';
 // Keep the generated PNG intact. Phaser extracts each alpha-padded region at runtime.
 export const generatedMonsters={key:'woods-monster-png',url:generatedUrl,frames:{

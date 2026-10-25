@@ -1,3 +1,7 @@
+> Live starter icons are generated PNG sprites in `assets/generated/items.png`.
+> Drop an individual PNG/WebP here, named after its item ID, to override one.
+> Legacy SVG icons remain as source references and are not loaded by the game.
+
 # Item sprites
 
 The transparent SVGs are the initial glossy cartoon inventory icons. To replace

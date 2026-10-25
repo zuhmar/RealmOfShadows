@@ -1,11 +1,7 @@
 import Phaser from 'phaser';
 import {emptyEquipment,weapons,type Equipment,type Facing,type WeaponId} from '@realm/game-data';
-const layers=import.meta.glob('../../../assets/characters/paper-doll/*.svg',{eager:true,query:'?url&no-inline',import:'default'}) as Record<string,string>;
-const icons=import.meta.glob('../../../assets/items/*.svg',{eager:true,query:'?url&no-inline',import:'default'}) as Record<string,string>;
-export const paperDollAssets=[...Object.entries(layers).map(([path,url])=>({key:`doll-${path.split('/').at(-1)!.replace('.svg','')}`,url})),...Object.entries(icons).filter(([path])=>Object.hasOwn(weapons,path.split('/').at(-1)!.replace('.svg',''))||path.endsWith('/woodenShield.svg')).map(([path,url])=>({key:`doll-item-${path.split('/').at(-1)!.replace('.svg','')}`,url}))];
-
 // A small shared rig: the same pivots drive body parts, clothing and held items.
-// SVGs are rasterized once by Phaser's loader; walking only transforms textures.
+// Painted PNG parts retain the original pivots; walking only transforms textures.
 export class PaperDoll extends Phaser.GameObjects.Container{
  equipment:Equipment=emptyEquipment();weapon:WeaponId='wand';direction:Facing='down';moving=false;private signature='';
  private neck:Phaser.GameObjects.Image;private torso:Phaser.GameObjects.Image;private tunic:Phaser.GameObjects.Image;private head:Phaser.GameObjects.Container;private face:Phaser.GameObjects.Image;private hood:Phaser.GameObjects.Image;

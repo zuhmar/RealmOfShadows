@@ -1,3 +1,7 @@
+> Legacy vector source: the live game now uses generated PNG artwork. See
+> `assets/generated/README.md` for the current asset pipeline. The instructions
+> below describe the preserved vector reference workflow.
+
 # Full reference-driven Elderwood
 
 `Reference.png` in the parent folder is the latest village plan. This recreation
