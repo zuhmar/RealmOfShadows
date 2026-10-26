@@ -57,7 +57,10 @@ pivot and foot baseline y=154 keep idle and walking poses aligned.
 The active folder is `assets/skins/reference-runtime/`:
 
 - Thirty 960×640 outfit atlases: six poses across four facing directions,
-  totaling 720 full-body poses. Two idle poses and four walking poses per view.
+  totaling 720 full-body poses. Two source idle poses and four walking poses per view. The live renderer holds
+  neutral pose 0 while stationary, avoiding stance changes in generated breathing
+  frames. Walking plays only for actual grid movement; interpolation corrections
+  do not drive remote-player gait or facing. Wings and aura effects stay independent.
 - Ten 768×160 wing atlases: four directional 192×160 frames, anchored at (96,90).
   A shared per-theme scale preserves profile foreshortening.
 - Ten 1152×192 aura atlases: three back and three front frames, anchored at (96,162).
@@ -91,4 +94,5 @@ selected gallery card, portrait and in-world character.
 Deploy **both Vercel and Render from the same commit** so both sides recognize
 the collection and variant IDs. Checks: `npm test`, `npm run build`,
 `npm run test:cosmetics:browser`, `npm run test:cosmetics:integration`,
-`npm run test:cosmetics:peers`, and `npm run test:accounts`.
+`npm run test:cosmetics:peers`, `npm run test:accounts`, and
+`npm run test:avatar-idle:browser`.

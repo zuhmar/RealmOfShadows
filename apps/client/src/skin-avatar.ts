@@ -8,7 +8,7 @@ export function installSkinAnimations(scene:Phaser.Scene){
   const key=`skin-${skin}`;if(!scene.textures.exists(key))continue;const texture=scene.textures.get(key);
   for(const [row,direction]of directions.entries()){
    for(let i=0;i<6;i++)if(!texture.has(`${direction}-${i}`))texture.add(`${direction}-${i}`,0,i*160,row*160,160,160);
-   for(const action of ['idle','walk']){const animation=`skin-${skin}-${action}-${direction}`;if(!scene.anims.exists(animation))scene.anims.create({key:animation,frames:(action==='idle'?[0,1]:[2,3,4,5]).map(i=>({key,frame:`${direction}-${i}`})),frameRate:action==='idle'?2:8,repeat:-1});}
+   for(const action of ['idle','walk']){const animation=`skin-${skin}-${action}-${direction}`;if(!scene.anims.exists(animation))scene.anims.create({key:animation,frames:(action==='idle'?[0]:[2,3,4,5]).map(i=>({key,frame:`${direction}-${i}`})),frameRate:action==='idle'?2:8,repeat:-1});}
   }
  }
  for(const wing of Object.keys(wingDefinitions))if(wing!=='none'&&scene.textures.exists(`wings-${wing}`)){const t=scene.textures.get(`wings-${wing}`);for(const [i,direction]of directions.entries())if(!t.has(direction))t.add(direction,0,i*192,0,192,160);}
@@ -20,7 +20,14 @@ export class SkinAvatar extends Phaser.GameObjects.Container{
  look:CosmeticLook={skin:'citizen',wings:'none',aura:'none'};
  constructor(scene:Phaser.Scene){super(scene,0,0);this.sprite=scene.make.sprite({key:'skin-citizen',frame:'down-0',add:false}).setOrigin(.5,154/160).setScale(.5);this.wings=scene.make.image({key:'__WHITE',add:false}).setVisible(false);this.aura=scene.make.image({key:'__WHITE',add:false}).setVisible(false);this.auraFront=scene.make.image({key:'__WHITE',add:false}).setVisible(false);this.add([this.aura,this.wings,this.sprite,this.auraFront]);}
  pose(look:CosmeticLook,facing:Facing,moving:boolean,time:number){
-  this.look={...look};const key=`skin-${look.skin}-${moving?'walk':'idle'}-${facing}`;if(this.scene.anims.exists(key))this.sprite.play(key,true);
+  this.look={...look};const key=`skin-${look.skin}-${moving?'walk':'idle'}-${facing}`;
+  if(this.scene.anims.exists(key)){
+   if(moving)this.sprite.play(key,true);
+   else if(this.sprite.anims.currentAnim?.key!==key||this.sprite.anims.isPlaying){
+    // Generated breathing poses can change stance. Keep the neutral pose planted.
+    this.sprite.play(key);this.sprite.anims.pause(this.sprite.anims.currentAnim!.frames[0]);
+   }
+  }
   const wingKey=`wings-${look.wings}`;this.wings.setVisible(look.wings!=='none'&&this.scene.textures.exists(wingKey));
   if(this.wings.visible){this.wings.setTexture(wingKey,facing).setOrigin(.5,90/160).setPosition(facing==='left'?8:facing==='right'?-8:0,-skinDefinitions[look.skin].backHeight).setScale(.6);if(facing==='up')this.bringToTop(this.wings);else this.bringToTop(this.sprite);}
   const auraKey=`aura-${look.aura}`,visible=look.aura!=='none'&&this.scene.textures.exists(auraKey),phase=[0,1,2,1][Math.floor(time/220)%4];this.aura.setVisible(visible);this.auraFront.setVisible(visible);

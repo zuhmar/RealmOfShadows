@@ -61,7 +61,8 @@
     "test:cosmetics:browser": "node tests/browser-cosmetics.cjs",
     "test:cosmetics:integration": "tsx tests/cosmetics.integration.ts",
     "test:cosmetics:peers": "node tests/browser-cosmetics-peers.cjs",
-    "art:skins:legacy": "python3 scripts/extract-class-skins.py"
+    "art:skins:legacy": "python3 scripts/extract-class-skins.py",
+    "test:avatar-idle:browser": "node tests/browser-avatar-idle.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",
