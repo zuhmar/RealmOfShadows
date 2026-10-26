@@ -2,7 +2,7 @@ import {depotBoxes} from './depot';
 import overrides from './grid-overrides.json';
 import type {RegionId} from './index';
 import {mapObject,type IslandObject} from './island-layout';
-export interface GridMap{width:number;height:number;cells:number[][];objects:IslandObject[];blocked:Set<string>}
+export interface GridMap{width:number;height:number;cells:number[][];objects:IslandObject[];blocked:Set<string>;edges:Set<string>}
 export const gridDirections=[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]] as const;
 const cache=new Map<string,GridMap>();
 export const gridCell=(p:{x:number;y:number})=>({x:Math.floor(p.x)+.5,y:Math.floor(p.y)+.5});
@@ -11,7 +11,7 @@ export function gridMap(region:string):GridMap{
  const old=cache.get(region);if(old)return old;
  const lower=region.endsWith('-depths'),village=region==='elderwood',cave=region.startsWith('caverns');
  const width=lower?48:region==='woods'?68:region==='caverns'?64:32,height=lower?36:region==='woods'||region==='caverns'?48:24;
- const cells=Array.from({length:height},()=>Array<number>(width).fill(cave||lower?5:0)),objects:IslandObject[]=[],blocked=new Set<string>();
+ const cells=Array.from({length:height},()=>Array<number>(width).fill(cave||lower?5:0)),objects:IslandObject[]=[],blocked=new Set<string>(),edges=new Set<string>();
  const rect=(x:number,y:number,w:number,h:number,material:number)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(j>=0&&i>=0&&j<height&&i<width)cells[j][i]=material;};
  const path=(points:readonly (readonly [number,number])[],material=1)=>{for(let i=1;i<points.length;i++){let [x,y]=points[i-1];const [tx,ty]=points[i];rect(x-1,y-1,3,3,material);while(x!==tx||y!==ty){x+=Math.sign(tx-x);y+=Math.sign(ty-y);rect(x-1,y-1,3,3,material);}}};
  const prop=(key:string,x:number,y:number,w:number,h:number,solidW=0,solidH=0)=>{objects.push(mapObject(key,x*48,y*48,w*48,h*48));for(let dy=0;dy<solidH;dy++)for(let dx=0;dx<solidW;dx++)blocked.add(`${x+dx},${y+h-solidH+dy}`);};
@@ -19,9 +19,13 @@ export function gridMap(region:string):GridMap{
   rect(1,1,30,22,0);rect(1,19,30,4,3);rect(14,2,5,17,2);rect(3,9,26,3,1);rect(3,15,26,3,1);rect(14,19,5,4,4);rect(19,17,10,6,0);path([[27,16],[27,22],[23,22]]);
   // A roofless Depot is part of the same village grid, with a three-cell entrance.
   rect(5,2,9,7,4);
-  for(let y=3;y<=7;y++)for(let x=6;x<=12;x++)prop('depot-floor',x,y,1,1);
-  for(let x=5;x<=13;x++)for(const y of [2,8]){if(y===8&&x>=8&&x<=10)continue;prop(x===5||x===13?'depot-wall-corner':'depot-wall-h',x,y,1,1,1,1);}
-  for(let y=3;y<=7;y++)for(const x of [5,13])prop('depot-wall-v',x,y,1,1,1,1);
+  for(let y=2;y<=8;y++)for(let x=5;x<=13;x++)prop('depot-floor',x,y,1,1);
+  for(let x=6;x<=12;x++){prop('depot-wall-n',x,2,1,1);if(x<8||x>10)prop('depot-wall-s',x,8,1,1);}
+  for(let y=3;y<=7;y++){prop('depot-wall-w',5,y,1,1);prop('depot-wall-e',13,y,1,1);}
+  for(const [key,x,y]of [['nw',5,2],['ne',13,2],['sw',5,8],['se',13,8]] as const)prop(`depot-wall-${key}`,x,y,1,1);
+  // Walls occupy boundaries, leaving the floor cell beside each wall usable.
+  for(let y=2;y<=8;y++){edges.add(`v:5,${y}`);edges.add(`v:14,${y}`);}
+  for(let x=5;x<=13;x++){edges.add(`h:${x},2`);if(x<8||x>10)edges.add(`h:${x},9`);}
   for(const box of depotBoxes)prop('depot-box',box.x-.5,box.y-.5,1,1,1,1);
   prop('depot-sign',8,1,3,1.25);
   prop('elderwood-blacksmith',22,3,6,5,6,4);prop('elderwood-workshop',3,12,6,4,6,3);prop('elderwood-bank',23,12,6,4,6,3);prop('elderwood-hall',20,18,6,4,6,3);
@@ -57,7 +61,7 @@ export function gridMap(region:string):GridMap{
  if(override?.cells){if(override.cells.length!==height||override.cells.some(row=>row.length!==width||row.some(n=>!Number.isInteger(n)||n<0||n>5)))throw Error(`Invalid grid terrain override: ${region}`);for(let y=0;y<height;y++)cells[y]=[...override.cells[y]];}
  for(let x=0;x<width;x++){cells[0][x]=5;cells[height-1][x]=5;}for(let y=0;y<height;y++){cells[y][0]=5;cells[y][width-1]=5;}
  for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(cells[y][x]===3||cells[y][x]===5)blocked.add(`${x},${y}`);
- const result={width,height,cells,objects,blocked};cache.set(region,result);return result;
+ const result={width,height,cells,objects,blocked,edges};cache.set(region,result);return result;
 }
 export function gridBlocked(region:string,x:number,y:number){const map=gridMap(region);return x<0||y<0||x>=map.width||y>=map.height||map.blocked.has(`${Math.floor(x)},${Math.floor(y)}`);}
 type GridMonster='wolf'|'spider'|'boar'|'bear'|'bat'|'crawler'|'golem'|'wyrm';
@@ -68,4 +72,19 @@ export function gridSpawns(region:RegionId):{id:string;kind:GridMonster;region:R
  if(lower&&woods)result.push({id:'roots-shrine-spider',kind:'spider',region,x:37.5,y:6.5});
  if(lower&&!woods){const vault=result.at(-1)!;vault.x=37.5;vault.y=6.5;}
  return result;
+}
+
+/** Trace grid-boundary crossings. At a diagonal join both orthogonal routes must be clear. */
+export function gridCrossesWall(region:string,from:{x:number;y:number},to:{x:number;y:number}):boolean{
+ const {edges}=gridMap(region);if(!edges.size)return false;
+ let x=Math.floor(from.x),y=Math.floor(from.y);const endX=Math.floor(to.x),endY=Math.floor(to.y),dx=to.x-from.x,dy=to.y-from.y,sx=Math.sign(dx),sy=Math.sign(dy);
+ const blocked=(ax:number,ay:number,bx:number,by:number)=>edges.has(ax===bx?`h:${ax},${Math.max(ay,by)}`:`v:${Math.max(ax,bx)},${ay}`);
+ const deltaX=dx?1/Math.abs(dx):Infinity,deltaY=dy?1/Math.abs(dy):Infinity;
+ let tx=dx?((sx>0?x+1:x)-from.x)/dx:Infinity,ty=dy?((sy>0?y+1:y)-from.y)/dy:Infinity;
+ const limit=Math.abs(endX-x)+Math.abs(endY-y)+2;
+ for(let i=0;i<limit&&(x!==endX||y!==endY);i++){
+  if(Math.abs(tx-ty)<1e-10){if(blocked(x,y,x+sx,y)||blocked(x,y,x,y+sy)||blocked(x+sx,y,x+sx,y+sy)||blocked(x,y+sy,x+sx,y+sy))return true;x+=sx;y+=sy;tx+=deltaX;ty+=deltaY;}
+  else if(tx<ty){if(blocked(x,y,x+sx,y))return true;x+=sx;tx+=deltaX;}
+  else{if(blocked(x,y,x,y+sy))return true;y+=sy;ty+=deltaY;}
+ }return false;
 }

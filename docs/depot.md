@@ -2,9 +2,9 @@
 
 The old tavern is now the **Depot**. It is built from native 32px floor and wall
 sprites on the village grid, with no roof or separate indoor instance. Players
-outside can see inside. Enter through the three-cell south doorway. Solid walls
-and storage boxes block movement; the interior floor remains walkable. The
-front wall fades to 35% opacity while a player is inside.
+outside can see inside. Enter through the three-cell south doorway. Walls block crossing the room’s tile boundaries; storage boxes occupy their own
+cells. Every other floor cell, including the cells beside walls, is walkable. The
+south wall fades to 35% opacity while a player is inside.
 
 Three boxes sit along the north wall. Click or tap any box to walk over and
 open personal storage. Space also opens a nearby box. Every box accesses the
@@ -46,3 +46,21 @@ Checks: `npm test`, `npm run build`, `npm run test:depot:browser`,
 Browser default: localhost:5220; multiplayer default: ws://localhost:2620.
 Override with TEST_CLIENT_URL / TEST_SERVER_URL. Deploy both Vercel and Render
 from the same commit so storage rules and UI agree.
+
+## Directional edge-wall kit
+
+Eight wall sprites are extracted from `assets/world/depot/walls-master.png`:
+`depot-wall-nw`, `ne`, `sw`, `se` are distinct L-shaped corner tiles; `n`, `e`,
+`s`, `w` are straight edge strips. Every canvas is exactly 32×32. North strips
+occupy y=0–8, south strips y=23–31, west strips x=0–7 and east strips x=24–31.
+The tile center stays transparent. Their connected ends reach tile boundaries,
+so they form one continuous rectangular outline rather than posts in tile centers.
+`npm run art:depot` rebuilds the original props and this directional kit.
+
+The room's outer boundaries are x=5 and x=14, y=2 and y=9 in world-cell units.
+The three south entrance cells (x=8,9,10) have no blocking edge. `GridMap.edges`
+stores horizontal and vertical barriers independently from occupied/solid cells.
+Shared movement, pathfinding, footprint collision, sight and charge attacks
+all respect the same edges. Diagonals check both orthogonal passages at a join.
+`tests/depot-walls.test.ts` covers orientations, usable wall-adjacent floor,
+bidirectional wall blocking, doorway access and corner/jamb clipping.

@@ -8,7 +8,7 @@ const gear=()=>({id:crypto.randomUUID(),base:'clothTunic' as const,rarity:'legen
 test('Depot is a visible walk-in village room with solid walls and accessible personal boxes',()=>{
  const map=gridMap('elderwood');assert.ok(!map.objects.some(o=>o.key==='elderwood-tavern'));assert.ok(map.objects.some(o=>o.key==='depot-sign'));assert.ok(map.objects.filter(o=>o.key==='depot-floor').length>=30);
  for(const box of depotBoxes){assert.equal(legal(box),false);assert.ok(pathfind(portalFor('elderwood').arrival,{x:box.x,y:box.y+1}).length);}
- assert.ok(legal({x:9.5,y:8.5}));assert.ok(legal({x:9.5,y:5.5}));assert.equal(legal({x:5.5,y:5.5}),false);
+ assert.ok(legal({x:9.5,y:8.5}));assert.ok(legal({x:9.5,y:5.5}));assert.equal(legal({x:5.5,y:5.5}),true);
 });
 test('all item categories deposit and withdraw atomically; rolled gear retains identity and bonuses',()=>{
  const {e,p,profile}=setup(),g=gear(),stats=gearStats(g);profile.gear.push(g);profile.inventory=[{id:10,item:'pelt',quantity:5}];e.serial=10;

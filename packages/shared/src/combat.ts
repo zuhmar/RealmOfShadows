@@ -1,4 +1,4 @@
-import {gridCell,gridKey,gridDirections,newAttributes,attributeDamage,maxHealth,maxMana,shieldBlock,type Attributes,combat as C,monsters,monsterAggressive,monsterKind,allMonsterSpawns,combatRegion,monsterRegion,type MonsterKind,PORTAL,portalFor,weapons,weaponDamage,skillRules,spells,isSpell,canLearnSpell,skillLevel,type SpellAccess,type SpellId,type WeaponId,type SkillId,type RegionId,type Facing} from '@realm/game-data';
+import {gridCrossesWall,gridCell,gridKey,gridDirections,newAttributes,attributeDamage,maxHealth,maxMana,shieldBlock,type Attributes,combat as C,monsters,monsterAggressive,monsterKind,allMonsterSpawns,combatRegion,monsterRegion,type MonsterKind,PORTAL,portalFor,weapons,weaponDamage,skillRules,spells,isSpell,canLearnSpell,skillLevel,type SpellAccess,type SpellId,type WeaponId,type SkillId,type RegionId,type Facing} from '@realm/game-data';
 import {legal,pathfind,move,occupiedCells,freeLanding,type Point} from './index';
 export interface Fighter extends Point{stepX?:number;stepY?:number;attributes:Attributes;weaponBonus:number;shieldArmor:number;shieldingXp:number;armor:number;weapon:WeaponId;meleeXp:number;distanceXp:number;magicXp:number;region:RegionId;hp:number;mana:number;deadUntil:number;shotAt:number;spellAt:number;target:string;auto:boolean}
 // Retain the existing Wolf/wolves API and wire collection for compatibility;
@@ -16,7 +16,7 @@ const attack=(kind:MonsterKind)=>{
  if(kind==='spider'||kind==='wyrm')return {kind:kind==='spider'?'venom':'shard',range:kind==='spider'?3.2:4.5,windup:kind==='spider'?.45:1.1,radius:kind==='spider'?.6:1.2};
  return {kind:'bite',range:monsters[kind].range,windup:0,radius:.5};
 };
-export function sight(a:Point & {region?:RegionId},b:Point & {region?:RegionId},region:RegionId=a.region??b.region??'woods'):boolean{const n=Math.ceil(distance(a,b)*8);for(let i=0;i<=n;i++){if(!legal({x:a.x+(b.x-a.x)*i/Math.max(1,n),y:a.y+(b.y-a.y)*i/Math.max(1,n)},region))return false;}return true;}
+export function sight(a:Point & {region?:RegionId},b:Point & {region?:RegionId},region:RegionId=a.region??b.region??'woods'):boolean{if(gridCrossesWall(region,a,b))return false;const n=Math.ceil(distance(a,b)*8);for(let i=0;i<=n;i++){if(!legal({x:a.x+(b.x-a.x)*i/Math.max(1,n),y:a.y+(b.y-a.y)*i/Math.max(1,n)},region))return false;}return true;}
 export class CombatSimulation{
  enemyShots:{region:RegionId;radius:number;x:number;y:number;toX:number;toY:number;remaining:number;damage:number}[]=[];
  private actors=new Map<string,Fighter>();
@@ -81,7 +81,7 @@ export class CombatSimulation{
     const start=gridCell(w),end=gridCell({x:w.aimX,y:w.aimY}),length=Math.max(Math.abs(end.x-start.x),Math.abs(end.y-start.y));
     const occupied=occupiedCells([...actors.values(),...this.wolves.values()],monsterRegion(w),w);
     for(let i=1;i<=length;i++){const next={x:start.x+Math.round((end.x-start.x)*i/length),y:start.y+Math.round((end.y-start.y)*i/length)};
-     if(!legal(next,monsterRegion(w))||occupied.has(gridKey(next))||!legal({x:next.x,y:w.y},monsterRegion(w))||!legal({x:w.x,y:next.y},monsterRegion(w)))break;w.x=next.x;w.y=next.y;}
+     if(gridCrossesWall(monsterRegion(w),w,next)||!legal(next,monsterRegion(w))||occupied.has(gridKey(next))||!legal({x:next.x,y:w.y},monsterRegion(w))||!legal({x:w.x,y:next.y},monsterRegion(w)))break;w.x=next.x;w.y=next.y;}
     w.stepX=w.x;w.stepY=w.y;
     for(const actor of actors.values())if(actor.hp>0&&actor.region===monsterRegion(w)&&!this.safe(actor)&&distance(actor,{x:w.aimX,y:w.aimY})<.8&&inRange(w,actor,1.5)&&sight(w,actor))this.strike(actor,stats.damage);
    }

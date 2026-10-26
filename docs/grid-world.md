@@ -21,7 +21,7 @@ cell while the existing character scale remains readable. Camera zoom can
 change how large that appears on a device. Lower floors use their parent
 island's material set. The map has no underlying full-map background image.
 
-`assets/world/objects/` contains 80 independent transparent PNGs. Trees,
+`assets/world/objects/` contains 88 independent transparent PNGs. Trees,
 buildings, portal entrances and decorations may be several cells tall or wide.
 Vite discovers these files directly by filename. They are no longer split into
 32px terrain/object tile pages at runtime. Existing painted prop art is retained;
@@ -30,7 +30,8 @@ The one-time extraction can be reproduced with
 `python3 scripts/extract-world-objects.py` from the archived object pages.
 It overwrites exported sprites; do not run it over edited replacements.
 
-Buildings and tree trunks have explicit cell footprints; visual canopies can
+Depot walls use directional edge sprites and shared boundary barriers, leaving
+wall-adjacent floor cells free. Other buildings and tree trunks have explicit cell footprints; visual canopies can
 overhang a path. Water and wall cells are solid. Bridge cells remain walkable.
 Village, forest habitats and the enclosed bear grove have newly authored paths.
 Floor entrances moved to the new paths: Woods (34.5,12.5), Caverns (32.5,22.5).
