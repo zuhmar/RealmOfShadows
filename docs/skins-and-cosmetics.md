@@ -36,24 +36,33 @@ No database migration is required. Deploy Vercel and Render from the same commit
 
 ## Artwork and animation
 
-All five skins are original, distinct characters made without the supplied references:
-Citizen courier (auburn hair and teal overalls), dwarf Knight (white beard and ruby armor),
-elf Archer (mint ponytail), moon-witch Mage (silver bob and crescent hat), and foxfolk Rogue
-(orange fur and indigo leathers). Each master contains two idle and four walk poses for down, left, right and up:
+All five skins are original human characters in a shared smooth, flat glossy cartoon
+style with controlled highlights and restrained cel shading. These are medieval
+outfits with distinct human faces, hair and silhouettes:
+
+- Citizen: young man in a cream linen shirt, olive-brown wool jerkin and leather boots.
+- Knight: broad human man with short dark hair and beard, steel plate and a blue surcoat.
+- Archer: human woman with a chestnut braid, green tunic, leather armor and quiver.
+- Mage: older human man with short gray beard, burgundy scholar robes and a cream cowl.
+- Rogue: human woman with black hair, a charcoal hood, navy leathers and burgundy scarf.
+
+There are no animal characters, elves, dwarves, unnatural skin colors or pixel-art
+conversions in the player skin set. Each master contains two idle and four walk
+poses for down, left, right and up:
 120 character poses. No held weapon is baked into the outfits; combat still
 uses the equipped weapon. The Archer carries a decorative quiver.
 
 Original generated masters are preserved in `assets/skins/masters/`. Run
 `python3 scripts/extract-class-skins.py` to repeat measured atlas extraction.
-Some master rows are not exactly 256 pixels tall, so measured row bands keep
-feet and hoods intact. Runtime class poses share 160×160 transparent canvases,
-a common foot baseline at y=154 and a constant scale per class. The wing master uses measured column bands because full pairs are wider than
+Generated row spacing can drift, so extraction finds clear gaps near the quarter
+boundaries to keep feet and hoods intact. Runtime class poses share 160×160 transparent canvases,
+a common centered figure pivot, a foot baseline at y=154 and a constant scale per class. The wing master uses measured column bands because full pairs are wider than
 folded profile views. The pipeline also extracts twelve directional wing sprites (192×160) and three auras
 (192×64), all lossless WebP. `assets/skins/frames.json` records source bounds.
 Runtime assets are loaded from `assets/skins/runtime/` without loading masters.
 
 Wing extraction preserves a fixed scale across directions and anchors at the measured
-root rather than centering each alpha bounding box. Profile roots attach at the inner
+root rather than centering each alpha bounding box. Upper-back heights account for the human body proportions. Profile roots attach at the inner
 edge; their horizontal offsets follow the wearer’s back. Rear-facing wings render over
 the character, while front-facing wings render behind it. No image-center flutter
 scaling is used. Extraction requires Pillow, NumPy and SciPy.

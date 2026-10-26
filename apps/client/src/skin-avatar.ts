@@ -12,7 +12,7 @@ export class SkinAvatar extends Phaser.GameObjects.Container{
  this.sprite.setScale(.5).setOrigin(.5,154/160);if(this.scene.anims.exists(key))this.sprite.play(key,true);
  const wingKey=`wings-${look.wings}-${facing}`;this.wings.setVisible(look.wings!=='none'&&this.scene.textures.exists(wingKey));if(this.wings.visible){
   // Anchor the actual wing root to the upper back; never scale around the artwork center.
-  const backHeight={citizen:34,knight:35,archer:36,mage:32,rogue:34}[look.skin];
+  const backHeight={citizen:46,knight:46,archer:46,mage:44,rogue:46}[look.skin];
   this.wings.setTexture(wingKey).setOrigin(.5,90/160).setPosition(facing==='left'?8:facing==='right'?-8:0,-backHeight).setScale(.6);
   if(facing==='up')this.bringToTop(this.wings);else this.bringToTop(this.sprite);
  }
