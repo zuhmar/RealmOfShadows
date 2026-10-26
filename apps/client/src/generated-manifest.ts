@@ -1,4 +1,5 @@
 import {generatedFrames,type GeneratedFrame} from './generated-frames';
+import {stairFrames} from './stair-frames';
 import {cavernsPropFrames} from './caverns-prop-frames';
 export type {GeneratedFrame} from './generated-frames';
 import {equipmentHeadFrames} from './equipment-head-frames';
@@ -35,6 +36,7 @@ export const generatedSheets:GeneratedSheet[]=[
  {key:'generated-buildings',url:'',scale:2,frames:generatedFrames.buildings},
  {key:'generated-village',url:'',scale:2,frames:generatedFrames.village},
  {key:'generated-forest',url:'',scale:2,frames:{...generatedFrames.forest,'woods-portal':generatedFrames.village['elderwood-portal']}},
+ {key:'generated-stairs',url:'',scale:2,frames:stairFrames},
  {key:'generated-caverns',url:'',scale:2,frames:cavernsPropFrames},
  {key:'generated-items',url:itemsUrl,scale:1,frames:generatedFrames.items},
  {key:'generated-character',url:characterUrl,scale:1,frames:generatedFrames.character},

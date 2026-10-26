@@ -30,3 +30,8 @@ Run `npm run test:caverns:browser` and `npm run test:caverns:integration` with
 The browser placement editor currently supports Woods; Caverns terrain and
 placement edits happen in the shared data file. Deploy both client and server
 from the same commit when changing this island.
+
+Depth 2 is now accessible through the stairs at Prismatic Crossing. It has five
+connected chambers, 17 monsters and a reservoir bridge. Floor connections and
+area isolation are documented in `docs/map-floors.md`; the lower map is in
+`packages/game-data/src/caverns-depths.ts`.

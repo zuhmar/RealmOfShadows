@@ -2,16 +2,17 @@ import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
 import {generatedFrames} from '../apps/client/src/generated-frames';
+import {stairFrames} from '../apps/client/src/stair-frames';
 import {cavernsPropFrames} from '../apps/client/src/caverns-prop-frames';
 
 // Normal atlas preparation: retain the generated PNG masters and their trim
 // offsets, then pack each map prefab into reusable 32×32 cells without repainting.
 const folder=new URL('../assets/tilesets/shared-32/',import.meta.url);
-const groups=['buildings','village','forest','caverns'] as const;
-const allFrames={...generatedFrames,caverns:cavernsPropFrames};
+const groups=['buildings','village','forest','caverns','stairs'] as const;
+const allFrames={...generatedFrames,caverns:cavernsPropFrames,stairs:stairFrames};
 const aliases=new Map(['oak','pine','boulder','banner','lamp','gate-pier'].map(name=>[`woods-${name}`,`elderwood-${name}`]));
 await mkdir(folder,{recursive:true});
-const images:Record<string,string>={};for(const group of groups)images[group]='data:image/png;base64,'+(await readFile(new URL(`../assets/generated/${group==='caverns'?'caverns-props':group}.png`,import.meta.url))).toString('base64');
+const images:Record<string,string>={};for(const group of groups)images[group]='data:image/png;base64,'+(await readFile(new URL(`../assets/generated/${group==='stairs'?'caverns-stairs':group==='caverns'?'caverns-props':group}.png`,import.meta.url))).toString('base64');
 const frames=groups.flatMap(group=>Object.entries(allFrames[group]).map(([key,frame])=>({key,frame:key==='woods-portal'?generatedFrames.village['elderwood-portal']:frame,group:key==='woods-portal'?'village':group,shared:aliases.get(key)?generatedFrames.village[aliases.get(key)! as keyof typeof generatedFrames.village].source:undefined})));
 const browser=await chromium.launch({executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH??'/usr/bin/chromium',args:['--no-sandbox']});
 try{

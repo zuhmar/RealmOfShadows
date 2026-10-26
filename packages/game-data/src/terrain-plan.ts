@@ -1,3 +1,4 @@
+import {depthsMap,depthsFloor,depthsGeometry,depthsTrails} from './caverns-depths';
 import {elderwoodMap,elderwoodTerrainGeometry} from './elderwood';
 import {woodsMap,woodsGeometry,woodsTrails,woodsSpawnTrails,woodsClearings,woodsHabitats,woodsEncounterSpawns,woodsPortal} from './woods';
 import {cavernsMap,cavernsFloor,cavernsGeometry,cavernsBossWalls,cavernsTrails} from './caverns';
@@ -22,10 +23,11 @@ function clip(polygon:MapPolygon,width:number,height:number):MapPolygon{
 const cache=new Map<string,TerrainPlan>();
 export function terrainPlan(region:string):TerrainPlan{
  const cached=cache.get(region);if(cached)return cached;
- const detailed=region==='woods'||region==='elderwood'||region==='caverns',map=region==='woods'?woodsMap:region==='caverns'?cavernsMap:elderwoodMap;
+ const detailed=region==='woods'||region==='elderwood'||region==='caverns'||region==='caverns-depths',map=region==='caverns-depths'?depthsMap:region==='woods'?woodsMap:region==='caverns'?cavernsMap:elderwoodMap;
  const sourceWidth=detailed?map.width:1536,sourceHeight=detailed?map.height:1152,scale=4/3;
  const width=sourceWidth*scale,height=sourceHeight*scale,layers:TerrainLayerPlan[]=[];
  const add=(name:string,material:TerrainMaterial,polygons:readonly MapPolygon[],tint=0xffffff)=>{layers.push({name,material,tint,polygons:polygons.map(p=>clip(p,sourceWidth,sourceHeight)).filter(p=>p.length>=3).map(p=>{const points=p.map(([x,y])=>[x*scale,y*scale] as const);let area=0;for(let i=0;i<points.length;i++){const a=points[i],b=points[(i+1)%points.length];area+=a[0]*b[1]-b[0]*a[1];}return area<0?points.reverse():points;})});};
+ if(region==='caverns-depths'){add('deep-rock','cliff',[rectangle(0,0,sourceWidth,sourceHeight)],0x29223e);add('deep-floor','stone',depthsFloor,0xa491ba);add('deep-trails','stone',depthsTrails.flatMap(points=>road(points,60)),0xb9b1da);add('deep-lake','water',depthsGeometry.rivers,0x9384d5);add('deep-bridge','wood',depthsGeometry.bridges);const result={width,height,offsetY:0,columns:Math.ceil(width/32),rows:Math.ceil(height/32),layers};cache.set(region,result);return result;}
  add('meadow',region==='caverns'?'cliff':'grass',[rectangle(0,0,sourceWidth,sourceHeight)],region==='caverns'?0x33334c:region==='woods'?0xd7ead7:region==='swamp'?0x9cb89b:0xffffff);
  if(region==='caverns'){
   add('cavern-floor','stone',cavernsFloor,0xa4b4d9);

@@ -46,7 +46,9 @@
     "test:attributes:browser": "node tests/browser-attributes.cjs",
     "test:identification:browser": "node tests/browser-identification.cjs",
     "test:inventory:browser": "node tests/browser-inventory.cjs",
-    "test:inventory:integration": "tsx tests/inventory.integration.ts"
+    "test:inventory:integration": "tsx tests/inventory.integration.ts",
+    "test:floors:browser": "node tests/browser-floors.cjs",
+    "test:floors:integration": "tsx tests/floors.integration.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

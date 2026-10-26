@@ -53,5 +53,6 @@ add('ancient-statue',2040,850,85,140);add('ancient-statue',2370,850,85,140);add(
 add('rune-obelisk',1880,250,80,140);add('rune-obelisk',2540,250,80,140);add('crystal-large',2210,220,130,180);
 for(const [x,y]of [[1860,740],[2530,740],[980,570]])add('bones',x,y,65,45);
 cavernsObjects.push(mapObject('elderwood-portal',1536-100,1850-179,200,179));
+cavernsObjects.push(mapObject('caverns-stairs-down',1456,1020,160,120));
 const collision=islandCollision(cavernsMap.width,cavernsMap.height,cavernsGeometry,cavernsObjects);
 export function cavernsFootprintBlocked(x:number,y:number,r=0){return collision(x*48,(y-cavernsMap.offsetY)*48,r*48);}
