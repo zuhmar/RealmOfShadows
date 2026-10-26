@@ -1,0 +1,107 @@
+{
+  "knight": {
+    "name": "Iron Vanguard",
+    "description": "Silver plate, gold edging and royal-blue cloth.",
+    "backHeight": 38,
+    "reference": "Outfits-01.png",
+    "panel": 1
+  },
+  "archer": {
+    "name": "Woodland Ranger",
+    "description": "Green leather, gold details and a woodland quiver.",
+    "backHeight": 38,
+    "reference": "Outfits-01.png",
+    "panel": 2
+  },
+  "mage": {
+    "name": "Arcane Scholar",
+    "description": "Purple and gold robes with an amethyst chest gem.",
+    "backHeight": 38,
+    "reference": "Outfits-01.png",
+    "panel": 3
+  },
+  "rogue": {
+    "name": "Shadow Stalker",
+    "description": "Black armored leather with a crimson scarf.",
+    "backHeight": 38,
+    "reference": "Outfits-01.png",
+    "panel": 4
+  },
+  "citizen": {
+    "name": "Wandering Adventurer",
+    "description": "Cream linen and brown adventurer leathers.",
+    "backHeight": 38,
+    "reference": "Outfits-01.png",
+    "panel": 5
+  },
+  "shadow-reaper": {
+    "name": "Shadow Reaper",
+    "description": "Black and violet armor, crystals and reaper headgear.",
+    "backHeight": 38,
+    "reference": "Outfits-02.png",
+    "panel": 1
+  },
+  "royal-guardian": {
+    "name": "Royal Guardian",
+    "description": "Ornate gold and silver plate with blue gemstones.",
+    "backHeight": 38,
+    "reference": "Outfits-02.png",
+    "panel": 2
+  },
+  "inferno-knight": {
+    "name": "Inferno Knight",
+    "description": "Black plate with glowing orange lava details.",
+    "backHeight": 38,
+    "reference": "Outfits-02.png",
+    "panel": 3
+  },
+  "frostborn": {
+    "name": "Frostborn",
+    "description": "Icy blue crystalline armor and silver hair.",
+    "backHeight": 38,
+    "reference": "Outfits-02.png",
+    "panel": 4
+  },
+  "forest-spirit": {
+    "name": "Forest Spirit",
+    "description": "Green leaf armor, gold vines and antler headpieces.",
+    "backHeight": 38,
+    "reference": "Outfits-02.png",
+    "panel": 5
+  },
+  "celestial-knight": {
+    "name": "Celestial Knight",
+    "description": "Ivory and gold celestial plate and ornate headgear.",
+    "backHeight": 38,
+    "reference": "Outfits-02.png",
+    "panel": 6
+  },
+  "blood-moon": {
+    "name": "Blood Moon",
+    "description": "Black and crimson armor with moonlit silver accents.",
+    "backHeight": 38,
+    "reference": "Outfits-02.png",
+    "panel": 7
+  },
+  "crystal-warden": {
+    "name": "Crystal Warden",
+    "description": "Black armor and luminous amethyst crystals.",
+    "backHeight": 38,
+    "reference": "Outfits-02.png",
+    "panel": 8
+  },
+  "sand-nomad": {
+    "name": "Sand Nomad",
+    "description": "Tan scarves, antique-gold travel armor and turquoise.",
+    "backHeight": 38,
+    "reference": "Outfits-02.png",
+    "panel": 9
+  },
+  "void-lord": {
+    "name": "Void Lord",
+    "description": "Black and violet armor with gold filigree and regal headgear.",
+    "backHeight": 38,
+    "reference": "Outfits-02.png",
+    "panel": 10
+  }
+}

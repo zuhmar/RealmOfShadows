@@ -1,84 +1,94 @@
-# Themed outfits, wings and auras
+# Reference-based outfits, wings and auras
 
-Players now use complete animated character sprites. The paper-doll renderer
-and its appearance toggle are no longer part of the live character renderer.
-Equipping armor or a weapon changes combat stats but does not change the skin.
-Mara keeps her existing NPC sprite and animation sheet.
+The uploaded images in `assets/references/` are the design source for this
+collection. Outfits use the supplied human faces, hair, costume silhouettes,
+colors, headgear and stylized glossy cartoon proportions. Wing and aura themes
+follow their own reference sheets. Maps and item artwork use their existing
+pipelines. The reference PNGs are preserved and never loaded into the game.
 
 ## Wardrobe
 
-Open the character profile and choose **Wardrobe**. Ten complete human medieval
-outfits are available to every class from level one: Citizen, Knight, Hunter,
-Scholar, Assassin, Noble, Adventurer, Merchant, Pirate and Nomad. Use the Outfit
-selector or expand **Browse all outfits** to choose from illustrated cards.
-The selected card and live portrait update when the choice is accepted.
+Open **Profile → Wardrobe → Browse reference outfits**. There are 15 outfit
+themes, each with male and female versions (30 selectable looks):
 
-Outfits are independent of combat class. A Citizen can wear Knight armor, a Mage
-can look like a Hunter, and a Rogue can wear Noble finery without changing class,
-weapons, spells, skills, stats, gold or inventory slots. No class or level unlock
-is required for this initial wardrobe. No purchase or loot system is implied.
+- Iron Vanguard, Woodland Ranger, Arcane Scholar, Shadow Stalker, Wandering Adventurer.
+- Shadow Reaper, Royal Guardian, Inferno Knight, Frostborn, Forest Spirit.
+- Celestial Knight, Blood Moon, Crystal Warden, Sand Nomad, Void Lord.
 
-Automatic remains an optional compatibility choice that follows the current
-class. Once an explicit outfit is chosen, changing class keeps that outfit.
-Existing saved `archer`, `mage` and `rogue` outfit IDs remain valid; their displayed
-outfit names are Hunter, Scholar and Assassin. Combat class names are unchanged.
+The gallery can show both variants or filter to male/female. Changing the gallery
+filter does not change the selected look. A variant is part of the outfit ID;
+there is no new account or combat gender attribute.
 
-Wings have independent None, Dawn Feathers, Ember Drake and Violet Fae choices.
-Auras have None, Golden Radiance, Arcane Circle and Ember Halo choices. One of
-each can be worn at once or removed. This first collection is freely available;
-there is no purchase, loot roll or combat bonus. Cosmetics do not consume bag or
-Depot slots and do not affect the grid footprint, speed, damage or learned spells.
-Wings follow all four facing directions using measured upper-back attachment roots;
-auras pulse beneath the feet. Neither modifies character body parts.
+Outfits remain independent of combat class and equipment. All choices are
+available in this initial wardrobe, preserving the preceding wardrobe behavior.
+The reference heading “unlockable outfits” has not introduced prices, quests,
+level restrictions or loot rules. Those require a separate progression design.
+Automatic still follows the current class's male base outfit; an explicit outfit
+stays selected when class changes. Armor and weapons continue to determine stats.
 
-Selections update the in-world character and profile portraits. The server
-replicates only the resolved public `look` (skin, wings, aura) to other players.
-The existing public equipment appearance field is retained for compatibility,
-but is not used to assemble the player visually. Inventory stays private.
+The ten wing themes are Shadow, Divine, Inferno, Frost, Forest, Celestial, Void,
+Phoenix, Crystal and Dragon. They have separate front, rear and profile art.
+Profile roots sit on the upper back and the wings extend behind the wearer.
+Rear-facing root clasps draw over the body; front-facing wings draw behind it.
 
-## Saving and validation
+The ten aura themes are Shadow, Divine, Inferno, Frost, Forest, Celestial, Void,
+Blood, Crystal and Dragon. Each has three looping visual phases. Their upper
+particles and the far half of the ground ring draw behind the character; the
+near half draws in front of the feet. No character image is baked into an aura.
+Wings and auras can be worn independently or set to None, and give no stats,
+collision, skills, inventory slots, class abilities or combat bonuses.
 
-`Profile.cosmetics` stores exactly three validated IDs. Automatic is resolved
-from the authoritative class; explicit choices can use any registered outfit.
-Requests reject unknown IDs, extra keys and arbitrary textures. Changing cosmetics changes no stats, gold or ownership.
-Selections save through the existing character JSON and save queue. Old saves
-receive Automatic / None / None. Guests keep cosmetics for their session only.
-No database migration is required. Deploy Vercel and Render from the same commit
-so the server accepts the new IDs and the client has their artwork.
+## Runtime art pipeline
 
-## Artwork and animation
+`packages/game-data/src/outfit-themes.json` defines theme metadata. Complete
+reference-derived source images are preserved in `assets/skins/reference-masters/`.
+`layout.json` records measured variant rows and separately generated profiles.
+Crowded original atlases omitted some requested views, so dedicated rear and
+right-facing strips supply those directions. No direction is substituted with
+a rear view. The original uploaded references remain unedited.
 
-All ten outfits use original human characters in a shared smooth, flat glossy
-cartoon style, with controlled highlights, restrained cel shading and medieval
-fabrics and silhouettes. The five existing human outfits are retained. The new
-set adds purple velvet and gold Noble finery, a weathered-cape Adventurer,
-a brocade-clad Merchant, a sea-coat Pirate and a layered desert-robed Nomad.
+Run `npm run art:skins` to extract and normalize the active collection. It uses
+Pillow, NumPy and SciPy. Row detection uses eroded alpha only for measurement;
+it does not erode the output artwork. Extraction excludes neighboring-cell
+flecks, measures the actual figure's feet, and normalizes independently sized
+source strips without stretching figures. A common 160×160 frame, centered
+pivot and foot baseline y=154 keep idle and walking poses aligned.
 
-Each master contains two idle and four walk poses for down, left, right and up:
-240 full-character poses in total. No held weapon is baked into the outfits;
-combat continues to use equipped weapons. These are complete painted characters,
-not equipment paper dolls, pixel-art conversions or copies of Tibia sprites.
+The active folder is `assets/skins/reference-runtime/`:
 
-Original generated masters are preserved in `assets/skins/masters/`. Run
-`python3 scripts/extract-class-skins.py` to repeat measured atlas extraction.
-Generated row spacing can drift, so extraction finds clear gaps near the quarter
-boundaries to keep feet and hoods intact. Runtime outfit poses share 160×160 transparent canvases,
-a common centered figure pivot, a foot baseline at y=154 and a constant scale per outfit. The wing master uses measured column bands because full pairs are wider than
-folded profile views. The pipeline also extracts twelve directional wing sprites (192×160) and three auras
-(192×64), all lossless WebP. `assets/skins/frames.json` records source bounds.
-Runtime assets are loaded from `assets/skins/runtime/` without loading masters.
+- Thirty 960×640 outfit atlases: six poses across four facing directions,
+  totaling 720 full-body poses. Two idle poses and four walking poses per view.
+- Ten 768×160 wing atlases: four directional 192×160 frames, anchored at (96,90).
+  A shared per-theme scale preserves profile foreshortening.
+- Ten 1152×192 aura atlases: three back and three front frames, anchored at (96,162).
+- Thirty separate 160×160 gallery thumbnails under `previews/`.
 
-Wing extraction preserves a fixed scale across directions and anchors at the measured
-root rather than centering each alpha bounding box. Upper-back heights account for the human body proportions. Profile roots attach at the inner
-edge; their horizontal offsets follow the wearer’s back. Rear-facing wings render over
-the character, while front-facing wings render behind it. No image-center flutter
-scaling is used. Extraction requires Pillow, NumPy and SciPy.
+All runtime images are transparent lossless WebP. Atlas packing loads 50 cosmetic
+textures instead of one image request per animation pose. Thumbnails use the
+same first down-facing pose as the body. `reference-frames.json` records measured
+source cells, bounds, placements and effect anchors for review. Old generated
+art and its extraction script remain archived; `art:skins:legacy` reproduces
+that older set. The active renderer loads only the reference-derived collection.
 
-`SkinAvatar` draws a full-character animation sprite, a directional wing pair and
-an aura beneath it. Directional poses are drawn artwork; walking does not
-rotate or move separate limbs. Portraits render the same selected look.
+## Saving, migration and multiplayer
 
-Checks: `npm test`, `npm run build`, `npm run test:cosmetics:browser`,
-`npm run test:cosmetics:integration`, and `npm run test:accounts`.
-Browser URL defaults to localhost:5250 and server URL to ws://localhost:2640;
-set TEST_CLIENT_URL and TEST_SERVER_URL to choose other running services.
+`Profile.cosmetics` still contains only `skin`, `wings`, and `aura`. Existing
+character JSON storage and save queues are used; no SQL migration is required.
+Guests retain choices only for their session. Private snapshots clone cosmetic
+settings; other players receive only the resolved public `look` IDs.
+
+Known retired choices migrate on save load, cosmetic requests and public-look
+reads: Noble → Royal Guardian; Adventurer/Merchant → Wandering Adventurer;
+Pirate → Blood Moon; Nomad → Sand Nomad. Old Dawn/Ember/Fae wings map to
+Divine/Dragon/Forest; Radiance/Arcane/Embers auras map to Divine/Shadow/Inferno.
+Existing class-named base IDs remain valid. Unknown IDs, extra nested keys and
+arbitrary textures are rejected, and migration changes no belongings or stats.
+
+Rapid wardrobe selections are grouped for 150ms so the final choice stays under
+the server's existing economy request budget. The accepted snapshot drives the
+selected gallery card, portrait and in-world character.
+
+Deploy **both Vercel and Render from the same commit** so both sides recognize
+the collection and variant IDs. Checks: `npm test`, `npm run build`,
+`npm run test:cosmetics:browser`, `npm run test:cosmetics:integration`,
+`npm run test:cosmetics:peers`, and `npm run test:accounts`.

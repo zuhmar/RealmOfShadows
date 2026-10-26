@@ -1,0 +1,55 @@
+{
+  "citizen": {
+    "femaleStart": 3,
+    "rightSource": "citizen-right.png"
+  },
+  "knight": {
+    "femaleStart": 3,
+    "rightSource": "knight-right.png"
+  },
+  "archer": {
+    "femaleStart": 3,
+    "rightSource": "archer-right.png"
+  },
+  "mage": {
+    "femaleStart": 3
+  },
+  "rogue": {
+    "femaleStart": 4
+  },
+  "shadow-reaper": {
+    "femaleStart": 4
+  },
+  "royal-guardian": {
+    "femaleStart": 3
+  },
+  "inferno-knight": {
+    "femaleStart": 4,
+    "rightSource": "inferno-knight-right.png"
+  },
+  "frostborn": {
+    "femaleStart": 4,
+    "rightSource": "frostborn-right.png"
+  },
+  "forest-spirit": {
+    "femaleStart": 3,
+    "rightSource": "forest-spirit-right.png"
+  },
+  "celestial-knight": {
+    "femaleStart": 4,
+    "rightSource": "celestial-knight-right.png"
+  },
+  "blood-moon": {
+    "femaleStart": 4
+  },
+  "crystal-warden": {
+    "femaleStart": 4
+  },
+  "sand-nomad": {
+    "femaleStart": 3,
+    "rightSource": "sand-nomad-right.png"
+  },
+  "void-lord": {
+    "femaleStart": 4
+  }
+}
