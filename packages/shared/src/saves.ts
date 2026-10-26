@@ -1,4 +1,4 @@
-import {emptyDepot,depotUsage,depotRules,emptyGearLoadout,isGearBase,isRarity,gearSlot,gearDefinition,lootEquipmentRules,newAttributes,attributeRules,attributeDefinitions,weapons,emptyEquipment,starterEquipment,equipmentSlots,equipmentItems,isEquipment,isEquipmentSlot,classes,classRules,isClassChoice,isWeapon,isSpell,canLearnSpell,items,rewards,totalXp,levelForXp,skillRules,skillLevel,spells,type SpellId} from '@realm/game-data';
+import {defaultCosmetics,validCosmetics,emptyDepot,depotUsage,depotRules,emptyGearLoadout,isGearBase,isRarity,gearSlot,gearDefinition,lootEquipmentRules,newAttributes,attributeRules,attributeDefinitions,weapons,emptyEquipment,starterEquipment,equipmentSlots,equipmentItems,isEquipment,isEquipmentSlot,classes,classRules,isClassChoice,isWeapon,isSpell,canLearnSpell,items,rewards,totalXp,levelForXp,skillRules,skillLevel,spells,type SpellId} from '@realm/game-data';
 import type {Profile} from './economy';
 export interface CharacterProgress{version:1;profile:Profile;cooldowns:Partial<Record<SpellId,number>>;potionRemaining:number}
 const integer=(v:unknown,max:number)=>typeof v==='number'&&Number.isSafeInteger(v)&&v>=0&&v<=max;
@@ -6,6 +6,8 @@ const integer=(v:unknown,max:number)=>typeof v==='number'&&Number.isSafeInteger(
 export function readProgress(value:unknown):CharacterProgress{
  const s=structuredClone(value) as CharacterProgress,p=s?.profile;
  if(s?.version!==1||!p||!integer(p.xp,totalXp(rewards.levelCap))||!integer(p.gold,Number.MAX_SAFE_INTEGER)||!(p.classId==='citizen'||isClassChoice(p.classId)))throw Error('Invalid character save.');
+ if(p.cosmetics===undefined)p.cosmetics=defaultCosmetics();
+ if(!validCosmetics(p.cosmetics,p.classId))throw Error('Invalid saved cosmetics.');
  // Older saves receive an empty private Depot without changing bag ownership.
  if(p.depot===undefined)p.depot=emptyDepot();
  const d=p.depot;

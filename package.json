@@ -56,7 +56,11 @@
     "art:island-terrain": "python3 scripts/extract-island-terrain.py",
     "test:depot:browser": "node tests/browser-depot.cjs",
     "test:depot:integration": "tsx tests/depot.integration.ts",
-    "art:depot": "python3 scripts/extract-depot-sprites.py"
+    "art:depot": "python3 scripts/extract-depot-sprites.py",
+    "art:skins": "python3 scripts/extract-class-skins.py",
+    "test:cosmetics:browser": "node tests/browser-cosmetics.cjs",
+    "test:cosmetics:integration": "tsx tests/cosmetics.integration.ts",
+    "test:cosmetics:peers": "node tests/browser-cosmetics-peers.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

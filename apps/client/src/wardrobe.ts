@@ -1,0 +1,7 @@
+import {skinDefinitions,wingDefinitions,auraDefinitions,type Cosmetics} from '@realm/game-data';
+import type {EconomySnapshot} from '@realm/shared';
+let previous='';
+export function setupWardrobe(change:(cosmetics:Cosmetics)=>void){
+ for(const [id,defs]of [['skin',skinDefinitions],['wings',wingDefinitions],['aura',auraDefinitions]] as const){const select=document.querySelector<HTMLSelectElement>(`#cosmetic-${id}`)!;if(id==='skin')select.add(new Option('Automatic · Your class','auto'));for(const [value,def]of Object.entries(defs))select.add(new Option(def.name,value));select.addEventListener('change',()=>change({skin:document.querySelector<HTMLSelectElement>('#cosmetic-skin')!.value as Cosmetics['skin'],wings:document.querySelector<HTMLSelectElement>('#cosmetic-wings')!.value as Cosmetics['wings'],aura:document.querySelector<HTMLSelectElement>('#cosmetic-aura')!.value as Cosmetics['aura']}));}
+}
+export function renderWardrobe(bag:EconomySnapshot){const key=JSON.stringify([bag.classId,bag.cosmetics]);if(previous===key)return;previous=key;for(const field of ['skin','wings','aura'] as const)document.querySelector<HTMLSelectElement>(`#cosmetic-${field}`)!.value=bag.cosmetics[field];for(const option of Array.from(document.querySelectorAll<HTMLOptionElement>('#cosmetic-skin option')))option.disabled=!['auto','citizen',bag.classId].includes(option.value);document.querySelector('#wardrobe-status')!.textContent=bag.classId==='citizen'?'Choose a class at level 5 to unlock its skin.':'Your class skin is unlocked. Wings and auras are cosmetic only.';}

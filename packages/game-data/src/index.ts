@@ -1,3 +1,4 @@
+export * from './cosmetics';
 export * from './depot';
 import {gridBlocked} from './grid-world';
 export * from './grid-world';
