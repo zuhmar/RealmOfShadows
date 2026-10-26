@@ -78,7 +78,7 @@ Guests retain choices only for their session. Private snapshots clone cosmetic
 settings; other players receive only the resolved public `look` IDs.
 
 Known retired choices migrate on save load, cosmetic requests and public-look
-reads: Noble → Royal Guardian; Adventurer/Merchant → Wandering Adventurer;
+reads and wardrobe rendering: Noble → Royal Guardian; Adventurer/Merchant → Wandering Adventurer;
 Pirate → Blood Moon; Nomad → Sand Nomad. Old Dawn/Ember/Fae wings map to
 Divine/Dragon/Forest; Radiance/Arcane/Embers auras map to Divine/Shadow/Inferno.
 Existing class-named base IDs remain valid. Unknown IDs, extra nested keys and

@@ -1,4 +1,4 @@
-import {skinDefinitions,wingDefinitions,auraDefinitions,type Cosmetics} from '@realm/game-data';
+import {skinDefinitions,wingDefinitions,auraDefinitions,migrateCosmetics,validCosmetics,defaultCosmetics,type Cosmetics} from '@realm/game-data';
 import type {EconomySnapshot} from '@realm/shared';
 const thumbnails=import.meta.glob('../../../assets/skins/reference-runtime/previews/*.webp',{eager:true,query:'?url',import:'default'}) as Record<string,string>;
 let previous='';
@@ -15,8 +15,9 @@ export function setupWardrobe(change:(cosmetics:Cosmetics)=>void){
  }
 }
 export function renderWardrobe(bag:EconomySnapshot){
- const key=JSON.stringify([bag.classId,bag.cosmetics]);if(previous===key)return;previous=key;
- for(const field of ['skin','wings','aura'] as const)document.querySelector<HTMLSelectElement>(`#cosmetic-${field}`)!.value=bag.cosmetics[field];
- for(const card of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-outfit]')))card.setAttribute('aria-pressed',String(card.dataset.outfit===bag.cosmetics.skin));
- document.querySelector('#wardrobe-status')!.textContent=bag.cosmetics.skin==='auto'?'Automatic follows your class. Choose any outfit for a look of your own.':`${skinDefinitions[bag.cosmetics.skin].description} Available to every class.`;
+ const migrated=migrateCosmetics(bag.cosmetics),cosmetics=validCosmetics(migrated)?migrated:defaultCosmetics();
+ const key=JSON.stringify([bag.classId,cosmetics]);if(previous===key)return;previous=key;
+ for(const field of ['skin','wings','aura'] as const)document.querySelector<HTMLSelectElement>(`#cosmetic-${field}`)!.value=cosmetics[field];
+ for(const card of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-outfit]')))card.setAttribute('aria-pressed',String(card.dataset.outfit===cosmetics.skin));
+ document.querySelector('#wardrobe-status')!.textContent=cosmetics.skin==='auto'?'Automatic follows your class. Choose any outfit for a look of your own.':`${skinDefinitions[cosmetics.skin].description} Available to every class.`;
 }

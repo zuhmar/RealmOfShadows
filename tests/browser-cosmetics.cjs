@@ -12,6 +12,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
   await page.evaluate(async()=>{const {game}=await import(document.querySelector('script[src*="/src/main.ts"]').src);window.s=game.scene.scenes[0]});
   assert.equal(await page.evaluate(()=>!!s.avatar.getData('skinAvatar')&&!s.avatar.getData('paperDoll')),true);assert.equal(await page.locator('#appearance-style').count(),0);
   await page.locator('#character-panel').click();await page.locator('#wardrobe-tab').click();
+  const migrated=await page.evaluate(async()=>{const {renderWardrobe}=await import('/src/wardrobe.ts');const legacy={...s.bag,cosmetics:{skin:'nomad',wings:'dawn',aura:'arcane'}};renderWardrobe(legacy);const values=['skin','wings','aura'].map(id=>document.querySelector(`#cosmetic-${id}`).value);renderWardrobe(s.bag);return values;});assert.deepEqual(migrated,['sand-nomad','divine','shadow']);
   assert.equal(await page.locator('#cosmetic-skin option').count(),31);assert.equal(await page.locator('#cosmetic-wings option').count(),11);assert.equal(await page.locator('#cosmetic-aura option').count(),11);
   await page.locator('#outfit-browser summary').click();assert.equal(await page.locator('[data-outfit]').count(),30);
   await page.selectOption('#outfit-variant-filter','female');assert.equal(await page.locator('[data-outfit]:visible').count(),15);await page.locator('[data-outfit="royal-guardian-female"]').click();
