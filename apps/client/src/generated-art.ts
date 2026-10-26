@@ -13,18 +13,20 @@ export function installGeneratedArt(scene:Phaser.Scene){
    paintFrame(texture.getContext(),source,frame,scale);
    texture.refresh();
   }
+  // Extracted poses own their textures; release duplicate equipment atlases.
+  if(sheet.key.startsWith('equipment-'))scene.textures.remove(sheet.key);
  }
 }
 function paintFrame(context:CanvasRenderingContext2D,source:CanvasImageSource,frame:GeneratedFrame,scale=1){
  const [x,y,w,h]=frame.source,[dx,dy,dw,dh]=frame.placement;
  context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';context.drawImage(source,x,y,w,h,dx*scale,dy*scale,dw*scale,dh*scale);
 }
-let itemImage:Promise<HTMLImageElement>|undefined;
+const itemImages=new Map<string,Promise<HTMLImageElement>>();
 const itemUrls=new Map<string,Promise<string|undefined>>();
 export function generatedItemUrl(id:string){
  if(itemUrls.has(id))return itemUrls.get(id)!;
- const sheet=generatedSheets.find(sheet=>sheet.key==='generated-items')!,frame=sheet.frames[`doll-item-${id}`];if(!frame)return Promise.resolve(undefined);
- itemImage??=new Promise<HTMLImageElement>((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(Error('Item artwork failed to load'));image.src=sheet.url;});
+ const sheet=generatedSheets.find(sheet=>sheet.frames[`doll-item-${id}`]);if(!sheet)return Promise.resolve(undefined);const frame=sheet.frames[`doll-item-${id}`];
+ let itemImage=itemImages.get(sheet.key);if(!itemImage){itemImage=new Promise<HTMLImageElement>((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(Error('Item artwork failed to load'));image.src=sheet.url;});itemImages.set(sheet.key,itemImage);}
  const result=itemImage.then(image=>{const canvas=document.createElement('canvas');[canvas.width,canvas.height]=frame.size;paintFrame(canvas.getContext('2d')!,image,frame);return canvas.toDataURL('image/png');}).catch(()=>undefined);
  itemUrls.set(id,result);return result;
 }

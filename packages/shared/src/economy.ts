@@ -23,9 +23,10 @@ export class Economy{
  const profile=this.profiles.get(id);if(!profile||p.hp<=0)return 'You cannot use items while defeated.';
  if(!request||typeof request!=='object')return 'Invalid action.';const {kind,drop,weapon,classId,spell,item,slot}=request as {kind:unknown;drop:unknown;weapon:unknown;classId:unknown;spell:unknown;item:unknown;slot:unknown};
  if(kind==='class'){if(profile.classId!=='citizen')return 'Your class has already been chosen.';if(profile.level<classRules.unlockLevel)return 'Reach level 5 to choose your class.';if(!isClassChoice(classId))return 'Choose Knight, Archer, Mage or Rogue.';profile.classId=classId;const starter=classes[classId].weapon;if(!profile.ownedWeapons.includes(starter))profile.ownedWeapons.push(starter);profile.weapon=starter;p.weapon=starter;p.auto=false;p.target='';return `You chose ${classes[classId].name}. ${weapons[starter].name} equipped.`;}
- if(kind==='equip'){if(!isWeapon(weapon)||!profile.ownedWeapons.includes(weapon))return 'You do not own that weapon.';if(p.auto)return 'Stop attacking before changing weapons.';profile.weapon=weapon;p.weapon=weapon;p.target='';return 'Weapon equipped.';}
+ if(kind==='equip'){if(!isWeapon(weapon)||!profile.ownedWeapons.includes(weapon))return 'You do not own that weapon.';if(profile.level<weapons[weapon].level)return `Reach level ${weapons[weapon].level} to equip this weapon.`;if(p.auto)return 'Stop attacking before changing weapons.';profile.weapon=weapon;p.weapon=weapon;p.target='';return 'Weapon equipped.';}
  if(kind==='equip-item'){
  if(!isEquipment(item)||!profile.ownedEquipment.includes(item))return 'You do not own that item.';
+ if(profile.level<equipmentItems[item].level)return `Reach level ${equipmentItems[item].level} to equip this item.`;
  if(p.auto)return 'Stop attacking before changing equipment.';
  profile.equipment[equipmentItems[item].slot]=item;p.armor=equipmentArmor(profile.equipment);return `${equipmentItems[item].name} equipped.`;
  }
@@ -49,6 +50,16 @@ export class Economy{
  p.hp=Math.min(C.playerHp,p.hp+items.potion.heal);profile.potionReadyAt=time+items.potion.cooldown;stack.quantity--;profile.inventory=profile.inventory.filter(s=>s.quantity>0);return 'Healing potion restored health.';
  }
  if(p.region!=='elderwood'||Math.hypot(p.x-merchant.x,p.y-merchant.y)>merchant.range)return 'Visit Mara the Trader in Elderwood.';
+ if(kind==='buy-equipment'){
+ const definition=isEquipment(item)?equipmentItems[item]:isWeapon(item)?weapons[item]:null;
+ if(!definition)return 'Choose valid equipment.';
+ if(profile.level<definition.level)return `Reach level ${definition.level} to buy this item.`;
+ if((isEquipment(item)&&profile.ownedEquipment.includes(item))||(isWeapon(item)&&profile.ownedWeapons.includes(item)))return 'You already own that item.';
+ if(profile.gold<definition.price)return `${definition.name} costs ${definition.price} gold.`;
+ profile.gold-=definition.price;
+ if(isEquipment(item))profile.ownedEquipment.push(item);else if(isWeapon(item))profile.ownedWeapons.push(item);
+ return `Bought ${definition.name}.`;
+ }
  if(kind==='learn'){if(!isSpell(spell)||!canLearnSpell(spell,profile))return 'That spell is unavailable for your class or level.';if(profile.learnedSpells.includes(spell))return 'You already know that spell.';const s=spells[spell];if(profile.gold<s.price)return `${s.name} costs ${s.price} gold.`;profile.gold-=s.price;profile.learnedSpells.push(spell);return `Learned ${s.name}.`; }
  if(kind==='buy'){
  if(profile.gold<items.potion.buy)return `A potion costs ${items.potion.buy} gold.`;

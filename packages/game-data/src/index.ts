@@ -38,3 +38,5 @@ export * from './island-layout';
 
 export * from './monsters';
 export * from './terrain-plan';
+
+export * from './equipment-tiers';

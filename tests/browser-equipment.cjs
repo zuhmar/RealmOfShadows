@@ -9,10 +9,10 @@ for(const mobile of [false,true])for(const offline of [true,false]){
  await click('#bag-equipment>summary');assert.equal(await page.locator('#equipment-items button').count(),9);
  await page.waitForFunction(()=>[...document.querySelectorAll('#equipment-items img')].every(img=>img.complete&&img.naturalWidth>0));
  for(const id of ['clothTunic','clothHood','woodenShield'])await click(`#equipment-items [data-item="${id}"]`);
- await page.waitForFunction(()=>document.querySelector('#equipment-stats').textContent.startsWith('3 armor'));assert.match(await page.locator('[data-slot="chest"]').textContent(),/Cloth Tunic/);
+ await page.waitForFunction(()=>document.querySelector('#equipment-stats').textContent.startsWith('3 armor'));assert.match(await page.locator('[data-slot="chest"]').textContent(),/Beginner Tunic/);
  await click('[data-slot="chest"]');await page.waitForFunction(()=>document.querySelector('#equipment-stats').textContent.startsWith('2 armor'));assert.match(await page.locator('[data-slot="chest"]').textContent(),/Empty/);
- await click('#equipment-items [data-item="sword"]');await page.waitForFunction(()=>document.querySelector('#equipment-slots').textContent.includes('Training Sword'));
- await click('#close-inventory');await click('#inventory-button');assert.match(await page.locator('#equipment-stats').textContent(),/2 armor.*Training Sword/);
+ await click('#equipment-items [data-item="sword"]');await page.waitForFunction(()=>document.querySelector('#equipment-slots').textContent.includes('Beginner Sword'));
+ await click('#close-inventory');await click('#inventory-button');assert.match(await page.locator('#equipment-stats').textContent(),/2 armor.*Beginner Sword/);
  await page.screenshot({path:`/tmp/realm-equipment-${mobile?'mobile':'desktop'}-${offline?'preview':'online'}.png`});assert.deepEqual(errors,[]);console.log(`PASS equipment ${mobile?'mobile':'desktop'} ${offline?'preview':'online'}: eight slots, sprites, equip/unequip, armor, weapon and reopening bag`);await page.close();
 }
 }finally{await browser.close()}})();

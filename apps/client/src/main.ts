@@ -8,7 +8,7 @@ import {displayDensity,displaySize} from './display';
 import {PaperDoll} from './paper-doll';
 import {setupAccounts,type AccountUI} from './accounts';
 import {Client,type Room} from 'colyseus.js';
-import {regionSize,monsters,monsterKind,monsterRegion,combatRegion,cavernsMap,cavernsObjects,woodsMap,woodsObjects,WORLD,readAppearance,equipmentItems,equipmentSlots,type EquipmentSlot,elderwoodMap,elderwoodObjects,landmarks,characterSprite,regions,portalFor,canTravel,combat as C,items,merchant,rewards,weapons,classes,classRules,skillRequirement,spells,canLearnSpell,isSpell,type RegionId,type Facing} from '@realm/game-data';
+import {regionSize,monsters,monsterKind,monsterRegion,combatRegion,cavernsMap,cavernsObjects,woodsMap,woodsObjects,WORLD,equipmentTiers,readAppearance,equipmentItems,equipmentSlots,type EquipmentSlot,elderwoodMap,elderwoodObjects,landmarks,characterSprite,regions,portalFor,canTravel,combat as C,items,merchant,rewards,weapons,classes,classRules,skillRequirement,spells,canLearnSpell,isSpell,type RegionId,type Facing} from '@realm/game-data';
 import {attackPath,sight,move,pathfind,CombatSimulation,newFighter,Economy,type EconomySnapshot,type Fighter,type Wolf,type CombatEvent,type Point,type Motion,type Input} from '@realm/shared';
 import './style.css';
 import {animatedMonsters,animatedMonster,installMonsterAnimations,playMonster} from './monster-animations';
@@ -103,7 +103,7 @@ class Elderwood extends Phaser.Scene {
  }
  renderInventory(){
  const bag=this.bag;if(!bag)return;document.querySelector('#inventory-summary')!.textContent=`${bag.gold} gold · ${bag.inventory.length} / ${bag.capacity} supply slots · Level ${bag.level}`;
- const key=JSON.stringify([bag.inventory,bag.weapon,bag.equipment,bag.ownedWeapons,bag.ownedEquipment]);if(key===this.inventoryRenderKey)return;this.inventoryRenderKey=key;
+ const key=JSON.stringify([bag.inventory,bag.weapon,bag.equipment,bag.ownedWeapons,bag.ownedEquipment,bag.gold,bag.level]);if(key===this.inventoryRenderKey)return;this.inventoryRenderKey=key;
  const equipped=document.querySelector('#equipment-slots')!,owned=document.querySelector('#equipment-items')!;equipped.replaceChildren();owned.replaceChildren();
  document.querySelector('#equipment-stats')!.textContent=`${bag.armor} armor · ${weapons[bag.weapon].name}`;
  const makeItem=(id:string,name:string,detail:string,action?:()=>void)=>{const element=document.createElement(action?'button':'div');if(element instanceof HTMLButtonElement){element.type='button';element.addEventListener('click',action!);}element.className='equipment-item';element.append(itemSprite(id,name));const title=document.createElement('strong');title.textContent=name;const text=document.createElement('span');text.textContent=detail;element.append(title,text);return element;};
@@ -113,6 +113,12 @@ class Elderwood extends Phaser.Scene {
  }
  for(const id of bag.ownedWeapons){const active=bag.weapon===id;const element=makeItem(id,weapons[id].name,active?'Equipped':`${weapons[id].attack} base attack · Equip`,()=>this.economyAction({kind:'equip',weapon:id}));(element as HTMLButtonElement).disabled=active;element.dataset.item=id;element.classList.toggle('is-equipped',active);owned.append(element);}
  for(const id of bag.ownedEquipment){const definition=equipmentItems[id],active=bag.equipment[definition.slot]===id;const element=makeItem(id,definition.name,`${definition.armor} armor · ${active?'Unequip':'Equip'}`,()=>this.economyAction(active?{kind:'unequip-item',slot:definition.slot}:{kind:'equip-item',item:id}));element.dataset.item=id;element.classList.toggle('is-equipped',active);owned.append(element);}
+ const catalogue=document.querySelector('#equipment-catalogue')!,openTiers=new Set(Array.from(catalogue.querySelectorAll<HTMLDetailsElement>('details[open]')).map(d=>d.dataset.tier));catalogue.replaceChildren();
+ for(const [tier,definition]of Object.entries(equipmentTiers)){
+ const details=document.createElement('details'),summary=document.createElement('summary'),list=document.createElement('div');details.dataset.tier=tier;details.open=openTiers.has(tier);summary.textContent=`${definition.name} set · Level ${definition.level}`;list.className='equipment-catalogue-grid';details.append(summary,list);
+ for(const [id,item]of Object.entries({...equipmentItems,...weapons})){if(item.tier!==tier)continue;const ownedItem=[...bag.ownedEquipment,...bag.ownedWeapons].includes(id as never),stat='armor'in item?`${item.armor} armor`:`${item.attack} attack`;const card=makeItem(id,item.name,`${stat} · ${ownedItem?'Owned':`${item.price} gold`}`,()=>this.economyAction({kind:'buy-equipment',item:id}));card.dataset.buyItem=id;(card as HTMLButtonElement).disabled=ownedItem||bag.level<item.level||bag.gold<item.price;list.append(card);}
+ catalogue.append(details);
+ }
  const grid=document.querySelector('#inventory-grid')!;grid.replaceChildren();for(let i=0;i<bag.capacity;i++){const slot=document.createElement('div');slot.className='inventory-slot';const stack=bag.inventory[i];if(stack){slot.append(itemSprite(stack.item,items[stack.item].name));const name=document.createElement('strong');name.textContent=items[stack.item].name;const count=document.createElement('span');count.textContent=`×${stack.quantity}`;slot.append(name,count);if(stack.item==='potion'){const use=document.createElement('button');use.type='button';use.textContent='Use';use.addEventListener('click',()=>this.economyAction({kind:'potion'}));slot.append(use);}}else slot.textContent='Empty';grid.append(slot);}
  }
  renderRewards(){
