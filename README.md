@@ -4,7 +4,7 @@ A multiplayer fantasy RPG with accounts, saved progression, equipment, island tr
 
 The village [Depot](docs/depot.md) is a visible walk-in tiled building with private, saved item storage.
 
-Players use [class skins with wearable wings and auras](docs/skins-and-cosmetics.md), chosen in the profile’s Wardrobe.
+Players use [themed outfits with wearable wings and auras](docs/skins-and-cosmetics.md), chosen in the profile’s Wardrobe.
 
 ## Local development
 

@@ -7,7 +7,7 @@ export function readProgress(value:unknown):CharacterProgress{
  const s=structuredClone(value) as CharacterProgress,p=s?.profile;
  if(s?.version!==1||!p||!integer(p.xp,totalXp(rewards.levelCap))||!integer(p.gold,Number.MAX_SAFE_INTEGER)||!(p.classId==='citizen'||isClassChoice(p.classId)))throw Error('Invalid character save.');
  if(p.cosmetics===undefined)p.cosmetics=defaultCosmetics();
- if(!validCosmetics(p.cosmetics,p.classId))throw Error('Invalid saved cosmetics.');
+ if(!validCosmetics(p.cosmetics))throw Error('Invalid saved cosmetics.');
  // Older saves receive an empty private Depot without changing bag ownership.
  if(p.depot===undefined)p.depot=emptyDepot();
  const d=p.depot;

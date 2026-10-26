@@ -5,7 +5,7 @@ import json
 import numpy as np
 from scipy import ndimage
 root=Path(__file__).resolve().parents[1];masters=root/'assets/skins/masters';dest=root/'assets/skins/runtime';dest.mkdir(exist_ok=True)
-skins=['citizen','knight','archer','mage','rogue']
+skins=['citizen','knight','archer','mage','rogue','noble','adventurer','merchant','pirate','nomad']
 metadata={}
 def trim(im):
  box=im.getchannel('A').point(lambda a:255 if a>16 else 0).getbbox()
@@ -50,4 +50,4 @@ image=Image.open(masters/'auras.png').convert('RGBA')
 for col,aura in enumerate(['radiance','arcane','embers']):
  cell=image.crop((round(col*image.width/3),0,round((col+1)*image.width/3),image.height));part=cell.crop(trim(cell)).resize((180,58),Image.Resampling.LANCZOS);out=Image.new('RGBA',(192,64));out.alpha_composite(part,(6,3));out.save(dest/f'aura-{aura}.webp',lossless=True)
 (root/'assets/skins/frames.json').write_text(json.dumps(metadata,indent=2)+'\n')
-print('120 aligned full-character poses, 12 directional wing sprites, 3 auras')
+print('240 aligned full-character outfit poses, 12 directional wing sprites, 3 auras')

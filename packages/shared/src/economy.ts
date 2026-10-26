@@ -25,7 +25,7 @@ export class Economy{
  act(id:string,p:Fighter,request:unknown,time:number):string{
  const profile=this.profiles.get(id);if(!profile||p.hp<=0)return 'You cannot use items while defeated.';const fits=(changes:Partial<Profile>)=>inventoryFits(profile,{...profile,...changes});
  if(!request||typeof request!=='object')return 'Invalid action.';const {kind,drop,weapon,classId,spell,item,slot,attribute}=request as {kind:unknown;drop:unknown;weapon:unknown;classId:unknown;spell:unknown;item:unknown;slot:unknown;attribute:unknown};
- if(kind==='cosmetics'){const next=(request as {cosmetics?:unknown}).cosmetics;if(!validCosmetics(next,profile.classId))return 'Choose your class skin or Citizen and valid cosmetic accessories.';profile.cosmetics={...next};return 'Appearance updated.';}
+ if(kind==='cosmetics'){const next=(request as {cosmetics?:unknown}).cosmetics;if(!validCosmetics(next))return 'Choose a valid outfit, wings and aura.';profile.cosmetics={...next};return 'Appearance updated.';}
  if(kind==='depot-deposit'||kind==='depot-withdraw')return transferDepot(profile,p,request as {kind:unknown},this.add.bind(this));
  if(kind==='attribute'){
  if(!isAttribute(attribute))return 'Choose a valid attribute.';

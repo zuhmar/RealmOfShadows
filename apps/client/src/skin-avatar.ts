@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
-import {type CosmeticLook,type Facing} from '@realm/game-data';
+import {skinDefinitions,type CosmeticLook,type Facing} from '@realm/game-data';
 const files=import.meta.glob('../../../assets/skins/runtime/*.webp',{eager:true,query:'?url',import:'default'}) as Record<string,string>;
 export const skinAssets=Object.entries(files).map(([path,url])=>({key:path.split('/').at(-1)!.replace('.webp',''),url}));
-export function installSkinAnimations(scene:Phaser.Scene){for(const skin of ['citizen','knight','archer','mage','rogue'])for(const direction of ['down','left','right','up'])for(const action of ['idle','walk']){const key=`skin-${skin}-${action}-${direction}`,indices=action==='idle'?[0,1]:[2,3,4,5];if(scene.textures.exists(`skin-${skin}-${direction}-0`))scene.anims.create({key,frames:indices.map(i=>({key:`skin-${skin}-${direction}-${i}`})),frameRate:action==='idle'?2:8,repeat:-1});}}
+export function installSkinAnimations(scene:Phaser.Scene){for(const skin of Object.keys(skinDefinitions))for(const direction of ['down','left','right','up'])for(const action of ['idle','walk']){const key=`skin-${skin}-${action}-${direction}`,indices=action==='idle'?[0,1]:[2,3,4,5];if(scene.textures.exists(`skin-${skin}-${direction}-0`))scene.anims.create({key,frames:indices.map(i=>({key:`skin-${skin}-${direction}-${i}`})),frameRate:action==='idle'?2:8,repeat:-1});}}
 /** One fully drawn animated character; accessories are independent cosmetic overlays. */
 export class SkinAvatar extends Phaser.GameObjects.Container{
  sprite:Phaser.GameObjects.Sprite;wings:Phaser.GameObjects.Image;aura:Phaser.GameObjects.Image;
@@ -12,7 +12,7 @@ export class SkinAvatar extends Phaser.GameObjects.Container{
  this.sprite.setScale(.5).setOrigin(.5,154/160);if(this.scene.anims.exists(key))this.sprite.play(key,true);
  const wingKey=`wings-${look.wings}-${facing}`;this.wings.setVisible(look.wings!=='none'&&this.scene.textures.exists(wingKey));if(this.wings.visible){
   // Anchor the actual wing root to the upper back; never scale around the artwork center.
-  const backHeight={citizen:46,knight:46,archer:46,mage:44,rogue:46}[look.skin];
+  const backHeight=skinDefinitions[look.skin].backHeight;
   this.wings.setTexture(wingKey).setOrigin(.5,90/160).setPosition(facing==='left'?8:facing==='right'?-8:0,-backHeight).setScale(.6);
   if(facing==='up')this.bringToTop(this.wings);else this.bringToTop(this.sprite);
  }
