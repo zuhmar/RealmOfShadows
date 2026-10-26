@@ -22,6 +22,7 @@
     "art:elderwood": "tsx scripts/build-elderwood-svg.ts",
     "test:island:browser": "node tests/browser-island.cjs",
     "art:woods": "tsx scripts/build-woods-svg.ts",
+    "art:woods-sections": "node scripts/encode-woods-sections.cjs",
     "art:monsters": "tsx scripts/build-monsters-svg.ts",
     "test:woods:browser": "node tests/browser-woods.cjs",
     "test:generated-art:browser": "node tests/browser-generated-art.cjs",
@@ -33,7 +34,8 @@
     "map:editor": "npm run dev -w @realm/client -- --port 5190",
     "test:map-editor:browser": "node tests/browser-map-editor.cjs",
     "test:woods-portal:browser": "node tests/browser-woods-portal.cjs",
-    "test:display:browser": "node tests/browser-display.cjs"
+    "test:display:browser": "node tests/browser-display.cjs",
+    "test:woods-ground:browser": "node tests/browser-woods-ground.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

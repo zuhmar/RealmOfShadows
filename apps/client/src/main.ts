@@ -1,6 +1,6 @@
 import bagIconUrl from '../../../assets/generated/bag-icon.png?url';
 import {generatedSheets,installGeneratedArt} from './generated-art';
-import {woodsMapAssets} from './woods-map';
+import {woodsMapAssets,installWoodsGround} from './woods-map';
 import {generatedMonsters} from './monster-assets';
 import Phaser from 'phaser';
 import {displayDensity,displaySize} from './display';
@@ -30,6 +30,7 @@ class Elderwood extends Phaser.Scene {
  peers=new Map<string,Phaser.GameObjects.Container>();route:Point[]=[];seq=0;acc=0;online=false;preview=false;touch={x:0,y:0};pendingInteraction:'portal'|'trader'|undefined;sprinting=false;pending:Input[]=[];facing:Facing='down';walking=false;animationStyle=new Map<string,{scale:number;origin:number}>();
  preload(){for(const sheet of generatedSheets)this.load.image(sheet.key,sheet.url);this.load.image(generatedMonsters.key,generatedMonsters.url);for(const asset of woodsMapAssets)this.load.image(asset.key,asset.url);this.load.image(maraAsset.key,maraAsset.url);for(const asset of elderwoodMapAssets)this.load.image(asset.key,asset.url);for(const asset of terrainAssets)this.load.image(asset.key,asset.url);for(const asset of animatedMonsters)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
  create(){
+ installWoodsGround(this);
  installGeneratedArt(this);
  if(this.textures.exists(generatedMonsters.key)){const texture=this.textures.get(generatedMonsters.key);for(const [kind,f]of Object.entries(generatedMonsters.frames))texture.add(kind,0,f.x,f.y,f.w,f.h);}
  try{this.usePaperDoll=localStorage.getItem('realm-appearance')!=='original';}catch{}
