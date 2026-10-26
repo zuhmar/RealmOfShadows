@@ -1,0 +1,19 @@
+const {chromium}=require('playwright'),assert=require('node:assert/strict');
+(async()=>{const browser=await chromium.launch({executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH??'/usr/bin/chromium',args:['--no-sandbox']});try{for(const mobile of [false,true]){
+ const page=await browser.newPage({viewport:mobile?{width:390,height:844}:{width:1280,height:900},isMobile:mobile,hasTouch:mobile});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(k,...a){return /webgl/.test(k)?null:get.call(this,k,...a)}});await page.route('**/matchmake/**',r=>r.abort());await page.goto(process.env.TEST_CLIENT_URL??'http://localhost:5252');await page.locator('#play-guest').click();await page.waitForFunction(()=>document.querySelector('#connection').textContent.includes('Local preview'));
+ await page.evaluate(async()=>{const {game}=await import(document.querySelector('script[src*="/src/main.ts"]').src);window.s=game.scene.scenes[0];const w=s.sim.wolves.get('wolf-1');s.sim.wolves.clear();s.sim.wolves.set(w.id,w);s.applyTravel('woods',{x:8.5,y:11.5,stamina:100});s.cameras.main.setZoom(.6);s.selected=w.id;});
+ await page.waitForFunction(()=>document.querySelector('#combat-target').textContent.includes('In range'));assert.equal(await page.locator('#spell-bar').isVisible(),true);assert.equal(await page.locator('#learned-spells button').count(),0);assert.equal(await page.evaluate(()=>s.wolfViews.get('wolf-1').getData('ring').strokeColor),0xa9e5ae);
+ // A partial hit leaves a lagging health trail and transient impact objects.
+ await page.evaluate(()=>s.sim.damage(s.sim.wolves.get('wolf-1'),7,'local'));await page.waitForFunction(()=>s.wolfViews.get('wolf-1').getData('trailHp')>s.sim.wolves.get('wolf-1').hp);await page.waitForFunction(()=>s.fxObjects.size>0);
+ // Keep the wounded monster stationary while exercising its windup presentation.
+ await page.evaluate(()=>{const w=s.sim.wolves.get('wolf-1');w.target='local';w.mode='windup';w.windupUntil=s.sim.time+2;});await page.waitForFunction(()=>s.wolfViews.get('wolf-1').getData('ring').strokeColor===0xff925f);
+ await page.screenshot({path:`/tmp/combat-warning-${mobile?'mobile':'desktop'}.png`});await page.evaluate(()=>{const w=s.sim.wolves.get('wolf-1');s.sim.damage(w,999,'local');});await page.waitForFunction(()=>s.bag.drops.length===1&&!s.wolfViews.has('wolf-1'));
+ const before=await page.evaluate(()=>({gold:s.bag.gold,x:s.local.x,y:s.local.y}));await page.waitForTimeout(150);
+ const point=await page.evaluate(()=>{const v=[...s.dropViews.values()][0],c=s.cameras.main,r=s.game.canvas.getBoundingClientRect();return {x:r.x+(v.x-c.worldView.x)*c.zoom*r.width/s.game.canvas.width,y:r.y+(v.y-c.worldView.y)*c.zoom*r.height/s.game.canvas.height}});
+ if(mobile)await page.touchscreen.tap(point.x,point.y);else await page.mouse.click(point.x,point.y);
+ await page.waitForFunction(()=>s.bag.drops.length===0);const after=await page.evaluate(()=>({gold:s.bag.gold,x:s.local.x,y:s.local.y,pending:s.pendingLoot,views:s.dropViews.size}));assert.ok(after.gold>before.gold);assert.ok(Math.hypot(after.x-before.x,after.y-before.y)>.5);assert.equal(after.pending,undefined);assert.equal(after.views,0);
+ // Confirm cancellation doesn't leave a queued pickup behind.
+ await page.evaluate(()=>{s.pendingLoot='cancel-test';s.cast('stop')});assert.equal(await page.evaluate(()=>s.pendingLoot),undefined);
+ await page.waitForTimeout(1800);assert.equal(await page.evaluate(()=>s.fxObjects.size),0);assert.deepEqual(errors,[]);await page.screenshot({path:`/tmp/combat-feedback-${mobile?'mobile':'desktop'}.png`});console.log(`PASS ${mobile?'mobile':'desktop'}: range indicator, health trail, warning ring, impact cleanup, real loot click walks and collects once, cancellation`);await page.close();
+}}finally{await browser.close()}})();
