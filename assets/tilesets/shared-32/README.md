@@ -19,7 +19,8 @@ then run `npm run art:map-tiles`.
 ## Large objects
 
 `objects-*.png` are 1024×1024 pages of 32×32 cells. `object-prefabs.json`
-describes 48 complete buildings, trees, portals and other props. Each entry
+describes 72 complete buildings, trees, cave crystals, mining props and other
+objects. Each entry
 retains its original width/height and gives a row-major tile list; `-1` is empty.
 For tile ID `id`, page = `floor(id/1024)` and cell = `id % 1024`; the cell's
 source position is `(cell % 32)*32, floor(cell/32)*32`.
@@ -38,7 +39,8 @@ existing island routes, clearings and collision polygons. Runtime edge tiles
 clip material boundaries to those polygons, so shores, bridges and boss walls
 agree with the server. Camera dimensions, navigation and monster spawns retain
 their existing coordinates. The four current islands all use the tileset;
-Elderwood and Woods retain their detailed placed props.
+Elderwood, Woods and Crystal Caverns have detailed placed props. Caverns uses
+cached material colors so its dark rock and blue floor match on Canvas/WebGL.
 
 The browser placement editor still edits monsters and the portal; it does not
 yet paint terrain. The `.tsj` opens the tile palette in Tiled, but Tiled map

@@ -11,7 +11,7 @@ test('all four woods habitats connect to the portal and spawn on walkable land',
  assert.ok(woodsObjects.length>150);assert.equal(legal({x:1.5,y:10},'woods'),false);assert.equal(legal({x:2.2,y:11.9},'woods'),true);
 });
 test('each monster attacks, credits its own rewards once, and respawns at full health',()=>{
- for(const kind of Object.keys(monsters) as (keyof typeof monsters)[]){const sim=new CombatSimulation(),spawn=monsterSpawns.find(s=>s.kind===kind)!,w=sim.wolves.get(spawn.id)!,stats=monsters[kind];
+ for(const kind of [...new Set(monsterSpawns.map(s=>s.kind))]){const sim=new CombatSimulation(),spawn=monsterSpawns.find(s=>s.kind===kind)!,w=sim.wolves.get(spawn.id)!,stats=monsters[kind];
  for(const [id]of sim.wolves)if(id!==w.id)sim.wolves.delete(id);
  const p={...newFighter(),region:'woods' as const,x:w.x+.4,y:w.y},economy=new Economy();economy.join('a');economy.join('b');
  sim.damage(w,1,'a');sim.tick(.05,[['a',p]]);if(kind!=='wolf'){assert.equal(p.hp,100);assert.equal(w.mode,'windup');sim.tick(kind==='bear'?.86:kind==='boar'?.66:.55,[['a',p]]);}assert.equal(p.hp,100-stats.damage);assert.equal(w.mode,'attack');

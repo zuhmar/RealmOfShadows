@@ -1,5 +1,6 @@
 import {elderwoodMap,elderwoodTerrainGeometry} from './elderwood';
 import {woodsMap,woodsGeometry,woodsTrails,woodsSpawnTrails,woodsClearings,woodsHabitats,woodsEncounterSpawns,woodsPortal} from './woods';
+import {cavernsMap,cavernsFloor,cavernsGeometry,cavernsBossWalls,cavernsTrails} from './caverns';
 import {rectangle,type MapPolygon} from './island-layout';
 export const terrainTileSize=32;
 export const terrainMaterials=['grass','dirt','stone','water','wood','cliff'] as const;
@@ -21,11 +22,20 @@ function clip(polygon:MapPolygon,width:number,height:number):MapPolygon{
 const cache=new Map<string,TerrainPlan>();
 export function terrainPlan(region:string):TerrainPlan{
  const cached=cache.get(region);if(cached)return cached;
- const detailed=region==='woods'||region==='elderwood',map=region==='woods'?woodsMap:elderwoodMap;
+ const detailed=region==='woods'||region==='elderwood'||region==='caverns',map=region==='woods'?woodsMap:region==='caverns'?cavernsMap:elderwoodMap;
  const sourceWidth=detailed?map.width:1536,sourceHeight=detailed?map.height:1152,scale=4/3;
  const width=sourceWidth*scale,height=sourceHeight*scale,layers:TerrainLayerPlan[]=[];
  const add=(name:string,material:TerrainMaterial,polygons:readonly MapPolygon[],tint=0xffffff)=>{layers.push({name,material,tint,polygons:polygons.map(p=>clip(p,sourceWidth,sourceHeight)).filter(p=>p.length>=3).map(p=>{const points=p.map(([x,y])=>[x*scale,y*scale] as const);let area=0;for(let i=0;i<points.length;i++){const a=points[i],b=points[(i+1)%points.length];area+=a[0]*b[1]-b[0]*a[1];}return area<0?points.reverse():points;})});};
- add('meadow',region==='caverns'?'stone':'grass',[rectangle(0,0,sourceWidth,sourceHeight)],region==='woods'?0xd7ead7:region==='swamp'?0x9cb89b:0xffffff);
+ add('meadow',region==='caverns'?'cliff':'grass',[rectangle(0,0,sourceWidth,sourceHeight)],region==='caverns'?0x33334c:region==='woods'?0xd7ead7:region==='swamp'?0x9cb89b:0xffffff);
+ if(region==='caverns'){
+  add('cavern-floor','stone',cavernsFloor,0xa4b4d9);
+  add('crystal-trails','stone',cavernsTrails.flatMap(points=>road(points,72)),0xc4d6ed);
+  add('wyrm-arena','stone',[rectangle(1740,160,1020,720)],0xa1b8cf);
+  add('underground-lake','water',cavernsGeometry.rivers,0x8cb7ef);
+  add('wyrm-walls','cliff',cavernsBossWalls,0x929cb7);
+  add('mine-bridge','wood',cavernsGeometry.bridges);
+  const result={width,height,offsetY:map.offsetY*64,columns:Math.ceil(width/32),rows:Math.ceil(height/32),layers};cache.set(region,result);return result;
+ }
  let trails:{points:readonly (readonly [number,number])[];width:number}[],pockets:MapPolygon[]=[],stone:MapPolygon[]=[];
  if(region==='woods'){
   trails=[...woodsTrails.map(points=>({points,width:110})),...woodsSpawnTrails.map(points=>({points,width:72}))];

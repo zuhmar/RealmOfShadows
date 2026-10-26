@@ -1,8 +1,8 @@
-import {monsters,monsterKind,equipmentItems,equipmentSlots,emptyEquipment,starterEquipment,isEquipment,isEquipmentSlot,equipmentArmor,type Equipment,type EquipmentId,items,rewards,merchant,combat as C,totalXp,levelForXp,type ItemId,classes,weapons,classRules,isClassChoice,isWeapon,skillLevel,spells,isSpell,canLearnSpell,type SpellId,type ClassId,type WeaponId} from '@realm/game-data';
+import {monsters,monsterKind,equipmentItems,equipmentSlots,emptyEquipment,starterEquipment,isEquipment,isEquipmentSlot,equipmentArmor,type RegionId,type Equipment,type EquipmentId,items,rewards,merchant,combat as C,totalXp,levelForXp,type ItemId,classes,weapons,classRules,isClassChoice,isWeapon,skillLevel,spells,isSpell,canLearnSpell,type SpellId,type ClassId,type WeaponId} from '@realm/game-data';
 import {sight,type Fighter,type Kill} from './combat';
 export interface Stack{id:number;item:ItemId;quantity:number}
 export interface Profile{equipment:Equipment;ownedEquipment:EquipmentId[];learnedSpells:SpellId[];classId:ClassId;weapon:WeaponId;ownedWeapons:WeaponId[];skills:{melee:number;distance:number;magic:number};skillXp:{melee:number;distance:number;magic:number};gold:number;xp:number;level:number;inventory:Stack[];potionReadyAt:number}
-export interface Drop{id:string;owner:string;x:number;y:number;gold:number;pelts:number;expires:number}
+export interface Drop{id:string;owner:string;region?:RegionId;x:number;y:number;gold:number;pelts:number;shards?:number;expires:number}
 export interface EconomySnapshot extends Profile{armor:number;account?:{email:string;savedAt:string;state:'ready'|'saving'|'error'}|null;drops:Drop[];capacity:number;nextXp:number;levelXp:number;time:number}
 export class Economy{
  profiles=new Map<string,Profile>();drops=new Map<string,Drop>();lastKill=0;serial=0;
@@ -10,7 +10,7 @@ export class Economy{
  sync(id:string,p:Fighter){const profile=this.profiles.get(id);if(!profile)return;profile.skillXp={melee:p.meleeXp,distance:p.distanceXp,magic:p.magicXp};profile.skills={melee:skillLevel(p.meleeXp),distance:skillLevel(p.distanceXp),magic:skillLevel(p.magicXp)};}
  leave(id:string){this.profiles.delete(id);for(const [key,d] of this.drops)if(d.owner===id)this.drops.delete(key);}
  process(kills:Kill[],players:Map<string,Fighter>|{get(id:string):Fighter|undefined},time:number){
- for(const kill of kills){if(kill.id<=this.lastKill)continue;this.lastKill=kill.id;const p=players.get(kill.owner),profile=this.profiles.get(kill.owner);if(!p||!profile)continue;const reward=kill.kind?monsters[monsterKind(kill.kind)]:{xp:rewards.wolfXp,gold:rewards.wolfGold,pelts:rewards.wolfPelts};profile.xp=Math.min(totalXp(rewards.levelCap),profile.xp+reward.xp);profile.level=levelForXp(profile.xp);const id=`spoils-${kill.id}`;this.drops.set(id,{id,owner:kill.owner,x:kill.x,y:kill.y,gold:reward.gold,pelts:reward.pelts,expires:time+rewards.dropLifetime});}
+ for(const kill of kills){if(kill.id<=this.lastKill)continue;this.lastKill=kill.id;const p=players.get(kill.owner),profile=this.profiles.get(kill.owner);if(!p||!profile)continue;const reward=kill.kind?monsters[monsterKind(kill.kind)]:{xp:rewards.wolfXp,gold:rewards.wolfGold,pelts:rewards.wolfPelts};profile.xp=Math.min(totalXp(rewards.levelCap),profile.xp+reward.xp);profile.level=levelForXp(profile.xp);const id=`spoils-${kill.id}`;this.drops.set(id,{id,owner:kill.owner,region:kill.region??'woods',shards:'shards' in reward?reward.shards:0,x:kill.x,y:kill.y,gold:reward.gold,pelts:reward.pelts,expires:time+rewards.dropLifetime});}
  for(const [id,d] of this.drops)if(time>=d.expires)this.drops.delete(id);
  }
  add(inventory:Stack[],item:ItemId,quantity:number):Stack[]|null{
@@ -36,10 +36,10 @@ export class Economy{
  }
  if(kind==='pickup'){
  if(typeof drop!=='string')return 'Choose a loot bundle.';const d=this.drops.get(drop);
- if(!d||d.owner!==id||time>=d.expires||p.region!=='woods'||Math.hypot(p.x-d.x,p.y-d.y)>rewards.pickupRange||!sight(p,d))return 'Move closer to your loot bundle.';
- const inventory=d.pelts?this.add(profile.inventory,'pelt',d.pelts):profile.inventory.map(s=>({...s}));if(!inventory)return 'Inventory full. Sell materials to free space.';
+ if(!d||d.owner!==id||time>=d.expires||p.region!==(d.region??'woods')||Math.hypot(p.x-d.x,p.y-d.y)>rewards.pickupRange||!sight(p,d,p.region))return 'Move closer to your loot bundle.';
+ let inventory=d.pelts?this.add(profile.inventory,'pelt',d.pelts):profile.inventory.map(s=>({...s}));if(inventory&&d.shards)inventory=this.add(inventory,'crystalShard',d.shards);if(!inventory)return 'Inventory full. Sell materials to free space.';
  // Mutations happen together after every prerequisite passes. A repeated ID finds no drop.
- profile.inventory=inventory;profile.gold+=d.gold;this.drops.delete(drop);return `Collected ${d.gold} gold${d.pelts?` and ${d.pelts} wolf pelt`:``}.`;
+ profile.inventory=inventory;profile.gold+=d.gold;this.drops.delete(drop);return `Collected ${d.gold} gold${d.pelts?` and ${d.pelts} wolf pelt`:``}${d.shards?` and ${d.shards} crystal shard${d.shards===1?'':'s'}`:``}.`;
  }
  if(kind==='potion'){
  const stack=profile.inventory.find(s=>s.item==='potion'&&s.quantity>0);
@@ -56,8 +56,8 @@ export class Economy{
  profile.gold-=items.potion.buy;profile.inventory=inventory;return 'Bought one healing potion.';
  }
  if(kind==='sell'){
- const count=profile.inventory.filter(s=>s.item==='pelt').reduce((sum,s)=>sum+s.quantity,0);if(!count)return 'No wolf pelts to sell.';
- profile.inventory=profile.inventory.filter(s=>s.item!=='pelt');profile.gold+=count*items.pelt.sell;return `Sold ${count} wolf pelts for ${count*items.pelt.sell} gold.`;
+ const count=profile.inventory.filter(s=>s.item==='pelt').reduce((sum,s)=>sum+s.quantity,0),shards=profile.inventory.filter(s=>s.item==='crystalShard').reduce((sum,s)=>sum+s.quantity,0);if(!count&&!shards)return 'No materials to sell.';
+ const gold=count*items.pelt.sell+shards*items.crystalShard.sell;profile.inventory=profile.inventory.filter(s=>s.item!=='pelt'&&s.item!=='crystalShard');profile.gold+=gold;return shards?`Sold materials for ${gold} gold.`:`Sold ${count} wolf pelts for ${gold} gold.`;
  }
  return 'Invalid action.';
  }

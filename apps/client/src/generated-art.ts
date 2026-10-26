@@ -2,7 +2,7 @@ import type Phaser from 'phaser';
 import {generatedSheets,type GeneratedFrame} from './generated-manifest';
 import {installMapObjectTiles} from './map-object-tiles';
 export {generatedSheets};
-export const generatedSourceSheets=generatedSheets.filter(sheet=>!['generated-buildings','generated-village','generated-forest'].includes(sheet.key));
+export const generatedSourceSheets=generatedSheets.filter(sheet=>Boolean(sheet.url));
 // Atlas extraction is normal game texture preparation. No generated source PNG
 // is rewritten; original logical canvases and transparent rig offsets are retained.
 export function installGeneratedArt(scene:Phaser.Scene){

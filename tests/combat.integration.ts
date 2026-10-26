@@ -1,4 +1,4 @@
-import {merchant,portalFor,monsterSpawns} from '@realm/game-data';
+import {merchant,portalFor,monsterSpawns,allMonsterSpawns} from '@realm/game-data';
 import {walkTo} from './helpers/walk';
 import {Client} from 'colyseus.js';
 import assert from 'node:assert/strict';
@@ -7,7 +7,7 @@ const a=await new Client(endpoint).joinOrCreate('elderwood'),b=await new Client(
 for(const room of [a,b])for(const name of ['combat-event','combat-error','travel-complete','travel-error','economy-state','economy-result'])room.onMessage(name,()=>{});
 let bag:any,observerBag:any;a.onMessage('economy-state',state=>bag=state);b.onMessage('economy-state',state=>observerBag=state);
 try{
- await wait(200);assert.equal(a.roomId,b.roomId);assert.equal(a.state.wolves.size,monsterSpawns.length);
+ await wait(200);assert.equal(a.roomId,b.roomId);assert.equal(a.state.wolves.size,allMonsterSpawns.length);
  a.send('travel','woods');b.send('travel','woods');await wait(200);
  a.send('combat',{kind:'bolt',target:'wolf-1',damage:99999});await wait(150);assert.equal(a.state.wolves.get('wolf-1').hp,65);
  a.send('combat',{kind:'stop'});await wait(150);

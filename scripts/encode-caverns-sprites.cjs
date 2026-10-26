@@ -1,0 +1,5 @@
+const fs=require('node:fs/promises'),path=require('node:path'),{chromium}=require('playwright');
+(async()=>{const browser=await chromium.launch({executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH??'/usr/bin/chromium',args:['--no-sandbox']});try{
+ const page=await browser.newPage(),folder=path.resolve(__dirname,'../assets/monsters/generated');
+ for(const kind of ['bat','crawler','golem','wyrm']){const input=await fs.readFile(path.join(folder,`${kind}-animations.png`));const result=await page.evaluate(async src=>{const image=new Image();image.src=src;await image.decode();const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;canvas.getContext('2d').drawImage(image,0,0);return canvas.toDataURL('image/webp',.96).split(',')[1];},'data:image/png;base64,'+input.toString('base64'));const output=Buffer.from(result,'base64');await fs.writeFile(path.join(folder,`${kind}-animations.webp`),output);console.log(`${kind}: ${input.length} → ${output.length} bytes`);}
+ }finally{await browser.close()}})();

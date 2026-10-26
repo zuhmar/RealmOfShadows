@@ -50,3 +50,13 @@ Painted equipment uses the same materials as those body parts. Preview actual
 assembled front, side and rear views both equipped and unequipped, in-world and
 in portraits, before accepting character changes. Review complete maps with
 those characters present before accepting a new art batch.
+
+Crystal Caverns uses the same slate/wood construction with cyan and amethyst
+mineral accents, compact facets and clean outlines. Its live 32px material
+colors are cached into terrain textures for Canvas/WebGL parity. Cave props
+are in `generated/caverns-props.png`; monster PNG masters retain four rows of
+down/left/right/up poses, with 2 idle, 4 walk, 1 attack and 1 defeated pose each.
+Alpha-inspected crops and fixed baselines define their animation frames. Bats
+and crawlers use 128px runtime canvases, golems 192px and the Wyrm 256px, with
+matching display scales; source sheets are released after pose extraction.
+WebP derivatives reduce download size while the PNG masters remain available.

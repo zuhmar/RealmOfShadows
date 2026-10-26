@@ -1,4 +1,4 @@
-export const items={pelt:{name:'Wolf Pelt',stack:20,sell:4},potion:{name:'Healing Potion',stack:10,buy:12,heal:40,cooldown:3}} as const;
+export const items={pelt:{name:'Wolf Pelt',stack:20,sell:4},potion:{name:'Healing Potion',stack:10,buy:12,heal:40,cooldown:3},crystalShard:{name:'Crystal Shard',stack:20,sell:8}} as const;
 export type ItemId=keyof typeof items;
 export const rewards={wolfXp:35,wolfGold:6,wolfPelts:1,capacity:12,dropLifetime:90,pickupRange:1.8,levelCap:100,levelFactor:100};
 export const merchant={name:'Mara the Trader',x:9.6875,y:7.9,range:2};
