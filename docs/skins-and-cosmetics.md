@@ -17,7 +17,7 @@ Auras have None, Golden Radiance, Arcane Circle and Ember Halo choices. One of
 each can be worn at once or removed. This first collection is freely available;
 there is no purchase, loot roll or combat bonus. Cosmetics do not consume bag or
 Depot slots and do not affect the grid footprint, speed, damage or learned spells.
-Wings follow all four facing directions and flutter as whole accessory sprites;
+Wings follow all four facing directions using measured upper-back attachment roots;
 auras pulse beneath the feet. Neither modifies character body parts.
 
 Selections update the in-world character and profile portraits. The server
@@ -36,9 +36,11 @@ No database migration is required. Deploy Vercel and Render from the same commit
 
 ## Artwork and animation
 
-The Citizen reuses its existing full-character idle/walk sheets. The four class
-masters each contain two idle and four walk poses for down, left, right and up:
-96 new character poses. No held weapon is baked into the outfits; combat still
+All five skins are original, distinct characters made without the supplied references:
+Citizen courier (auburn hair and teal overalls), dwarf Knight (white beard and ruby armor),
+elf Archer (mint ponytail), moon-witch Mage (silver bob and crescent hat), and foxfolk Rogue
+(orange fur and indigo leathers). Each master contains two idle and four walk poses for down, left, right and up:
+120 character poses. No held weapon is baked into the outfits; combat still
 uses the equipped weapon. The Archer carries a decorative quiver.
 
 Original generated masters are preserved in `assets/skins/masters/`. Run
@@ -50,7 +52,13 @@ folded profile views. The pipeline also extracts twelve directional wing sprites
 (192×64), all lossless WebP. `assets/skins/frames.json` records source bounds.
 Runtime assets are loaded from `assets/skins/runtime/` without loading masters.
 
-`SkinAvatar` draws a full-character animation sprite, a wing pair behind it and
+Wing extraction preserves a fixed scale across directions and anchors at the measured
+root rather than centering each alpha bounding box. Profile roots attach at the inner
+edge; their horizontal offsets follow the wearer’s back. Rear-facing wings render over
+the character, while front-facing wings render behind it. No image-center flutter
+scaling is used. Extraction requires Pillow, NumPy and SciPy.
+
+`SkinAvatar` draws a full-character animation sprite, a directional wing pair and
 an aura beneath it. Directional poses are drawn artwork; walking does not
 rotate or move separate limbs. Portraits render the same selected look.
 
