@@ -14,7 +14,7 @@ export const generatedSheets:GeneratedSheet[]=[
  // metadata for tooling; the original master atlases are no longer downloaded.
  {key:'generated-buildings',url:'',scale:2,frames:generatedFrames.buildings},
  {key:'generated-village',url:'',scale:2,frames:generatedFrames.village},
- {key:'generated-forest',url:'',scale:2,frames:generatedFrames.forest},
+ {key:'generated-forest',url:'',scale:2,frames:{...generatedFrames.forest,'woods-portal':generatedFrames.village['elderwood-portal']}},
  {key:'generated-items',url:itemsUrl,scale:1,frames:generatedFrames.items},
  {key:'generated-character',url:characterUrl,scale:1,frames:generatedFrames.character},
  {key:'generated-hooded',url:hoodedUrl,scale:1,frames:generatedFrames.hooded},

@@ -200,16 +200,18 @@ class Elderwood extends Phaser.Scene {
  if(!illustratedMap)this.add.text(16.5*64,12.2*64,config.name.toUpperCase(),{fontFamily:'Georgia',fontSize:'18px',color:'#535d42',letterSpacing:3}).setOrigin(.5);
  for(const b of config.obstacles){const rock=this.add.graphics();rock.fillStyle(config.accent,.45);rock.fillRoundedRect(b.x*64,b.y*64,b.w*64,b.h*64,24);rock.lineStyle(3,config.accent,.6);rock.strokeRoundedRect(b.x*64,b.y*64,b.w*64,b.h*64,24);rock.setDepth((b.y+b.h)*64);}
  const x=portalFor(this.region).x*64,y=portalFor(this.region).y*64;
- const illustratedPortal=illustratedMap&&this.textures.exists(`${mapPrefix}-portal`);
+ const illustratedPortal=this.textures.exists('elderwood-portal');
  const portal=this.add.graphics();
  if(illustratedPortal){portal.fillStyle(0xc576ff,.12);portal.fillEllipse(x,y,160,48);portal.setDepth(-1);}
- else{portal.fillStyle(0x182f3c,.8);portal.fillEllipse(x,y,128,50);portal.lineStyle(5,0xd9c591);portal.strokeEllipse(x,y,128,50);portal.fillStyle(config.accent,.25);portal.fillEllipse(x,y-48,80,104);portal.lineStyle(5,config.accent);portal.strokeEllipse(x,y-48,80,104);portal.lineStyle(2,0xf0f6ff,.8);portal.strokeEllipse(x,y-48,60,86);portal.setDepth(y);}this.portalGlow=portal;
- const portalArt=mapObjects.find(object=>object.key===`${mapPrefix}-portal`)!;
+ this.portalGlow=portal;
+ const portalArt=illustratedMap?mapObjects.find(object=>object.key===`${mapPrefix}-portal`):undefined;
  const portalScale=mapConfig.worldWidth*64/mapConfig.width;
- const portalCenterX=illustratedPortal?(portalArt.x+portalArt.w/2)*portalScale:x;
- const portalTop=illustratedPortal?portalArt.y*portalScale+mapConfig.offsetY*64:y-120;
- this.add.text(portalCenterX,portalTop-(illustratedPortal?18:0),'WAYFARER PORTAL',{fontFamily:'Georgia',fontSize:'14px',color:'#e9e4cb',backgroundColor:'#193b36'}).setOrigin(.5).setDepth(y+1);
- const target=this.add.zone(portalCenterX,illustratedPortal?portalTop+portalArt.h*portalScale/2:y-45,illustratedPortal?portalArt.w*portalScale:140,illustratedPortal?portalArt.h*portalScale:140).setInteractive({useHandCursor:true}).setDepth(y+2);
+ const portalWidth=(portalArt?.w??200)*portalScale,portalHeight=(portalArt?.h??179)*portalScale;
+ const portalCenterX=portalArt?(portalArt.x+portalArt.w/2)*portalScale:x;
+ const portalTop=portalArt?portalArt.y*portalScale+mapConfig.offsetY*64:y-portalHeight;
+ if(!illustratedMap)this.add.image(portalCenterX,portalTop,'elderwood-portal').setOrigin(.5,0).setDisplaySize(portalWidth,portalHeight).setDepth(y);
+ this.add.text(portalCenterX,portalTop-18,'WAYFARER PORTAL',{fontFamily:'Georgia',fontSize:'14px',color:'#e9e4cb',backgroundColor:'#193b36'}).setOrigin(.5).setDepth(y+1);
+ const target=this.add.zone(portalCenterX,portalTop+portalHeight/2,portalWidth,portalHeight).setInteractive({useHandCursor:true}).setDepth(y+2);
  target.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target!==this.game.canvas)return;this.approachInteraction('portal');});
  if(this.region==='elderwood'){const trader=this.makeAvatar(0xddc79b,merchant.name,false);trader.setPosition(merchant.x*64,merchant.y*64).setDepth(merchant.y*64);const sprite=trader.getData('sprite') as Phaser.GameObjects.Sprite|undefined;if(sprite&&this.textures.exists(maraAsset.key))sprite.setTexture(maraAsset.key,'idle-down-0').setOrigin(.5,maraAsset.origin).setScale(maraAsset.scale).play('mara-idle-down');const tradeZone=this.add.zone(merchant.x*64,merchant.y*64-30,100,110).setInteractive({useHandCursor:true}).setDepth(merchant.y*64+1);tradeZone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target===this.game.canvas&&!pointer.rightButtonDown())this.approachInteraction('trader');});}
  this.worldObjects=this.children.list.filter(obj=>!existing.has(obj));

@@ -27,6 +27,9 @@ source position is `(cell % 32)*32, floor(cell/32)*32`.
 The game reconstructs each prefab once from these pieces. A building still
 spans many tiles and keeps its existing depth order, collision footprint and
 placement. The source paintings in `assets/generated/` remain unchanged.
+All live portals share Elderwood's portal painting and its 200×179 logical
+dimensions, including the portals on the placeholder islands. The Woods
+prefab is generated from that same master to prevent its appearance drifting.
 
 ## Layout and editing
 
