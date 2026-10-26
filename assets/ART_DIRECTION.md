@@ -14,6 +14,12 @@ Avoid neon lime grass, polished plastic, oversized gold ornament and unrelated
 portrait/icon rendering styles. Keep consistent head/body proportions, camera,
 lighting and material treatment across characters, equipment, props and monsters.
 
+Ground PNGs currently have a 1536×1024 source resolution. Preserve crisp edges
+and broad details when repainting; enlarging their display size does not add
+source detail. The game uses a density-aware backing canvas (up to 2×) with
+matching camera zoom to retain the same field of view and touch coordinates.
+Do not use nearest-neighbor filtering to disguise softness in the painted art.
+
 All repaint batches should reference this same model, retain existing asset
 identities and silhouettes, and preserve alpha. Grounds retain exact geography;
 props retain their registered footprint and baseline. The original uploaded

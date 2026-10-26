@@ -3,6 +3,7 @@ import {generatedSheets,installGeneratedArt} from './generated-art';
 import {woodsMapAssets} from './woods-map';
 import {generatedMonsters} from './monster-assets';
 import Phaser from 'phaser';
+import {displayDensity,displaySize} from './display';
 import {PaperDoll} from './paper-doll';
 import {setupAccounts,type AccountUI} from './accounts';
 import {Client,type Room} from 'colyseus.js';
@@ -18,6 +19,7 @@ import {elderwoodMapAssets} from './elderwood-map';
 let noticeTimer:ReturnType<typeof setTimeout>;
 const notice=(s:string)=>{const element=document.querySelector('#notice')!;element.textContent=s;element.classList.remove('is-quiet');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>element.classList.add('is-quiet'),5500);};
 class Elderwood extends Phaser.Scene {
+ viewZoom=.85;
  region:RegionId='elderwood';worldObjects:Phaser.GameObjects.GameObject[]=[];portalGlow?:Phaser.GameObjects.Graphics;traveling=false;travelTimer?:ReturnType<typeof setTimeout>;
  usePaperDoll=true;portraitKey='';inventoryRenderKey='';economy=new Economy();bag?:EconomySnapshot;dropViews=new Map<string,Phaser.GameObjects.Container>();shopOpen=false;lastXp=0;
  fxObjects=new Set<Phaser.GameObjects.GameObject>();sim=new CombatSimulation();fighter:Fighter=newFighter();wolfViews=new Map<string,Phaser.GameObjects.Container>();selected='';autoAttack=false;chaseAt=0;
@@ -53,7 +55,7 @@ class Elderwood extends Phaser.Scene {
  this.drawPortraits();
  this.avatar=this.makeAvatar(0xf0cc80,'You');this.bodySprite=this.avatar.getData('sprite');this.avatar.setPosition(this.local.x*64,this.local.y*64);
  if(characterSprite&&this.textures.exists(characterSprite.key)){this.avatar.removeAll(true);this.bodySprite=this.add.sprite(0,0,characterSprite.key).setOrigin(characterSprite.anchor.x,characterSprite.anchor.y).setScale(characterSprite.scale);this.avatar.add(this.bodySprite);for(const [action,directions] of Object.entries(characterSprite.animations))for(const [direction,a] of Object.entries(directions!)){this.anims.create({key:`${action}-${direction}`,frames:a.frames.map(frame=>({key:characterSprite!.key,frame})),frameRate:a.fps,repeat:-1});}}
- this.cameras.main.setBounds(0,0,WORLD.width*64,WORLD.height*64).startFollow(this.avatar,true,.12,.12).setZoom(.85);
+ this.cameras.main.setBounds(0,0,WORLD.width*64,WORLD.height*64).startFollow(this.avatar,true,.12,.12).setZoom(this.viewZoom*displayDensity());
 // Track game keys without global preventDefault: disabling the scene keyboard
  // alone does not stop Phaser from swallowing letters typed into DOM forms.
  this.keys=this.input.keyboard!.addKeys('W,A,S,D,UP,LEFT,DOWN,RIGHT,SHIFT,SPACE,ONE,TWO,THREE,I,E,ESC',false) as typeof this.keys;
@@ -71,7 +73,7 @@ class Elderwood extends Phaser.Scene {
  document.querySelector<HTMLImageElement>('#bag-icon')!.src=bagIconUrl;
  for(const tab of ['profile','settings'])document.querySelector(`#${tab}-tab`)!.addEventListener('click',()=>{for(const name of ['profile','settings']){document.querySelector<HTMLElement>(`#${name}-content`)!.hidden=name!==tab;document.querySelector(`#${name}-tab`)!.setAttribute('aria-selected',String(name===tab));}});
  const sprint=document.querySelector('#sprint')!;sprint.addEventListener('click',()=>{this.sprinting=!this.sprinting;sprint.setAttribute('aria-pressed',String(this.sprinting));sprint.textContent=`Sprint: ${this.sprinting?'on':'off'}`;});
- for(const [id,delta] of [['zoom-in',.1],['zoom-out',-.1]] as const)document.querySelector(`#${id}`)!.addEventListener('click',()=>this.cameras.main.setZoom(Phaser.Math.Clamp(this.cameras.main.zoom+delta,.5,1.5)));
+ for(const [id,delta] of [['zoom-in',.1],['zoom-out',-.1]] as const)document.querySelector(`#${id}`)!.addEventListener('click',()=>{this.viewZoom=Phaser.Math.Clamp(this.viewZoom+delta,.5,1.5);this.cameras.main.setZoom(this.viewZoom*displayDensity());});
  window.addEventListener('blur',()=>{this.touch={x:0,y:0};this.pendingInteraction=undefined;this.route=[];this.input.keyboard?.resetKeys();});
  this.input.keyboard!.enabled=false;this.accounts=setupAccounts(()=>this.reconnectAccount(),()=>this.leaveAccount());
  }
@@ -291,4 +293,5 @@ class Elderwood extends Phaser.Scene {
  (document.querySelector('#stamina') as HTMLMeterElement).value=this.local.stamina;
  }
 }
-export const game=new Phaser.Game({type:Phaser.AUTO,parent:'game',backgroundColor:'#233c38',scale:{mode:Phaser.Scale.RESIZE,width:window.innerWidth,height:window.innerHeight},scene:Elderwood,render:{antialias:true},input:{activePointers:3}});
+export const game=new Phaser.Game({type:Phaser.AUTO,parent:'game',backgroundColor:'#233c38',scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH,...displaySize()},scene:Elderwood,render:{antialias:true,roundPixels:true},input:{activePointers:3}});
+window.addEventListener('resize',()=>{const {width,height}=displaySize();game.scale.setGameSize(width,height);const scene=game.scene.getScenes(true)[0] as Elderwood|undefined;if(scene)scene.cameras.main.setZoom(scene.viewZoom*displayDensity());});
