@@ -6,8 +6,8 @@ import {cavernsSpawns} from './caverns';
 export const monsterAggressiveLevel=6;
 export const monsters={
  wolf:{name:'Forest Wolf',level:2,hp:65,damage:9,speed:2.6,detect:3,range:1,cooldown:1.2,leash:7,respawn:10,xp:35,gold:6,pelts:1,boss:false},
- spider:{name:'Thorn Spider',level:4,hp:85,damage:11,speed:2.9,detect:4,range:1,cooldown:1,leash:6,respawn:15,xp:30,gold:12,pelts:0,boss:false},
- boar:{name:'Wild Boar',level:6,hp:130,damage:16,speed:3.2,detect:4,range:1.1,cooldown:1.6,leash:6,respawn:20,xp:45,gold:18,pelts:0,boss:false},
+ spider:{name:'Thorn Spider',level:4,hp:85,damage:11,speed:2.9,detect:4,range:1,cooldown:1,leash:6,respawn:15,xp:45,gold:12,pelts:0,boss:false},
+ boar:{name:'Wild Boar',level:6,hp:130,damage:16,speed:3.2,detect:4,range:1.1,cooldown:1.6,leash:6,respawn:20,xp:60,gold:18,pelts:0,boss:false},
  bear:{name:'Forest Bear',level:10,hp:520,damage:25,speed:2.1,detect:4.5,range:1.4,cooldown:1.8,leash:5,respawn:90,xp:180,gold:75,pelts:0,boss:true},
  bat:{name:'Cave Bat',level:12,hp:150,damage:13,speed:3.1,detect:3.5,range:1,cooldown:1.1,leash:6,respawn:15,xp:80,gold:15,pelts:0,shards:1,boss:false},
  crawler:{name:'Shard Crawler',level:14,hp:210,damage:18,speed:2.7,detect:4,range:1.1,cooldown:1.9,leash:6,respawn:20,xp:110,gold:22,pelts:0,shards:1,boss:false},

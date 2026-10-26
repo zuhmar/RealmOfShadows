@@ -1,10 +1,28 @@
 # Monster equipment and identification
 
-Every current monster has a 20% chance to include one unidentified item in its
-private loot bundle; bosses have a 65% chance. The item is chosen from all eleven
-armor/weapon types in the island's tier. Materials, gold and experience continue
-to drop as before. Future islands use the same tier table when their encounters
-are added; this change does not add those maps or monsters.
+Equipment drop chances scale with encounter difficulty. Each successful drop
+contains one unidentified item, chosen uniformly from the eleven armor/weapon
+types in that island's tier. Rarity odds are the same for every monster.
+Lower floors retain the equipment tier of their parent island.
+
+| Monster | Equipment chance | EXP | Gold |
+| --- | ---: | ---: | ---: |
+| Forest Wolf | 20% | 35 | 6 |
+| Thorn Spider | 24% | 45 | 12 |
+| Wild Boar | 30% | 60 | 18 |
+| Forest Bear | 75% | 180 | 75 |
+| Cave Bat | 22% | 80 | 15 |
+| Shard Crawler | 26% | 110 | 22 |
+| Crystal Golem | 32% | 155 | 35 |
+| Crystal Wyrm | 80% | 650 | 160 |
+
+The Woods rates average one equipment drop per five wolves, 4.2 spiders or
+3.3 boars. These are independent rolls, not guaranteed intervals. Bosses are
+more rewarding without guaranteeing equipment. Spider EXP rises from 30 to 45
+and boar EXP from 45 to 60; existing character EXP, gear, rarity odds, equip
+levels, gold, material rewards and identification costs are preserved.
+Future islands use the tier table when their encounters are added; this pass
+does not add those maps or monsters.
 
 | Island | Equipment tier | Minimum equip level |
 | --- | --- | ---: |
@@ -51,7 +69,7 @@ Mara buys unequipped monster gear (identified or unidentified), catalogue gear,
 and supply stacks including potions. Prices are server-controlled and shown in
 the bag while visiting her. Free starter catalogue items sell for zero gold,
 preventing buy/sell loops. Repeated sale requests cannot credit an item twice.
-Bank and house storage are not implemented yet.
+Personal Depot storage is available; house storage is not implemented.
 
 Starter and trader equipment remain ordinary identified catalogue items. Old
 saves migrate to empty individual-item bags while retaining equipment, skills,
@@ -63,3 +81,12 @@ consume, or fill existing stacks, but cannot increase slot use until below the
 limit. Unequipping and class starter grants must also fit. No database migration
 is needed. Deploy the client and server from the same
 commit because snapshots and the player weapon-bonus schema changed.
+
+Bag item comparisons show the equipped slot being replaced, attack/armor deltas,
+and all gained or lost attributes. Weapon cards also show base weapon attack per
+second, range and a skill change warning. This rate excludes skill scaling,
+attributes and enemy defense; it is not promised damage per second. Unidentified
+stats remain hidden until the server confirms the roll. The bag highlights the
+newly revealed card once and announces its name/stats in a status banner; reduced
+motion disables the reveal animation. The bag's collapsed loot guide lists tier
+progression, encounter drop chances and rarity odds.

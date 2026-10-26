@@ -8,7 +8,7 @@ export type GearBase=EquipmentId|WeaponId;
 export type GearSlot=EquipmentSlot|'weapon';
 export interface GearInstance{id:string;base:GearBase;rarity:Rarity|null}
 export type GearLoadout=Record<GearSlot,string|null>;
-export const lootEquipmentRules={capacity:32,maxInstances:40,dropChance:.20,bossDropChance:.65};
+export const lootEquipmentRules={capacity:32,maxInstances:40};
 export const emptyGearLoadout=():GearLoadout=>({weapon:null,head:null,chest:null,legs:null,feet:null,offhand:null,neck:null,ring:null});
 export const islandEquipmentTiers:Record<string,EquipmentTier>={woods:'beginner',caverns:'copper',swamp:'iron',tundra:'gold',celestial:'mythril',peaks:'dragon',fortress:'shadow'};
 export function isGearBase(value:unknown):value is GearBase{return isEquipment(value)||isWeapon(value);}
@@ -22,3 +22,19 @@ export function gearStats(item:GearInstance){const definition=gearDefinition(ite
  return {armor:isEquipment(item.base)?value:0,attack:isWeapon(item.base)?value:0,bonuses};
 }
 export function gearName(item:GearInstance){return `${item.rarity?rarityDefinitions[item.rarity].name:'Unidentified'} ${gearDefinition(item.base).name}`;}
+
+// A harder encounter yields equipment more often, without changing rarity odds
+// or letting a region skip its assigned equipment tier.
+export const monsterEquipmentChances={wolf:.20,spider:.24,boar:.30,bear:.75,bat:.22,crawler:.26,golem:.32,wyrm:.80} as const;
+export function equipmentDropChance(kind:keyof typeof monsterEquipmentChances){return monsterEquipmentChances[kind];}
+
+export interface GearComparisonLoadout{gear:GearInstance[];equippedGear:GearLoadout;equipment:Record<EquipmentSlot,EquipmentId|null>;weapon:WeaponId}
+/** Compare the replaced slot only; other gear and permanent attributes cancel. */
+export function compareGear(item:GearInstance,loadout:GearComparisonLoadout){
+ if(!item.rarity)return null;
+ const slot=gearSlot(item.base),current=loadout.gear.find(g=>g.id===loadout.equippedGear[slot]&&g.rarity),base=slot==='weapon'?loadout.weapon:loadout.equipment[slot];
+ const before=current?gearStats(current):base?gearStats({id:'comparison',base,rarity:null}):{attack:0,armor:0,bonuses:{strength:0,dexterity:0,intelligence:0,vitality:0}};
+ const after=gearStats(item),bonuses={...after.bonuses};for(const key of Object.keys(bonuses) as AttributeId[])bonuses[key]-=before.bonuses[key];
+ const previousWeapon=slot==='weapon'?weapons[loadout.weapon]:null,nextWeapon=slot==='weapon'?weapons[item.base as WeaponId]:null;
+ return {currentName:current?gearName(current):base?gearDefinition(base).name:'Empty slot',attack:after.attack-before.attack,armor:after.armor-before.armor,bonuses,weapon:previousWeapon&&nextWeapon?{before:previousWeapon,after:nextWeapon,beforeAttack:before.attack,afterAttack:after.attack}:null};
+}
