@@ -1,5 +1,5 @@
 export const skillRules={cap:100,factor:100,hitXp:5,novaHitXp:3};
-export type SkillId='melee'|'distance'|'magic';
+export type SkillId='melee'|'distance'|'magic'|'shielding';
 export function skillLevel(xp:number){return Math.min(skillRules.cap,Math.floor(Math.sqrt(Math.max(0,xp)/skillRules.factor))+1);}
 export function skillRequirement(level:number){return skillRules.factor*(level-1)**2;}
 export const weapons={
@@ -38,4 +38,4 @@ export type ClassId='citizen'|keyof typeof classes;
 export const classRules={unlockLevel:5,starterWeapons:['wand','sword','bow','dagger'] as WeaponId[],wolfDefense:4};
 export function isWeapon(value:unknown):value is WeaponId{return typeof value==='string'&&Object.hasOwn(weapons,value);}
 export function isClassChoice(value:unknown):value is keyof typeof classes{return typeof value==='string'&&Object.hasOwn(classes,value);}
-export function weaponDamage(weapon:WeaponId,xp:number,multiplier=1){return Math.max(1,Math.floor((weapons[weapon].attack+.6*skillLevel(xp))*multiplier-.5*classRules.wolfDefense));}
+export function weaponDamage(weapon:WeaponId,xp:number,multiplier=1,attributeBonus=0){return Math.max(1,Math.floor((weapons[weapon].attack+.6*skillLevel(xp)+attributeBonus)*multiplier-.5*classRules.wolfDefense));}

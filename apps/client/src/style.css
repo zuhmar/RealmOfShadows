@@ -47,3 +47,5 @@ header{top:116px;left:20px;gap:6px}.crest{font-size:17px}header small{font-size:
 @media(max-width:600px){nav{bottom:max(12px,env(safe-area-inset-bottom));left:50%;right:auto;transform:translateX(-50%)}#spell-bar{bottom:96px}#settings-content{max-width:100%}}
 
 #equipment-catalogue>details{margin:10px 0;border-top:1px solid #b8a57344;padding-top:10px}.equipment-catalogue-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px}#equipment-shop{margin-top:16px}#equipment-shop summary{min-height:32px;cursor:pointer}
+
+#attributes-panel{margin:12px 0;border:1px solid #b8a57355;border-radius:10px;padding:10px}#attributes-panel>summary{cursor:pointer;min-height:28px;font-size:12px}.attribute-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0;font-size:13px}.attribute-row button{min-width:44px;min-height:44px;padding:4px;font-size:20px}#attribute-effects{font-size:11px;line-height:1.5;color:#bdcdb7}#skill-shielding{cursor:help}

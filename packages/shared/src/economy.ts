@@ -1,13 +1,13 @@
-import {monsters,monsterKind,equipmentItems,equipmentSlots,emptyEquipment,starterEquipment,isEquipment,isEquipmentSlot,equipmentArmor,type RegionId,type Equipment,type EquipmentId,items,rewards,merchant,combat as C,totalXp,levelForXp,type ItemId,classes,weapons,classRules,isClassChoice,isWeapon,skillLevel,spells,isSpell,canLearnSpell,type SpellId,type ClassId,type WeaponId} from '@realm/game-data';
+import {newAttributes,attributePoints,attributeRules,isAttribute,maxHealth,type Attributes,type SkillId,monsters,monsterKind,equipmentItems,equipmentSlots,emptyEquipment,starterEquipment,isEquipment,isEquipmentSlot,equipmentArmor,type RegionId,type Equipment,type EquipmentId,items,rewards,merchant,combat as C,totalXp,levelForXp,type ItemId,classes,weapons,classRules,isClassChoice,isWeapon,skillLevel,spells,isSpell,canLearnSpell,type SpellId,type ClassId,type WeaponId} from '@realm/game-data';
 import {sight,type Fighter,type Kill} from './combat';
 export interface Stack{id:number;item:ItemId;quantity:number}
-export interface Profile{equipment:Equipment;ownedEquipment:EquipmentId[];learnedSpells:SpellId[];classId:ClassId;weapon:WeaponId;ownedWeapons:WeaponId[];skills:{melee:number;distance:number;magic:number};skillXp:{melee:number;distance:number;magic:number};gold:number;xp:number;level:number;inventory:Stack[];potionReadyAt:number}
+export interface Profile{attributes:Attributes;equipment:Equipment;ownedEquipment:EquipmentId[];learnedSpells:SpellId[];classId:ClassId;weapon:WeaponId;ownedWeapons:WeaponId[];skills:Record<SkillId,number>;skillXp:Record<SkillId,number>;gold:number;xp:number;level:number;inventory:Stack[];potionReadyAt:number}
 export interface Drop{id:string;owner:string;region?:RegionId;x:number;y:number;gold:number;pelts:number;shards?:number;expires:number}
-export interface EconomySnapshot extends Profile{armor:number;account?:{email:string;savedAt:string;state:'ready'|'saving'|'error'}|null;drops:Drop[];capacity:number;nextXp:number;levelXp:number;time:number}
+export interface EconomySnapshot extends Profile{attributePoints:number;armor:number;account?:{email:string;savedAt:string;state:'ready'|'saving'|'error'}|null;drops:Drop[];capacity:number;nextXp:number;levelXp:number;time:number}
 export class Economy{
  profiles=new Map<string,Profile>();drops=new Map<string,Drop>();lastKill=0;serial=0;
- join(id:string){if(!this.profiles.has(id))this.profiles.set(id,{equipment:emptyEquipment(),ownedEquipment:[...starterEquipment],learnedSpells:[],classId:'citizen',weapon:'wand',ownedWeapons:[...classRules.starterWeapons],skills:{melee:1,distance:1,magic:1},skillXp:{melee:0,distance:0,magic:0},gold:0,xp:0,level:1,inventory:[],potionReadyAt:0});}
- sync(id:string,p:Fighter){const profile=this.profiles.get(id);if(!profile)return;profile.skillXp={melee:p.meleeXp,distance:p.distanceXp,magic:p.magicXp};profile.skills={melee:skillLevel(p.meleeXp),distance:skillLevel(p.distanceXp),magic:skillLevel(p.magicXp)};}
+ join(id:string){if(!this.profiles.has(id))this.profiles.set(id,{attributes:newAttributes(),equipment:emptyEquipment(),ownedEquipment:[...starterEquipment],learnedSpells:[],classId:'citizen',weapon:'wand',ownedWeapons:[...classRules.starterWeapons],skills:{melee:1,distance:1,magic:1,shielding:1},skillXp:{melee:0,distance:0,magic:0,shielding:0},gold:0,xp:0,level:1,inventory:[],potionReadyAt:0});}
+ sync(id:string,p:Fighter){const profile=this.profiles.get(id);if(!profile)return;profile.skillXp={melee:p.meleeXp,distance:p.distanceXp,magic:p.magicXp,shielding:p.shieldingXp};profile.skills={melee:skillLevel(p.meleeXp),distance:skillLevel(p.distanceXp),magic:skillLevel(p.magicXp),shielding:skillLevel(p.shieldingXp)};}
  leave(id:string){this.profiles.delete(id);for(const [key,d] of this.drops)if(d.owner===id)this.drops.delete(key);}
  process(kills:Kill[],players:Map<string,Fighter>|{get(id:string):Fighter|undefined},time:number){
  for(const kill of kills){if(kill.id<=this.lastKill)continue;this.lastKill=kill.id;const p=players.get(kill.owner),profile=this.profiles.get(kill.owner);if(!p||!profile)continue;const reward=kill.kind?monsters[monsterKind(kill.kind)]:{xp:rewards.wolfXp,gold:rewards.wolfGold,pelts:rewards.wolfPelts};profile.xp=Math.min(totalXp(rewards.levelCap),profile.xp+reward.xp);profile.level=levelForXp(profile.xp);const id=`spoils-${kill.id}`;this.drops.set(id,{id,owner:kill.owner,region:kill.region??'woods',shards:'shards' in reward?reward.shards:0,x:kill.x,y:kill.y,gold:reward.gold,pelts:reward.pelts,expires:time+rewards.dropLifetime});}
@@ -21,19 +21,25 @@ export class Economy{
  }
  act(id:string,p:Fighter,request:unknown,time:number):string{
  const profile=this.profiles.get(id);if(!profile||p.hp<=0)return 'You cannot use items while defeated.';
- if(!request||typeof request!=='object')return 'Invalid action.';const {kind,drop,weapon,classId,spell,item,slot}=request as {kind:unknown;drop:unknown;weapon:unknown;classId:unknown;spell:unknown;item:unknown;slot:unknown};
+ if(!request||typeof request!=='object')return 'Invalid action.';const {kind,drop,weapon,classId,spell,item,slot,attribute}=request as {kind:unknown;drop:unknown;weapon:unknown;classId:unknown;spell:unknown;item:unknown;slot:unknown;attribute:unknown};
+ if(kind==='attribute'){
+ if(!isAttribute(attribute))return 'Choose a valid attribute.';
+ if(attributePoints(profile.level,profile.attributes)<1)return 'No attribute points available.';
+ if(profile.attributes[attribute]>=attributeRules.cap)return 'This attribute is at its maximum.';
+ profile.attributes[attribute]++;p.attributes={...profile.attributes};return `${attribute[0].toUpperCase()+attribute.slice(1)} increased.`;
+ }
  if(kind==='class'){if(profile.classId!=='citizen')return 'Your class has already been chosen.';if(profile.level<classRules.unlockLevel)return 'Reach level 5 to choose your class.';if(!isClassChoice(classId))return 'Choose Knight, Archer, Mage or Rogue.';profile.classId=classId;const starter=classes[classId].weapon;if(!profile.ownedWeapons.includes(starter))profile.ownedWeapons.push(starter);profile.weapon=starter;p.weapon=starter;p.auto=false;p.target='';return `You chose ${classes[classId].name}. ${weapons[starter].name} equipped.`;}
  if(kind==='equip'){if(!isWeapon(weapon)||!profile.ownedWeapons.includes(weapon))return 'You do not own that weapon.';if(profile.level<weapons[weapon].level)return `Reach level ${weapons[weapon].level} to equip this weapon.`;if(p.auto)return 'Stop attacking before changing weapons.';profile.weapon=weapon;p.weapon=weapon;p.target='';return 'Weapon equipped.';}
  if(kind==='equip-item'){
  if(!isEquipment(item)||!profile.ownedEquipment.includes(item))return 'You do not own that item.';
  if(profile.level<equipmentItems[item].level)return `Reach level ${equipmentItems[item].level} to equip this item.`;
  if(p.auto)return 'Stop attacking before changing equipment.';
- profile.equipment[equipmentItems[item].slot]=item;p.armor=equipmentArmor(profile.equipment);return `${equipmentItems[item].name} equipped.`;
+ profile.equipment[equipmentItems[item].slot]=item;p.armor=equipmentArmor(profile.equipment);p.shieldArmor=profile.equipment.offhand?equipmentItems[profile.equipment.offhand].armor:0;return `${equipmentItems[item].name} equipped.`;
  }
  if(kind==='unequip-item'){
  if(!isEquipmentSlot(slot))return 'Choose an equipment slot.';
  if(p.auto)return 'Stop attacking before changing equipment.';
- profile.equipment[slot]=null;p.armor=equipmentArmor(profile.equipment);return `${equipmentSlots[slot]} unequipped.`;
+ profile.equipment[slot]=null;p.armor=equipmentArmor(profile.equipment);p.shieldArmor=profile.equipment.offhand?equipmentItems[profile.equipment.offhand].armor:0;return `${equipmentSlots[slot]} unequipped.`;
  }
  if(kind==='pickup'){
  if(typeof drop!=='string')return 'Choose a loot bundle.';const d=this.drops.get(drop);
@@ -46,8 +52,8 @@ export class Economy{
  const stack=profile.inventory.find(s=>s.item==='potion'&&s.quantity>0);
  if(!stack)return 'No healing potions. Buy one from Mara in Elderwood.';
  if(time<profile.potionReadyAt)return 'Your potion is still on cooldown.';
- if(p.hp>=C.playerHp)return 'Your health is already full.';
- p.hp=Math.min(C.playerHp,p.hp+items.potion.heal);profile.potionReadyAt=time+items.potion.cooldown;stack.quantity--;profile.inventory=profile.inventory.filter(s=>s.quantity>0);return 'Healing potion restored health.';
+ if(p.hp>=maxHealth(p.attributes))return 'Your health is already full.';
+ p.hp=Math.min(maxHealth(p.attributes),p.hp+items.potion.heal);profile.potionReadyAt=time+items.potion.cooldown;stack.quantity--;profile.inventory=profile.inventory.filter(s=>s.quantity>0);return 'Healing potion restored health.';
  }
  if(p.region!=='elderwood'||Math.hypot(p.x-merchant.x,p.y-merchant.y)>merchant.range)return 'Visit Mara the Trader in Elderwood.';
  if(kind==='buy-equipment'){
@@ -72,5 +78,5 @@ export class Economy{
  }
  return 'Invalid action.';
  }
- snapshot(id:string,time:number):EconomySnapshot{const p=this.profiles.get(id)!;return {...p,armor:equipmentArmor(p.equipment),equipment:{...p.equipment},ownedEquipment:[...p.ownedEquipment],learnedSpells:[...p.learnedSpells],ownedWeapons:[...p.ownedWeapons],skills:{...p.skills},skillXp:{...p.skillXp},inventory:p.inventory.map(s=>({...s})),drops:[...this.drops.values()].filter(d=>d.owner===id&&d.expires>time).map(d=>({...d})),capacity:rewards.capacity,nextXp:totalXp(Math.min(rewards.levelCap,p.level+1)),levelXp:totalXp(p.level),time};}
+ snapshot(id:string,time:number):EconomySnapshot{const p=this.profiles.get(id)!;return {...p,attributes:{...p.attributes},attributePoints:attributePoints(p.level,p.attributes),armor:equipmentArmor(p.equipment),equipment:{...p.equipment},ownedEquipment:[...p.ownedEquipment],learnedSpells:[...p.learnedSpells],ownedWeapons:[...p.ownedWeapons],skills:{...p.skills},skillXp:{...p.skillXp},inventory:p.inventory.map(s=>({...s})),drops:[...this.drops.values()].filter(d=>d.owner===id&&d.expires>time).map(d=>({...d})),capacity:rewards.capacity,nextXp:totalXp(Math.min(rewards.levelCap,p.level+1)),levelXp:totalXp(p.level),time};}
 }

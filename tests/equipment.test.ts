@@ -17,7 +17,7 @@ test('equipment checks ownership, slot and combat state; snapshots cannot mutate
 test('armor from equipped items reduces wolf hits; unequipping restores damage',()=>{
  for(const armored of [false,true]){const {e,p}=setup();if(armored)for(const item of starterEquipment)e.act('p',p,{kind:'equip-item',item},0);
  const sim=new CombatSimulation(),wolf=sim.wolves.get('wolf-1')!;sim.wolves.clear();sim.wolves.set(wolf.id,wolf);Object.assign(p,{region:'woods',x:wolf.x,y:wolf.y});wolf.target='p';wolf.mode='attack';
- sim.tick(.05,[['p',p]]);assert.equal(p.hp,C.playerHp-C.wolf.damage+(armored?5:0));assert.equal(sim.events.find(event=>event.kind==='hit')?.damage,C.wolf.damage-(armored?5:0));
+ sim.tick(.05,[['p',p]]);assert.equal(p.hp,C.playerHp-C.wolf.damage+(armored?6:0));assert.equal(sim.events.find(event=>event.kind==='hit')?.damage,C.wolf.damage-(armored?6:0));
  }
 });
 test('equipment persists, legacy saves migrate, and forged slot saves are rejected',()=>{

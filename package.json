@@ -11,7 +11,7 @@
     "dev": "concurrently -k -n server,client \"npm run dev -w @realm/server\" \"npm run dev -w @realm/client\"",
     "build": "tsc --noEmit && npm run build -w @realm/client",
     "test": "tsx --test tests/*.test.ts",
-    "test:integration": "tsx tests/multiplayer.ts && tsx tests/combat.integration.ts && tsx tests/classes.integration.ts && tsx tests/water.integration.ts && tsx tests/monsters.integration.ts && tsx tests/passive.integration.ts && tsx tests/caverns.integration.ts",
+    "test:integration": "tsx tests/multiplayer.ts && tsx tests/combat.integration.ts && tsx tests/classes.integration.ts && tsx tests/water.integration.ts && tsx tests/monsters.integration.ts && tsx tests/passive.integration.ts && tsx tests/caverns.integration.ts && tsx tests/shielding.integration.ts",
     "test:browser": "node tests/browser-movement.cjs && node tests/browser-combat.cjs && node tests/browser-classes.cjs && node tests/browser-spells.cjs && node tests/browser-profile.cjs && node tests/browser-login.cjs",
     "test:accounts": "tsx tests/accounts.integration.ts",
     "test:accounts:browser": "tsx tests/accounts.browser.ts",
@@ -42,7 +42,8 @@
     "test:display:browser": "node tests/browser-display.cjs",
     "test:woods-ground:browser": "node tests/browser-woods-ground.cjs",
     "art:equipment": "python3 scripts/extract-equipment-sprites.py && python3 scripts/extract-equipment-heads.py",
-    "test:equipment-tiers:browser": "node tests/browser-equipment-tiers.cjs"
+    "test:equipment-tiers:browser": "node tests/browser-equipment-tiers.cjs",
+    "test:attributes:browser": "node tests/browser-attributes.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",
