@@ -1,3 +1,4 @@
+import {rootsSpawns} from './woods-depths';
 import {depthsSpawns} from './caverns-depths';
 import {woodsEncounterSpawns,woodsMap} from './woods';
 import {cavernsSpawns} from './caverns';
@@ -15,7 +16,7 @@ export const monsters={
 export type MonsterKind=keyof typeof monsters;
 export const monsterKind=(value:unknown):MonsterKind=>typeof value==='string'&&Object.hasOwn(monsters,value)?value as MonsterKind:'wolf';
 export const monsterSpawns=woodsEncounterSpawns.map(spawn=>({...spawn,x:spawn.x/48,y:spawn.y/48+woodsMap.offsetY}));
-export const allMonsterSpawns=[...monsterSpawns.map(s=>({...s,region:'woods' as const})),...cavernsSpawns,...depthsSpawns];
-export const combatRegion=(region:string)=>region==='woods'||region==='caverns'||region==='caverns-depths';
-export const monsterRegion=(monster:{region?:string})=>monster.region==='caverns-depths'?'caverns-depths' as const:monster.region==='caverns'?'caverns' as const:'woods' as const;
+export const allMonsterSpawns=[...monsterSpawns.map(s=>({...s,region:'woods' as const})),...cavernsSpawns,...depthsSpawns,...rootsSpawns];
+export const combatRegion=(region:string)=>region==='woods-depths'||region==='woods'||region==='caverns'||region==='caverns-depths';
+export const monsterRegion=(monster:{region?:string})=>monster.region==='woods-depths'?'woods-depths' as const:monster.region==='caverns-depths'?'caverns-depths' as const:monster.region==='caverns'?'caverns' as const:'woods' as const;
 export const monsterAggressive=(kind:MonsterKind)=>monsters[kind].boss||monsters[kind].level>=monsterAggressiveLevel;

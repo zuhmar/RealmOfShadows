@@ -16,7 +16,7 @@ export function woodsSvgFiles(){const common=islandPrefabs();const files:Record<
  Object.assign(files,woodsPrefabs());
  const polygon=(points:readonly (readonly number[])[])=>points.map(p=>p.join(',')).join(' ');
  files['base.svg']=expandedWoodsGuide();
- files['full-map.svg']=composeIslandSvg(files['base.svg'],woodsObjects,files,'woods-');return files;
+ files['full-map.svg']=composeIslandSvg(files['base.svg'],woodsObjects.filter(o=>o.key.startsWith('woods-')),files,'woods-');return files;
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)){
 const folder=fileURLToPath(new URL('../assets/maps/whispering-woods/svg/',import.meta.url));mkdirSync(folder,{recursive:true});for(const [name,svg]of Object.entries(woodsSvgFiles()))writeFileSync(folder+name,svg);

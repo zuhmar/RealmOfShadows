@@ -8,7 +8,7 @@ import {displayDensity,displaySize} from './display';
 import {PaperDoll} from './paper-doll';
 import {setupAccounts,type AccountUI} from './accounts';
 import {Client,type Room} from 'colyseus.js';
-import {supplySellPrice,catalogueSellPrice,droppedSellPrice,gearDefinition,gearStats,gearName,gearSlot,rarityDefinitions,type GearSlot,stairsFor,availableStair,isLowerFloor,depthsMap,depthsObjects,attributeDefinitions,attributeRules,maxHealth,maxMana,type AttributeId,regionSize,monsters,monsterKind,monsterRegion,combatRegion,cavernsMap,cavernsObjects,woodsMap,woodsObjects,WORLD,equipmentTiers,readAppearance,equipmentItems,equipmentSlots,type EquipmentSlot,elderwoodMap,elderwoodObjects,landmarks,characterSprite,regions,portalFor,canTravel,combat as C,items,merchant,rewards,weapons,classes,classRules,skillRequirement,spells,canLearnSpell,isSpell,type RegionId,type Facing} from '@realm/game-data';
+import {supplySellPrice,catalogueSellPrice,droppedSellPrice,gearDefinition,gearStats,gearName,gearSlot,rarityDefinitions,type GearSlot,rootsMap,rootsObjects,stairsFor,availableStair,isLowerFloor,depthsMap,depthsObjects,attributeDefinitions,attributeRules,maxHealth,maxMana,type AttributeId,regionSize,monsters,monsterKind,monsterRegion,combatRegion,cavernsMap,cavernsObjects,woodsMap,woodsObjects,WORLD,equipmentTiers,readAppearance,equipmentItems,equipmentSlots,type EquipmentSlot,elderwoodMap,elderwoodObjects,landmarks,characterSprite,regions,portalFor,canTravel,combat as C,items,merchant,rewards,weapons,classes,classRules,skillRequirement,spells,canLearnSpell,isSpell,type RegionId,type Facing} from '@realm/game-data';
 import {attackPath,sight,move,pathfind,CombatSimulation,newFighter,Economy,type EconomySnapshot,type Fighter,type Wolf,type CombatEvent,type Point,type Motion,type Input} from '@realm/shared';
 import './style.css';
 import {animatedMonsters,animatedMonster,installMonsterAnimations,playMonster} from './monster-animations';
@@ -207,11 +207,11 @@ class Elderwood extends Phaser.Scene {
  for(const obj of this.worldObjects)obj.destroy();
  const existing=new Set(this.children.list),config=regions[this.region];
  this.cameras.main.setBackgroundColor('#233c38');this.terrainCleanup=drawTiledTerrain(this,this.region);
- const mapConfig=isLowerFloor(this.region)?depthsMap:this.region==='woods'?woodsMap:this.region==='caverns'?cavernsMap:elderwoodMap,mapObjects=isLowerFloor(this.region)?depthsObjects:this.region==='woods'?woodsObjects:this.region==='caverns'?cavernsObjects:elderwoodObjects,mapPrefix=this.region==='woods'?'woods':this.region==='caverns'?'caverns':'elderwood';
+ const mapConfig=this.region==='woods-depths'?rootsMap:this.region==='caverns-depths'?depthsMap:this.region==='woods'?woodsMap:this.region==='caverns'?cavernsMap:elderwoodMap,mapObjects=this.region==='woods-depths'?rootsObjects:this.region==='caverns-depths'?depthsObjects:this.region==='woods'?woodsObjects:this.region==='caverns'?cavernsObjects:elderwoodObjects,mapPrefix=this.region==='woods'?'woods':this.region==='caverns'?'caverns':'elderwood';
  const illustratedMap=this.region==='elderwood'||combatRegion(this.region);
  if(illustratedMap){
  for(const object of mapObjects){const sx=mapConfig.worldWidth*64/mapConfig.width,sy=mapConfig.worldHeight*64/mapConfig.height;
- if((this.region==='caverns'||isLowerFloor(this.region))&&(object.key.includes('crystal')||object.key.includes('lantern')))this.add.ellipse((object.x+object.w/2)*sx,(object.y+object.h*.9)*sy+mapConfig.offsetY*64,object.w*sx*1.4,object.h*sy*.35,0x6ddcff,.09).setDepth(-2);
+ if((this.region==='caverns'||this.region==='caverns-depths')&&(object.key.includes('crystal')||object.key.includes('lantern')))this.add.ellipse((object.x+object.w/2)*sx,(object.y+object.h*.9)*sy+mapConfig.offsetY*64,object.w*sx*1.4,object.h*sy*.35,0x6ddcff,.09).setDepth(-2);
  this.add.image(object.x*sx,object.y*sy+mapConfig.offsetY*64,object.key).setOrigin(0).setDisplaySize(object.w*sx,object.h*sy).setDepth(object.footY*sy+mapConfig.offsetY*64);}
  }else{
  for(let x=0;x<WORLD.width;x++)for(const y of [0,23])this.tree(x*64+32,y*64+32);
@@ -264,7 +264,7 @@ class Elderwood extends Phaser.Scene {
  if(!this.route.length){this.pendingInteraction=undefined;this.pendingStair=undefined;notice('No clear route to that interaction.');}
  }
  openPortal(){
- if(isLowerFloor(this.region)){notice('Use the stairs to return to Depth 1.');return;}
+ if(isLowerFloor(this.region)){notice('Use the stairs to return to the upper floor.');return;}
  if(this.fighter.hp<=0)return;
  if(this.traveling)return;
  if(Math.hypot(this.local.x-portalFor(this.region).x,this.local.y-portalFor(this.region).y)>portalFor(this.region).radius){notice('Walk closer to the glowing portal, then interact.');return;}
@@ -284,7 +284,7 @@ class Elderwood extends Phaser.Scene {
  applyTravel(region:RegionId,position:Motion){
  clearTimeout(this.travelTimer);document.querySelectorAll<HTMLDetailsElement>('nav details').forEach(drawer=>drawer.open=false);document.querySelectorAll<HTMLDialogElement>('dialog[open]').forEach(dialog=>{if(dialog.id!=='login-dialog')dialog.close();});for(const view of this.dropViews.values())view.destroy();this.dropViews.clear();for(const obj of this.fxObjects){this.tweens.killTweensOf(obj);obj.destroy();}this.fxObjects.clear();this.pendingInteraction=undefined;this.pendingStair=undefined;this.traveling=false;this.region=region;this.selected='';this.autoAttack=false;this.fighter.target='';this.fighter.auto=false;this.fighter.region=region;this.fighter.x=position.x;this.fighter.y=position.y;for(const view of this.wolfViews.values())view.destroy();this.wolfViews.clear();this.local={x:position.x,y:position.y,stamina:position.stamina};this.pending=[];this.route=[];this.walking=false;this.touch={x:0,y:0};this.input.keyboard?.resetKeys();this.drawMap();
  for(const obj of this.peers.values())obj.destroy();this.peers.clear();
- this.avatar.setPosition(this.local.x*64,this.local.y*64);this.cameras.main.centerOn(this.avatar.x,this.avatar.y);notice(isLowerFloor(region)?'Crystal Caverns · Depth 2. Click the stairs to return to Depth 1.':`Arrived in ${regions[region].name}.`);
+ this.avatar.setPosition(this.local.x*64,this.local.y*64);this.cameras.main.centerOn(this.avatar.x,this.avatar.y);notice(isLowerFloor(region)?`${regions[region].name}. Click the stairs to return to the upper floor.`:`Arrived in ${regions[region].name}.`);
  }
  tree(x:number,y:number){this.add.image(x,y,'elderwood-oak').setOrigin(.5,1).setDisplaySize(88,112).setDepth(y);}
  makeAvatar(color:number,label:string,paper=true){const g=this.add.graphics();g.fillStyle(0x102823,.3);g.fillEllipse(0,0,30,13);g.fillStyle(0x446d82);g.fillRoundedRect(-13,-32,26,30,8);g.fillStyle(color);g.fillCircle(0,-40,13);g.fillStyle(0xffffff,.35);g.fillEllipse(-4,-44,12,7);const text=this.add.text(0,-88,label,{fontFamily:'sans-serif',fontSize:'12px',color:'#fff5d7',backgroundColor:'#203b36'}).setOrigin(.5);if(this.textures.exists('citizen-down')){g.clear();g.fillStyle(0x102823,.3);g.fillEllipse(0,0,30,13);const sprite=this.add.sprite(0,0,'citizen-down','frame-0').setOrigin(.5,characterStyle.origin).setScale(characterStyle.scale);sprite.play('idle-down');const doll=paper?new PaperDoll(this):undefined;const avatar=this.add.container(0,0,doll?[g,sprite,doll,text]:[g,sprite,text]).setData('sprite',sprite);if(doll){avatar.setData('paperDoll',doll);doll.setVisible(this.usePaperDoll);sprite.setVisible(!this.usePaperDoll);}return avatar;}return this.add.container(0,0,[g,text]);}

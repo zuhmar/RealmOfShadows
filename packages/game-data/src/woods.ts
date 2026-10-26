@@ -67,5 +67,6 @@ for(const [x,y]of [[1490,230],[1730,230],[1480,1880],[1750,1880]])add('ruin',x,y
 for(const [x,y]of [[620,440],[940,440],[1450,710],[1770,710],[1100,1100],[2040,1100]])add('lamp',x,y,28,90,false);
 for(const [x,y]of [[1030,590],[1200,810],[1960,810],[1800,1690]])add('sign',x,y,60,58,false);
 add('portal',placements.portal.x-100,placements.portal.y-179,200,179,false);
+woodsObjects.push(mapObject('caverns-stairs-down',1552,700,160,120));
 const collision=islandCollision(woodsMap.width,woodsMap.height,woodsGeometry,woodsObjects);
 export function woodsFootprintBlocked(x:number,y:number,r=0){return collision(x*48,(y-woodsMap.offsetY)*48,r*48);}
