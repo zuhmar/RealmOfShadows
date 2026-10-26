@@ -8,9 +8,9 @@ export type GearBase=EquipmentId|WeaponId;
 export type GearSlot=EquipmentSlot|'weapon';
 export interface GearInstance{id:string;base:GearBase;rarity:Rarity|null}
 export type GearLoadout=Record<GearSlot,string|null>;
-export const lootEquipmentRules={capacity:32,dropChance:.20,bossDropChance:.65};
+export const lootEquipmentRules={capacity:32,maxInstances:40,dropChance:.20,bossDropChance:.65};
 export const emptyGearLoadout=():GearLoadout=>({weapon:null,head:null,chest:null,legs:null,feet:null,offhand:null,neck:null,ring:null});
-export const islandEquipmentTiers:Record<string,Exclude<EquipmentTier,'beginner'>>={woods:'copper',caverns:'iron',swamp:'gold',tundra:'mythril',celestial:'dragon',peaks:'shadow',fortress:'shadow'};
+export const islandEquipmentTiers:Record<string,EquipmentTier>={woods:'beginner',caverns:'copper',swamp:'iron',tundra:'gold',celestial:'mythril',peaks:'dragon',fortress:'shadow'};
 export function isGearBase(value:unknown):value is GearBase{return isEquipment(value)||isWeapon(value);}
 export function isRarity(value:unknown):value is Rarity{return typeof value==='string'&&Object.hasOwn(rarityDefinitions,value);}
 export function gearDefinition(base:GearBase){return isEquipment(base)?equipmentItems[base]:weapons[base];}

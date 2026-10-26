@@ -1,10 +1,10 @@
-import {emptyGearLoadout,gearDefinition,gearSlot,gearName,gearStats,rollRarity,islandEquipmentTiers,lootEquipmentRules,type GearInstance,type GearLoadout,newAttributes,attributePoints,attributeRules,isAttribute,maxHealth,type Attributes,type SkillId,monsters,monsterKind,equipmentItems,equipmentSlots,emptyEquipment,starterEquipment,isEquipment,isEquipmentSlot,equipmentArmor,type RegionId,type Equipment,type EquipmentId,type EquipmentSlot,items,rewards,merchant,combat as C,totalXp,levelForXp,type ItemId,classes,weapons,classRules,isClassChoice,isWeapon,skillLevel,spells,isSpell,canLearnSpell,type SpellId,type ClassId,type WeaponId} from '@realm/game-data';
+import {inventoryUsage,inventoryFits,inventoryRules,supplySellPrice,catalogueSellPrice,droppedSellPrice,emptyGearLoadout,gearDefinition,gearSlot,gearName,gearStats,rollRarity,islandEquipmentTiers,lootEquipmentRules,type GearInstance,type GearLoadout,newAttributes,attributePoints,attributeRules,isAttribute,maxHealth,type Attributes,type SkillId,monsters,monsterKind,equipmentItems,equipmentSlots,emptyEquipment,starterEquipment,isEquipment,isEquipmentSlot,equipmentArmor,type RegionId,type Equipment,type EquipmentId,type EquipmentSlot,items,rewards,merchant,combat as C,totalXp,levelForXp,type ItemId,classes,weapons,classRules,isClassChoice,isWeapon,skillLevel,spells,isSpell,canLearnSpell,type SpellId,type ClassId,type WeaponId} from '@realm/game-data';
 import {sight,type Fighter,type Kill} from './combat';
 import {applyEquipment,effectiveAttributes,profileArmor,cloneGear,equippedInstance} from './gear';
 export interface Stack{id:number;item:ItemId;quantity:number}
 export interface Profile{gear:GearInstance[];equippedGear:GearLoadout;attributes:Attributes;equipment:Equipment;ownedEquipment:EquipmentId[];learnedSpells:SpellId[];classId:ClassId;weapon:WeaponId;ownedWeapons:WeaponId[];skills:Record<SkillId,number>;skillXp:Record<SkillId,number>;gold:number;xp:number;level:number;inventory:Stack[];potionReadyAt:number}
 export interface Drop{id:string;owner:string;region?:RegionId;x:number;y:number;gold:number;pelts:number;shards?:number;expires:number;gear?:GearInstance}
-export interface EconomySnapshot extends Profile{effectiveAttributes:Attributes;gearCapacity:number;weaponAttack:number;attributePoints:number;armor:number;account?:{email:string;savedAt:string;state:'ready'|'saving'|'error'}|null;drops:Drop[];capacity:number;nextXp:number;levelXp:number;time:number}
+export interface EconomySnapshot extends Profile{effectiveAttributes:Attributes;usedSlots:number;gearCapacity:number;weaponAttack:number;attributePoints:number;armor:number;account?:{email:string;savedAt:string;state:'ready'|'saving'|'error'}|null;drops:Drop[];capacity:number;nextXp:number;levelXp:number;time:number}
 export class Economy{
  constructor(private random:()=>number=()=>globalThis.crypto.getRandomValues(new Uint32Array(1))[0]/4294967296){}
  profiles=new Map<string,Profile>();drops=new Map<string,Drop>();lastKill=0;serial=0;
@@ -22,7 +22,7 @@ export class Economy{
  return next;
  }
  act(id:string,p:Fighter,request:unknown,time:number):string{
- const profile=this.profiles.get(id);if(!profile||p.hp<=0)return 'You cannot use items while defeated.';
+ const profile=this.profiles.get(id);if(!profile||p.hp<=0)return 'You cannot use items while defeated.';const fits=(changes:Partial<Profile>)=>inventoryFits(profile,{...profile,...changes});
  if(!request||typeof request!=='object')return 'Invalid action.';const {kind,drop,weapon,classId,spell,item,slot,attribute}=request as {kind:unknown;drop:unknown;weapon:unknown;classId:unknown;spell:unknown;item:unknown;slot:unknown;attribute:unknown};
  if(kind==='attribute'){
  if(!isAttribute(attribute))return 'Choose a valid attribute.';
@@ -30,7 +30,7 @@ export class Economy{
  if(profile.attributes[attribute]>=attributeRules.cap)return 'This attribute is at its maximum.';
  profile.attributes[attribute]++;applyEquipment(profile,p);return `${attribute[0].toUpperCase()+attribute.slice(1)} increased.`;
  }
- if(kind==='class'){if(profile.classId!=='citizen')return 'Your class has already been chosen.';if(profile.level<classRules.unlockLevel)return 'Reach level 5 to choose your class.';if(!isClassChoice(classId))return 'Choose Knight, Archer, Mage or Rogue.';profile.classId=classId;const starter=classes[classId].weapon;if(!profile.ownedWeapons.includes(starter))profile.ownedWeapons.push(starter);profile.weapon=starter;profile.equippedGear.weapon=null;applyEquipment(profile,p);p.auto=false;p.target='';return `You chose ${classes[classId].name}. ${weapons[starter].name} equipped.`;}
+ if(kind==='class'){if(profile.classId!=='citizen')return 'Your class has already been chosen.';if(profile.level<classRules.unlockLevel)return 'Reach level 5 to choose your class.';if(!isClassChoice(classId))return 'Choose Knight, Archer, Mage or Rogue.';const starter=classes[classId].weapon;if(!fits({weapon:starter,ownedWeapons:profile.ownedWeapons.includes(starter)?profile.ownedWeapons:[...profile.ownedWeapons,starter],equippedGear:{...profile.equippedGear,weapon:null}}))return 'Inventory full. Free a slot before choosing your class.';profile.classId=classId;if(!profile.ownedWeapons.includes(starter))profile.ownedWeapons.push(starter);profile.weapon=starter;profile.equippedGear.weapon=null;applyEquipment(profile,p);p.auto=false;p.target='';return `You chose ${classes[classId].name}. ${weapons[starter].name} equipped.`;}
  if(kind==='equip'){if(!isWeapon(weapon)||!profile.ownedWeapons.includes(weapon))return 'You do not own that weapon.';if(profile.level<weapons[weapon].level)return `Reach level ${weapons[weapon].level} to equip this weapon.`;if(p.auto)return 'Stop attacking before changing weapons.';profile.weapon=weapon;profile.equippedGear.weapon=null;applyEquipment(profile,p);p.target='';return 'Weapon equipped.';}
  if(kind==='equip-item'){
  if(!isEquipment(item)||!profile.ownedEquipment.includes(item))return 'You do not own that item.';
@@ -41,7 +41,7 @@ export class Economy{
  if(kind==='unequip-item'){
  if(!isEquipmentSlot(slot))return 'Choose an equipment slot.';
  if(p.auto)return 'Stop attacking before changing equipment.';
- profile.equipment[slot]=null;profile.equippedGear[slot]=null;applyEquipment(profile,p);return `${equipmentSlots[slot]} unequipped.`;
+ if(!fits({equipment:{...profile.equipment,[slot]:null},equippedGear:{...profile.equippedGear,[slot]:null}}))return 'Inventory full. Free a slot before unequipping.';profile.equipment[slot]=null;profile.equippedGear[slot]=null;applyEquipment(profile,p);return `${equipmentSlots[slot]} unequipped.`;
  }
  if(kind==='identify'||kind==='equip-gear'||kind==='discard-gear'){
  const found=profile.gear.find(g=>g.id===item);if(!found)return 'You do not own that equipment.';
@@ -57,12 +57,12 @@ export class Economy{
  if(kind==='unequip-gear'){
  const slot=Object.keys(profile.equippedGear).find(key=>profile.equippedGear[key as keyof GearLoadout]===item) as keyof GearLoadout|undefined;
  if(!slot)return 'This equipment is not equipped.';if(p.auto)return 'Stop attacking before changing equipment.';
- profile.equippedGear[slot]=null;if(slot==='weapon')profile.weapon=classRules.starterWeapons.find(id=>profile.ownedWeapons.includes(id))??'wand';else profile.equipment[slot]=null;applyEquipment(profile,p);return 'Equipment unequipped.';
+ const fallback=profile.ownedWeapons[0]??'wand',ownedWeapons=slot==='weapon'&&!profile.ownedWeapons.length?['wand' as WeaponId]:profile.ownedWeapons;if(!fits({ownedWeapons,equippedGear:{...profile.equippedGear,[slot]:null},...(slot==='weapon'?{weapon:fallback}:{equipment:{...profile.equipment,[slot]:null}})}))return 'Inventory full. Free a slot before unequipping.';profile.ownedWeapons=ownedWeapons;profile.equippedGear[slot]=null;if(slot==='weapon')profile.weapon=fallback;else profile.equipment[slot]=null;applyEquipment(profile,p);return 'Equipment unequipped.';
  }
  if(kind==='pickup'){
  if(typeof drop!=='string')return 'Choose a loot bundle.';const d=this.drops.get(drop);
  if(!d||d.owner!==id||time>=d.expires||p.region!==(d.region??'woods')||Math.hypot(p.x-d.x,p.y-d.y)>rewards.pickupRange||!sight(p,d,p.region))return 'Move closer to your loot bundle.';
- let inventory=d.pelts?this.add(profile.inventory,'pelt',d.pelts):profile.inventory.map(s=>({...s}));if(inventory&&d.shards)inventory=this.add(inventory,'crystalShard',d.shards);if(!inventory)return 'Inventory full. Sell materials to free space.';if(d.gear&&profile.gear.length>=lootEquipmentRules.capacity)return 'Equipment bag full. Discard equipment to free space.';
+ let inventory=d.pelts?this.add(profile.inventory,'pelt',d.pelts):profile.inventory.map(s=>({...s}));if(inventory&&d.shards)inventory=this.add(inventory,'crystalShard',d.shards);if(!inventory)return 'Inventory full. Sell materials to free space.';if((d.gear&&profile.gear.length>=lootEquipmentRules.maxInstances)||!fits({inventory,gear:d.gear?[...profile.gear,d.gear]:profile.gear}))return 'Inventory full. Sell or discard items to free space.';
  // Mutations happen together after every prerequisite passes. A repeated ID finds no drop.
  profile.inventory=inventory;if(d.gear)profile.gear.push(cloneGear(d.gear));profile.gold+=d.gold;this.drops.delete(drop);return `Collected ${d.gold} gold${d.pelts?` and ${d.pelts} wolf pelt`:``}${d.shards?` and ${d.shards} crystal shard${d.shards===1?'':'s'}`:``}${d.gear?' and unidentified equipment':''}.`;
  }
@@ -74,12 +74,26 @@ export class Economy{
  p.hp=Math.min(maxHealth(p.attributes),p.hp+items.potion.heal);profile.potionReadyAt=time+items.potion.cooldown;stack.quantity--;profile.inventory=profile.inventory.filter(s=>s.quantity>0);return 'Healing potion restored health.';
  }
  if(p.region!=='elderwood'||Math.hypot(p.x-merchant.x,p.y-merchant.y)>merchant.range)return 'Visit Mara the Trader in Elderwood.';
+ if(kind==='sell-supply'){
+ const stack=profile.inventory.find(s=>String(s.id)===item);if(!stack)return 'Choose a supply stack you own.';const gold=supplySellPrice(stack.item)*stack.quantity;profile.inventory=profile.inventory.filter(s=>s.id!==stack.id);profile.gold+=gold;return `Sold supply stack for ${gold} gold.`;
+ }
+ if(kind==='sell-gear'){
+ const found=profile.gear.find(g=>g.id===item);if(!found)return 'You do not own that equipment.';if(Object.values(profile.equippedGear).includes(found.id))return 'Unequip this item before selling it.';
+ const price=droppedSellPrice(found);profile.gear=profile.gear.filter(g=>g.id!==found.id);profile.gold+=price;return `Sold ${gearName(found)} for ${price} gold.`;
+ }
+ if(kind==='sell-equipment'){
+ if(isEquipment(item)){if(!profile.ownedEquipment.includes(item))return 'You do not own that item.';const slot=equipmentItems[item].slot;if(profile.equipment[slot]===item&&!profile.equippedGear[slot])return 'Unequip this item before selling it.';profile.ownedEquipment=profile.ownedEquipment.filter(id=>id!==item);}
+ else if(isWeapon(item)){if(!profile.ownedWeapons.includes(item))return 'You do not own that item.';if(profile.weapon===item&&!profile.equippedGear.weapon)return 'Unequip this item before selling it.';profile.ownedWeapons=profile.ownedWeapons.filter(id=>id!==item);}
+ else return 'Choose valid equipment.';
+ const price=catalogueSellPrice(item);profile.gold+=price;return `Sold equipment for ${price} gold.`;
+ }
  if(kind==='buy-equipment'){
  const definition=isEquipment(item)?equipmentItems[item]:isWeapon(item)?weapons[item]:null;
  if(!definition)return 'Choose valid equipment.';
  if(profile.level<definition.level)return `Reach level ${definition.level} to buy this item.`;
  if((isEquipment(item)&&profile.ownedEquipment.includes(item))||(isWeapon(item)&&profile.ownedWeapons.includes(item)))return 'You already own that item.';
  if(profile.gold<definition.price)return `${definition.name} costs ${definition.price} gold.`;
+ if(!fits(isEquipment(item)?{ownedEquipment:[...profile.ownedEquipment,item]}:isWeapon(item)?{ownedWeapons:[...profile.ownedWeapons,item]}:{}))return 'Inventory full. Sell or discard items to free space.';
  profile.gold-=definition.price;
  if(isEquipment(item))profile.ownedEquipment.push(item);else if(isWeapon(item))profile.ownedWeapons.push(item);
  return `Bought ${definition.name}.`;
@@ -87,7 +101,7 @@ export class Economy{
  if(kind==='learn'){if(!isSpell(spell)||!canLearnSpell(spell,profile))return 'That spell is unavailable for your class or level.';if(profile.learnedSpells.includes(spell))return 'You already know that spell.';const s=spells[spell];if(profile.gold<s.price)return `${s.name} costs ${s.price} gold.`;profile.gold-=s.price;profile.learnedSpells.push(spell);return `Learned ${s.name}.`; }
  if(kind==='buy'){
  if(profile.gold<items.potion.buy)return `A potion costs ${items.potion.buy} gold.`;
- const inventory=this.add(profile.inventory,'potion',1);if(!inventory)return 'Inventory full.';
+ const inventory=this.add(profile.inventory,'potion',1);if(!inventory||!fits({inventory}))return 'Inventory full. Sell or discard items to free space.';
  profile.gold-=items.potion.buy;profile.inventory=inventory;return 'Bought one healing potion.';
  }
  if(kind==='sell'){
@@ -96,5 +110,5 @@ export class Economy{
  }
  return 'Invalid action.';
  }
- snapshot(id:string,time:number):EconomySnapshot{const p=this.profiles.get(id)!;return {...p,gear:p.gear.map(cloneGear),equippedGear:{...p.equippedGear},effectiveAttributes:effectiveAttributes(p),gearCapacity:lootEquipmentRules.capacity,weaponAttack:equippedInstance(p,'weapon')?gearStats(equippedInstance(p,'weapon')!).attack:weapons[p.weapon].attack,attributes:{...p.attributes},attributePoints:attributePoints(p.level,p.attributes),armor:profileArmor(p),equipment:{...p.equipment},ownedEquipment:[...p.ownedEquipment],learnedSpells:[...p.learnedSpells],ownedWeapons:[...p.ownedWeapons],skills:{...p.skills},skillXp:{...p.skillXp},inventory:p.inventory.map(s=>({...s})),drops:[...this.drops.values()].filter(d=>d.owner===id&&d.expires>time).map(d=>({...d,...(d.gear?{gear:cloneGear(d.gear)}:{})})),capacity:rewards.capacity,nextXp:totalXp(Math.min(rewards.levelCap,p.level+1)),levelXp:totalXp(p.level),time};}
+ snapshot(id:string,time:number):EconomySnapshot{const p=this.profiles.get(id)!;return {...p,gear:p.gear.map(cloneGear),equippedGear:{...p.equippedGear},effectiveAttributes:effectiveAttributes(p),usedSlots:inventoryUsage(p),gearCapacity:lootEquipmentRules.maxInstances,weaponAttack:equippedInstance(p,'weapon')?gearStats(equippedInstance(p,'weapon')!).attack:weapons[p.weapon].attack,attributes:{...p.attributes},attributePoints:attributePoints(p.level,p.attributes),armor:profileArmor(p),equipment:{...p.equipment},ownedEquipment:[...p.ownedEquipment],learnedSpells:[...p.learnedSpells],ownedWeapons:[...p.ownedWeapons],skills:{...p.skills},skillXp:{...p.skillXp},inventory:p.inventory.map(s=>({...s})),drops:[...this.drops.values()].filter(d=>d.owner===id&&d.expires>time).map(d=>({...d,...(d.gear?{gear:cloneGear(d.gear)}:{})})),capacity:inventoryRules.capacity,nextXp:totalXp(Math.min(rewards.levelCap,p.level+1)),levelXp:totalXp(p.level),time};}
 }

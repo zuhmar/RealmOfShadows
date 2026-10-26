@@ -44,7 +44,9 @@
     "art:equipment": "python3 scripts/extract-equipment-sprites.py && python3 scripts/extract-equipment-heads.py",
     "test:equipment-tiers:browser": "node tests/browser-equipment-tiers.cjs",
     "test:attributes:browser": "node tests/browser-attributes.cjs",
-    "test:identification:browser": "node tests/browser-identification.cjs"
+    "test:identification:browser": "node tests/browser-identification.cjs",
+    "test:inventory:browser": "node tests/browser-inventory.cjs",
+    "test:inventory:integration": "tsx tests/inventory.integration.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

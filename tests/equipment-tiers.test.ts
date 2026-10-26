@@ -28,7 +28,9 @@ test('all classes can buy, equip and save every tier without changing learned sp
  for(const [id,item]of Object.entries({...equipmentItems,...weapons})){
  e.act('p',p,{kind:'buy-equipment',item:id},0);
  e.act('p',p,'armor'in item?{kind:'equip-item',item:id}:{kind:'equip',weapon:id},0);
+ for(const owned of [...profile.ownedEquipment])if(profile.equipment[equipmentItems[owned].slot]!==owned)e.act('p',p,{kind:'sell-equipment',item:owned},0);
+ for(const owned of [...profile.ownedWeapons])if(profile.weapon!==owned)e.act('p',p,{kind:'sell-equipment',item:owned},0);
  }
- const loaded=readProgress(writeProgress(profile,0)).profile;assert.equal(loaded.ownedEquipment.length,49);assert.equal(loaded.ownedWeapons.length,28);assert.equal(loaded.weapon,'shadowDaggers');assert.equal(loaded.equipment.chest,'shadowArmor');assert.deepEqual(loaded.learnedSpells,[]);
+ const loaded=readProgress(writeProgress(profile,0)).profile;assert.equal(loaded.ownedEquipment.length,7);assert.equal(loaded.ownedWeapons.length,1);assert.equal(loaded.weapon,'shadowDaggers');assert.equal(loaded.equipment.chest,'shadowArmor');assert.deepEqual(loaded.learnedSpells,[]);
  }
 });

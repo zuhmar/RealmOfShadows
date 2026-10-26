@@ -44,3 +44,5 @@ export * from './equipment-tiers';
 export * from './attributes';
 
 export * from './loot-equipment';
+
+export * from './inventory';

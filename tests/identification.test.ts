@@ -9,11 +9,11 @@ function level(profile:ReturnType<typeof setup>['profile'],n=100){profile.level=
 test('every monster can drop only its island tier, with a higher boss chance and no guaranteed normal drops',()=>{
  for(const [kind,stats]of Object.entries(monsters)){const {e,p}=setup();const region=['bat','crawler','golem','wyrm'].includes(kind)?'caverns':'woods';e.process([{id:1,owner:'p',x:5,y:5,region,kind:kind as keyof typeof monsters}],new Map([['p',p]]),0);const drop=[...e.drops.values()][0];assert.ok(drop.gear);assert.equal(drop.gear.rarity,null);assert.equal(gearDefinition(drop.gear.base).tier,islandEquipmentTiers[region]);}
  for(const [kind,expected]of [['wolf',false],['bear',true]] as const){const {e,p}=setup(()=>.5);e.process([{id:1,owner:'p',x:5,y:5,region:'woods',kind}],new Map([['p',p]]),0);assert.equal(!![...e.drops.values()][0].gear,expected);}
- assert.deepEqual(Object.values(islandEquipmentTiers),['copper','iron','gold','mythril','dragon','shadow','shadow']);
+ assert.deepEqual(Object.values(islandEquipmentTiers),['beginner','copper','iron','gold','mythril','dragon','shadow']);
 });
 test('unidentified equipment pickups are private, atomic, capacity limited and cannot duplicate',()=>{
  const {e,p,profile}=setup();Object.assign(p,{region:'woods',x:5,y:5});const gear:GearInstance={id:uuid(),base:'copperArmor',rarity:null};e.drops.set('loot',{id:'loot',owner:'p',region:'woods',x:5,y:5,gold:10,pelts:1,gear,expires:90});
- e.join('other');assert.match(e.act('other',p,{kind:'pickup',drop:'loot'},0),/closer/);profile.gear=Array.from({length:32},()=>({...gear,id:uuid()}));assert.match(e.act('p',p,{kind:'pickup',drop:'loot'},0),/bag full/);assert.equal(profile.gold,0);assert.equal(profile.inventory.length,0);assert.ok(e.drops.has('loot'));
+ e.join('other');assert.match(e.act('other',p,{kind:'pickup',drop:'loot'},0),/closer/);profile.gear=Array.from({length:32},()=>({...gear,id:uuid()}));assert.match(e.act('p',p,{kind:'pickup',drop:'loot'},0),/Inventory full/);assert.equal(profile.gold,0);assert.equal(profile.inventory.length,0);assert.ok(e.drops.has('loot'));
  profile.gear=[];e.act('p',p,{kind:'pickup',drop:'loot'},0);e.act('p',p,{kind:'pickup',drop:'loot'},0);assert.equal(profile.gear.length,1);assert.equal(profile.gold,10);assert.notEqual(profile.gear[0],gear);
 });
 test('identification rolls once server-side, rejects foreign IDs, and equipment cannot be worn before identification or its level',()=>{
