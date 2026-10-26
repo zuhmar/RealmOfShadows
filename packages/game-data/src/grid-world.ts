@@ -1,3 +1,4 @@
+import {woodsGridEncounters} from './woods-grid-spawns';
 import {depotBoxes} from './depot';
 import overrides from './grid-overrides.json';
 import type {RegionId} from './index';
@@ -66,6 +67,7 @@ export function gridMap(region:string):GridMap{
 export function gridBlocked(region:string,x:number,y:number){const map=gridMap(region);return x<0||y<0||x>=map.width||y>=map.height||map.blocked.has(`${Math.floor(x)},${Math.floor(y)}`);}
 type GridMonster='wolf'|'spider'|'boar'|'bear'|'bat'|'crawler'|'golem'|'wyrm';
 export function gridSpawns(region:RegionId):{id:string;kind:GridMonster;region:RegionId;x:number;y:number}[]{
+ if(region==='woods')return (Object.entries(woodsGridEncounters) as [keyof typeof woodsGridEncounters,typeof woodsGridEncounters[keyof typeof woodsGridEncounters]][]).flatMap(([kind,area])=>[...area.habitat,...area.approach].map(([x,y],i)=>({id:`${kind}-${i+1}`,kind,region,x:x+.5,y:y+.5})));
  const woods=region.startsWith('woods'),lower=region.endsWith('-depths');
  const groups:[GridMonster,number,number,number][]=woods?(lower?[['wolf',5,23,6],['spider',7,5,6],['boar',33,20,6]]:[['wolf',8,6,9],['spider',8,33,9],['boar',52,6,9],['bear',55,35,1]]):(lower?[['bat',5,23,6],['crawler',7,5,6],['golem',33,20,5]]:[['bat',7,7,9],['crawler',7,28,9],['golem',45,27,9],['wyrm',48,8,1]]);
  const result=groups.flatMap(([kind,x,y,count])=>Array.from({length:count},(_,i)=>({id:`${lower?woods?'roots-':'depths-':''}${kind}-${i+1}`,kind,region,x:x+(i%3)*3+.5,y:y+Math.floor(i/3)*3+.5})));

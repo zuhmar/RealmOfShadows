@@ -75,3 +75,5 @@ Checks: `npm test`, `npm run build`, `npm run test:grid:browser`, and
 `npm run test:grid:integration`. Browser URL defaults to localhost:5218;
 server URL defaults to ws://localhost:2610. Use TEST_CLIENT_URL / TEST_SERVER_URL
 to select your running development services.
+
+Whispering Woods encounter positions are authored in `packages/game-data/src/woods-grid-spawns.ts`: four clearing positions and five nearby path positions for each regular species. The forest keeps 28 monsters (nine wolves, nine spiders, nine boars and one enclosed bear boss), with at least three tiles between spawn centers. `gridSpawns` uses these positions for both the server and guest simulation; lower floors and other islands retain their existing encounters.
