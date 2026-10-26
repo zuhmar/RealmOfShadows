@@ -1,20 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {cavernsSpawns,cavernsPortal,cavernsMap,cavernsChambers,monsters,portalFor} from '@realm/game-data';
+import {gridSpawns,monsters,portalFor} from '@realm/game-data';
 import {CombatSimulation,newFighter,Economy,legal,pathfind,attackPath,sight} from '@realm/shared';
 import {writeProgress,readProgress} from '../packages/shared/src/saves';
 
+const cavernsSpawns=gridSpawns('caverns'),cavernsPortal=portalFor('caverns');
 test('every cave chamber and all 28 encounters connect to a safe portal through legal routes',()=>{
  assert.equal(cavernsSpawns.length,28);assert.equal(legal(cavernsPortal.arrival,'caverns'),true);
- for(const target of [...cavernsSpawns,...cavernsChambers.map(c=>({id:c.name,x:c.x/48,y:c.y/48+cavernsMap.offsetY}))]){assert.equal(legal(target,'caverns'),true,target.id);const route=pathfind(cavernsPortal.arrival,target,'caverns');assert.ok(route.length,target.id);let previous=cavernsPortal.arrival;for(const p of route){for(let i=1;i<=4;i++)assert.equal(legal({x:previous.x+(p.x-previous.x)*i/4,y:previous.y+(p.y-previous.y)*i/4},'caverns'),true,target.id);previous=p;}}
+ for(const target of [...cavernsSpawns,...[{id:'crossing',x:32.5,y:22.5},{id:'vault',x:50.5,y:10.5}]]){assert.equal(legal(target,'caverns'),true,target.id);const route=pathfind(cavernsPortal.arrival,target,'caverns');assert.ok(route.length,target.id);let previous=cavernsPortal.arrival;for(const p of route){for(let i=1;i<=4;i++)assert.equal(legal({x:previous.x+(p.x-previous.x)*i/4,y:previous.y+(p.y-previous.y)*i/4},'caverns'),true,target.id);previous=p;}}
  for(const s of cavernsSpawns)assert.ok(Math.hypot(s.x-cavernsPortal.x,s.y-cavernsPortal.y)>3.5,s.id);
 });
-test('lake and boss walls block movement and sight while bridge and arena gate stay open',()=>{
- const world=(x:number,y:number)=>({x:x/48,y:y/48+cavernsMap.offsetY});
- assert.equal(legal(world(1320,1620),'caverns'),false);assert.equal(legal(world(1536,1620),'caverns'),true);
- assert.equal(legal(world(2000,900),'caverns'),false);assert.equal(legal(world(2250,900),'caverns'),true);
- assert.equal(sight(world(2000,850),world(2000,960),'caverns'),false);
- const boss=cavernsSpawns.find(s=>s.kind==='wyrm')!,route=attackPath(world(2250,1050),boss,6,'caverns');assert.ok(route.length);assert.ok(sight(route.at(-1)!,boss,'caverns'));
+test('lake banks block movement while the mine bridge and boss entrance remain open',()=>{
+ assert.equal(legal({x:30.5,y:28.5},'caverns'),false);assert.ok(legal({x:32.5,y:28.5},'caverns'));
+ assert.equal(sight({x:30.5,y:27.5},{x:30.5,y:30.5},'caverns'),false);
+ const boss=cavernsSpawns.find(s=>s.kind==='wyrm')!,route=attackPath({x:50.5,y:19.5},boss,6,'caverns');assert.ok(route.length);assert.ok(sight(route.at(-1)!,boss,'caverns'));
 });
 test('cave monsters attack, grant their own rewards once, and respawn in their island',()=>{
  for(const kind of ['bat','crawler','golem','wyrm'] as const){const sim=new CombatSimulation(),s=cavernsSpawns.find(s=>s.kind===kind)!,monster=sim.wolves.get(s.id)!,p={...newFighter(),region:'caverns' as const,x:s.x+.8,y:s.y};for(const [id]of sim.wolves)if(id!==s.id)sim.wolves.delete(id);

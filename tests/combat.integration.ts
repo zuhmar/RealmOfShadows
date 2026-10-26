@@ -12,7 +12,7 @@ try{
  a.send('combat',{kind:'bolt',target:'wolf-1',damage:99999});await wait(150);assert.equal(a.state.wolves.get('wolf-1').hp,65);
  a.send('combat',{kind:'stop'});await wait(150);
  for(const item of ['clothHood','clothTunic','clothTrousers','leatherBoots','woodenShield']){a.send('economy',{kind:'equip-item',item});await wait(150);}
- await walkTo(a,{x:16,y:8.4},1);await wait(100);
+ await walkTo(a,{x:11.5,y:7.5},1);await wait(100);
  const mana=a.state.players.get(a.sessionId).mana;
  for(let i=0;i<20;i++)a.send('combat',{kind:'nova',target:'wolf-1',damage:99999});await wait(250);
  const caster=a.state.players.get(a.sessionId);assert.ok(caster.hp>0);assert.equal(caster.mana,mana);assert.deepEqual(bag.learnedSpells,[]);

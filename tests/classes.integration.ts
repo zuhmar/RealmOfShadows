@@ -7,7 +7,7 @@ for(const name of ['combat-event','combat-error','travel-complete','travel-error
 try{
  await wait(250);assert.equal(bag.classId,'citizen');room.send('economy',{kind:'class',classId:'knight',level:99,xp:999999});await wait(150);assert.equal(bag.classId,'citizen');room.send('economy',{kind:'equip',weapon:'knightSword'});await wait(150);assert.equal(bag.weapon,'wand');
  room.send('economy',{kind:'equip',weapon:'bow'});await wait(150);assert.equal(bag.weapon,'bow');assert.equal(room.state.players.get(room.sessionId).weapon,'bow');room.send('travel','woods');await wait(200);
- await walkTo(room,{x:16,y:8.4},1);await wait(100);
+ await walkTo(room,{x:11.5,y:7.5},1);await wait(100);
  room.send('combat',{kind:'nova',target:'wolf-1',weapon:'mageStaff',skill:99});await wait(150);assert.equal(room.state.players.get(room.sessionId).mana,100);
  room.send('combat',{kind:'bolt',target:'wolf-1',weapon:'mageStaff',damage:999});await wait(400);assert.ok(room.state.wolves.get('wolf-1').hp<65&&room.state.wolves.get('wolf-1').hp>0);assert.ok(room.state.players.get(room.sessionId).distanceXp>=5);assert.equal(room.state.players.get(room.sessionId).magicXp,0);
  room.send('economy',{kind:'equip',weapon:'sword'});await wait(150);assert.equal(bag.weapon,'bow');room.send('combat',{kind:'stop'});await wait(150);room.send('economy',{kind:'equip',weapon:'sword'});await wait(150);assert.equal(bag.weapon,'sword');room.send('combat',{kind:'bolt',target:'wolf-1'});for(let i=0;i<30&&room.state.players.get(room.sessionId).meleeXp<5;i++)await wait(100);assert.ok(room.state.players.get(room.sessionId).meleeXp>=5);assert.equal(bag.classId,'citizen');

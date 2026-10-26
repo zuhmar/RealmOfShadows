@@ -1,3 +1,4 @@
+import {gridSpawns,gridMap} from '@realm/game-data';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {CombatSimulation,Economy,newFighter,pathfind,legal} from '@realm/shared';
@@ -6,10 +7,10 @@ test('both stairs connect legal landings and require the right floor and proximi
  for(const s of floorConnections){assert.ok(legal(s.arrival,s.to));assert.equal(availableStair(s,s.from,s.id),s);assert.equal(availableStair({x:1,y:1},s.from,s.id),undefined);assert.equal(availableStair(s,s.to,s.id),undefined);assert.equal(availableStair(s,s.from,'__proto__'),undefined);}
  assert.equal(canTravel(portalFor('caverns'),'caverns','caverns-depths'),false);assert.equal(canTravel(portalFor('caverns-depths'),'caverns-depths','elderwood'),false);
 });
-test('lower depth is a native tiled map with connected chambers, all spawns and blocked lake banks',()=>{
- const arrival=floorConnections[0].arrival,plan=terrainPlan('caverns-depths');assert.equal(plan.columns,96);assert.equal(plan.rows,72);assert.ok(plan.layers.length>=5);
- for(const target of [...depthsSpawns,...depthsChambers.map(c=>({x:c.x/48,y:c.y/48}))]){assert.ok(legal(target,'caverns-depths'));assert.ok(pathfind(arrival,target,'caverns-depths').length,JSON.stringify(target));}
- assert.equal(legal({x:1000/48,y:950/48},'caverns-depths'),false);assert.equal(legal({x:1152/48,y:950/48},'caverns-depths'),true);
+test('depths grid spawns, central bridge and all stair landings remain connected',()=>{
+ const arrival=portalFor('caverns-depths').arrival,map=gridMap('caverns-depths');assert.equal(map.width,48);assert.equal(map.height,36);
+ for(const target of gridSpawns('caverns-depths')){assert.ok(legal(target,'caverns-depths'));assert.ok(pathfind(arrival,target,'caverns-depths').length);}
+ assert.equal(legal({x:22.5,y:21.5},'caverns-depths'),false);assert.ok(legal({x:24.5,y:21.5},'caverns-depths'));assert.ok(pathfind(arrival,{x:24.5,y:19.5},'caverns-depths').length);
 });
 test('attacks, spells, projectiles and loot cannot cross between depths',()=>{
  const sim=new CombatSimulation(),lower=sim.wolves.get('depths-bat-1')!,p=newFighter();Object.assign(p,{region:'caverns',x:lower.x,y:lower.y});assert.equal(monsterRegion(lower),'caverns-depths');assert.equal(sim.action('p',p,'bolt',lower.id),false);assert.equal(sim.castSpell('p',p,'spark',lower.id,{classId:'citizen',level:100,learnedSpells:['spark']}),false);

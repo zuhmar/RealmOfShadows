@@ -1,6 +1,6 @@
 # Realm of Shadows
 
-Phase 1: Elderwood movement foundation. Original flat glossy cartoon art is intended; world graphics are temporary geometric placeholders; the main character uses the supplied idle and walk artwork. No final artwork is generated or replaced.
+A multiplayer fantasy RPG with accounts, saved progression, equipment, island travel and layered maps. Current maps use individually authored grid cells, distinct 32×32 island terrain and standalone painted object sprites. Players and monsters use eight-direction grid movement with occupied cells and surrounding combat. See [Grid world](docs/grid-world.md) for current map authoring, artwork, controls and deployment.
 
 ## Local development
 

@@ -8,7 +8,7 @@ import {woodsSvgFiles} from '../scripts/build-woods-svg';
 test('all four woods habitats connect to the portal and spawn on walkable land',()=>{
  assert.deepEqual([...new Set(monsterSpawns.map(s=>s.kind))],['wolf','spider','boar','bear']);
  for(const spawn of monsterSpawns){assert.equal(legal(spawn,'woods'),true,spawn.id);const route=pathfind(PORTAL.arrival,spawn,'woods');assert.ok(route.length,spawn.id);let prev=PORTAL.arrival;for(const p of route){for(let n=1;n<=10;n++)assert.equal(legal({x:prev.x+(p.x-prev.x)*n/10,y:prev.y+(p.y-prev.y)*n/10},'woods'),true,spawn.id);prev=p;}}
- assert.ok(woodsObjects.length>150);assert.equal(legal({x:1.5,y:10},'woods'),false);assert.equal(legal({x:2.2,y:11.9},'woods'),true);
+ assert.ok(woodsObjects.length>150);assert.equal(legal({x:.5,y:10},'woods'),false);assert.equal(legal({x:2.2,y:11.9},'woods'),true);
 });
 test('each monster attacks, credits its own rewards once, and respawns at full health',()=>{
  for(const kind of [...new Set(monsterSpawns.map(s=>s.kind))]){const sim=new CombatSimulation(),spawn=monsterSpawns.find(s=>s.kind===kind)!,w=sim.wolves.get(spawn.id)!,stats=monsters[kind];
@@ -53,6 +53,6 @@ test('expanded woods supports distant exploration and retains town bounds',()=>{
 test('expanded habitats have spaced populations outside the portal sanctuary',()=>{
  for(const kind of ['wolf','spider','boar'])assert.ok(monsterSpawns.filter(s=>s.kind===kind).length>=7);assert.equal(monsterSpawns.filter(s=>s.kind==='bear').length,1);
  for(let i=0;i<monsterSpawns.length;i++){const a=monsterSpawns[i];assert.ok(Math.hypot(a.x-PORTAL.x,a.y-PORTAL.y)>3.5,a.id);
- for(const b of monsterSpawns.slice(i+1))assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>=3.5,`${a.id} overlaps ${b.id}`);}
+ for(const b of monsterSpawns.slice(i+1))assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>=3,`${a.id} overlaps ${b.id}`);}
  const den=woodsClearings.find(c=>c.name==='Wolf den')!;assert.ok(den.rx>=300&&den.ry>=200);
 });

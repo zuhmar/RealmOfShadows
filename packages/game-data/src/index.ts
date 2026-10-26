@@ -1,3 +1,5 @@
+import {gridBlocked} from './grid-world';
+export * from './grid-world';
 import {rootsFootprintBlocked} from './woods-depths';
 export * from './woods-depths';
 import {depthsMap,depthsFootprintBlocked} from './caverns-depths';
@@ -13,9 +15,7 @@ export {elderwoodGround,elderwoodBlocked,elderwoodFootprintBlocked,elderwoodPosi
 export const WORLD = { tile:64, width:32, height:24, speed:4, sprint:1.5, capacity:32, spawn:{x:16.5,y:14.5} };
 export const landmarks=elderwoodObjects.filter(object=>object.name&&object.key!=='elderwood-stall-red'&&object.key!=='elderwood-stall-blue'&&object.key!=='elderwood-stall-green').map(object=>({name:object.name!,x:object.x/48,y:object.y/48+4/3,w:object.w/48,h:object.h/48,color:0x8b9b79,description:'A village landmark. Interiors are not open yet.'}));
 export const regionSize=(region:RegionId)=>isLowerFloor(region)?{width:48,height:36}:region==='woods'?{width:68,height:48}:region==='caverns'?{width:64,height:48}:WORLD;
-export function blocked(x:number,y:number,region:RegionId='elderwood'):boolean {
- return x<1||y<1||x>=regionSize(region).width-1||y>=regionSize(region).height-1||(region==='woods-depths'?rootsFootprintBlocked(x+.5,y+.5):region==='elderwood'?elderwoodBlocked(x,y):region==='caverns-depths'?depthsFootprintBlocked(x+.5,y+.5):region==='woods'?woodsFootprintBlocked(x+.5,y+.5):region==='caverns'?cavernsFootprintBlocked(x+.5,y+.5):regions[region].obstacles.some(b=>x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h));
-}
+export function blocked(x:number,y:number,region:RegionId='elderwood'):boolean{return gridBlocked(region,x,y);}
 export type Facing='down'|'left'|'right'|'up';
 export interface SpriteManifest {key:string;url:string;frameWidth:number;frameHeight:number;anchor:{x:number;y:number};scale:number;animations:Partial<Record<'idle'|'walk',Record<Facing,{frames:number[];fps:number}>>>}
 // Add a supplied sprite sheet here. Empty means explicit geometric placeholders.
@@ -32,7 +32,7 @@ export const regions = {
 export type RegionId=keyof typeof regions;
 export const PORTAL={x:16.5,y:13.5,radius:2.5,arrival:{x:16.5,y:15.5}};
 export function isRegion(value:unknown):value is RegionId{return typeof value==='string'&&Object.hasOwn(regions,value);}
-export const portalFor=(region:RegionId)=>isLowerFloor(region)?{x:24,y:1420/48,radius:2.5,arrival:{x:24,y:32}}:region==='woods'?woodsPortal:region==='caverns'?cavernsPortal:PORTAL;
+export const portalFor=(region:RegionId)=>isLowerFloor(region)?{x:24.5,y:30.5,radius:2.5,arrival:{x:24.5,y:32.5}}:region==='woods'?{x:34.5,y:25.5,radius:2.5,arrival:{x:34.5,y:27.5}}:region==='caverns'?{x:32.5,y:40.5,radius:2.5,arrival:{x:32.5,y:42.5}}:PORTAL;
 export function canTravel(position:{x:number;y:number},from:RegionId,to:unknown):to is RegionId{return isRegion(to)&&!isLowerFloor(from)&&!isLowerFloor(to)&&from!==to&&Math.hypot(position.x-portalFor(from).x,position.y-portalFor(from).y)<=portalFor(from).radius;}
 export {combat,wolfSpawns} from './combat';
 export {items,rewards,merchant,totalXp,levelForXp,type ItemId} from './economy';
