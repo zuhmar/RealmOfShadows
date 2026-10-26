@@ -1,6 +1,7 @@
 import bagIconUrl from '../../../assets/generated/bag-icon.png?url';
-import {generatedSheets,installGeneratedArt} from './generated-art';
-import {woodsMapAssets,installWoodsGround} from './woods-map';
+import {generatedSourceSheets,installGeneratedArt} from './generated-art';
+import {mapObjectTileAssets} from './map-object-tiles';
+import {terrainTileAsset,drawTiledTerrain} from './tiled-terrain';
 import {generatedMonsters} from './monster-assets';
 import Phaser from 'phaser';
 import {displayDensity,displaySize} from './display';
@@ -13,12 +14,11 @@ import './style.css';
 import {animatedMonsters,animatedMonster,installMonsterAnimations,playMonster} from './monster-animations';
 import {characterAssets,characterFrameSize,characterStyle} from './character-assets';
 import {maraAsset} from './mara-assets';
-import {woodsTerrain,woodsGround,terrainAssets,terrainVariant} from './terrain-assets';
 import {itemSprite} from './item-assets';
-import {elderwoodMapAssets} from './elderwood-map';
 let noticeTimer:ReturnType<typeof setTimeout>;
 const notice=(s:string)=>{const element=document.querySelector('#notice')!;element.textContent=s;element.classList.remove('is-quiet');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>element.classList.add('is-quiet'),5500);};
 class Elderwood extends Phaser.Scene {
+ terrainCleanup?:()=>void;
  viewZoom=.85;
  region:RegionId='elderwood';worldObjects:Phaser.GameObjects.GameObject[]=[];portalGlow?:Phaser.GameObjects.Graphics;traveling=false;travelTimer?:ReturnType<typeof setTimeout>;
  usePaperDoll=true;portraitKey='';inventoryRenderKey='';economy=new Economy();bag?:EconomySnapshot;dropViews=new Map<string,Phaser.GameObjects.Container>();shopOpen=false;lastXp=0;
@@ -28,9 +28,8 @@ class Elderwood extends Phaser.Scene {
  room?:Room; avatar!:Phaser.GameObjects.Container; bodySprite?:Phaser.GameObjects.Sprite;
  local:Motion={...WORLD.spawn,stamina:100}; keys!:Record<string,Phaser.Input.Keyboard.Key>;
  peers=new Map<string,Phaser.GameObjects.Container>();route:Point[]=[];seq=0;acc=0;online=false;preview=false;touch={x:0,y:0};pendingInteraction:'portal'|'trader'|undefined;sprinting=false;pending:Input[]=[];facing:Facing='down';walking=false;animationStyle=new Map<string,{scale:number;origin:number}>();
- preload(){for(const sheet of generatedSheets)this.load.image(sheet.key,sheet.url);this.load.image(generatedMonsters.key,generatedMonsters.url);for(const asset of woodsMapAssets)this.load.image(asset.key,asset.url);this.load.image(maraAsset.key,maraAsset.url);for(const asset of elderwoodMapAssets)this.load.image(asset.key,asset.url);for(const asset of terrainAssets)this.load.image(asset.key,asset.url);for(const asset of animatedMonsters)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
+ preload(){for(const sheet of generatedSourceSheets)this.load.image(sheet.key,sheet.url);for(const asset of mapObjectTileAssets)this.load.image(asset.key,asset.url);this.load.image(terrainTileAsset.key,terrainTileAsset.url);this.load.image(generatedMonsters.key,generatedMonsters.url);this.load.image(maraAsset.key,maraAsset.url);for(const asset of animatedMonsters)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
  create(){
- installWoodsGround(this);
  installGeneratedArt(this);
  if(this.textures.exists(generatedMonsters.key)){const texture=this.textures.get(generatedMonsters.key);for(const [kind,f]of Object.entries(generatedMonsters.frames))texture.add(kind,0,f.x,f.y,f.w,f.h);}
  try{this.usePaperDoll=localStorage.getItem('realm-appearance')!=='original';}catch{}
@@ -51,7 +50,6 @@ class Elderwood extends Phaser.Scene {
  this.animationStyle.set(animation,characterStyle);}
  }
  for(const [id,s] of Object.entries(spells)){const button=document.createElement('button');button.dataset.spell=id;button.addEventListener('click',()=>this.economyAction({kind:'learn',spell:id}));document.querySelector('#spell-shop')!.append(button);}
- for(const asset of terrainAssets){if(!this.textures.exists(asset.key))continue;const texture=this.textures.get(asset.key);for(const [kind,y] of Object.entries(asset.rows))asset.columns.forEach((x,i)=>texture.add(`${kind}-${i}`,0,x,y,asset.size,asset.size));}
  this.drawMap();
  this.drawPortraits();
  this.avatar=this.makeAvatar(0xf0cc80,'You');this.bodySprite=this.avatar.getData('sprite');this.avatar.setPosition(this.local.x*64,this.local.y*64);
@@ -186,17 +184,16 @@ class Elderwood extends Phaser.Scene {
  }
  drawMap(){
  const bounds=regionSize(this.region);this.cameras.main.setBounds(0,0,bounds.width*64,bounds.height*64);
+ this.terrainCleanup?.();this.terrainCleanup=undefined;
  for(const obj of this.worldObjects)obj.destroy();
  const existing=new Set(this.children.list),config=regions[this.region];
- this.cameras.main.setBackgroundColor('#233c38');const g=this.add.graphics();const terrain=this.region==='woods'?woodsTerrain:undefined;const ground=woodsGround;
+ this.cameras.main.setBackgroundColor('#233c38');this.terrainCleanup=drawTiledTerrain(this,this.region);
  const mapConfig=this.region==='woods'?woodsMap:elderwoodMap,mapObjects=this.region==='woods'?woodsObjects:elderwoodObjects,mapPrefix=this.region==='woods'?'woods':'elderwood';
- const illustratedMap=(this.region==='elderwood'||this.region==='woods')&&this.textures.exists(`${mapPrefix}-base`);
+ const illustratedMap=this.region==='elderwood'||this.region==='woods';
  if(illustratedMap){
- this.add.image(0,mapConfig.offsetY*64,`${mapPrefix}-base`).setOrigin(0).setDisplaySize(mapConfig.worldWidth*64,mapConfig.worldHeight*64).setDepth(-2);
  for(const object of mapObjects){const sx=mapConfig.worldWidth*64/mapConfig.width,sy=mapConfig.worldHeight*64/mapConfig.height;
  this.add.image(object.x*sx,object.y*sy+mapConfig.offsetY*64,object.key).setOrigin(0).setDisplaySize(object.w*sx,object.h*sy).setDepth(object.footY*sy+mapConfig.offsetY*64);}
  }else{
- for(let y=0;y<WORLD.height;y++)for(let x=0;x<WORLD.width;x++){if(terrain&&this.textures.exists(terrain.key)){this.add.image(x*64+1,y*64+1,terrain.key,`${ground(x,y)}-${terrainVariant(x,y)}`).setOrigin(0).setDisplaySize(62,62).setDepth(-1);continue;}const road=Math.abs(x-16)<2||Math.abs(y-13)<2;const palette=road?config.road:config.ground;g.fillStyle(palette[(x+y)%2]);g.fillRoundedRect(x*64+1,y*64+1,62,62,8);if(!road&&(x*7+y*11)%9===0){g.fillStyle(0x749462,.6);g.fillCircle(x*64+22,y*64+25,4);}}
  for(let x=0;x<WORLD.width;x++)for(const y of [0,23])this.tree(x*64+32,y*64+32);
  for(let y=1;y<23;y++)for(const x of [0,31])this.tree(x*64+32,y*64+32);
  }
@@ -249,7 +246,7 @@ class Elderwood extends Phaser.Scene {
  for(const obj of this.peers.values())obj.destroy();this.peers.clear();
  this.avatar.setPosition(this.local.x*64,this.local.y*64);this.cameras.main.centerOn(this.avatar.x,this.avatar.y);notice(`Arrived in ${regions[region].name}. Use the portal to return or explore another destination.`);
  }
- tree(x:number,y:number){const g=this.add.graphics();g.fillStyle(0x675a40);g.fillRoundedRect(x-9,y-20,18,30,5);g.fillStyle(0x284f3b);g.fillCircle(x,y-32,34);g.fillStyle(0x5a8555);g.fillEllipse(x-6,y-42,46,30);g.setDepth(y);}
+ tree(x:number,y:number){this.add.image(x,y,'elderwood-oak').setOrigin(.5,1).setDisplaySize(88,112).setDepth(y);}
  makeAvatar(color:number,label:string,paper=true){const g=this.add.graphics();g.fillStyle(0x102823,.3);g.fillEllipse(0,0,30,13);g.fillStyle(0x446d82);g.fillRoundedRect(-13,-32,26,30,8);g.fillStyle(color);g.fillCircle(0,-40,13);g.fillStyle(0xffffff,.35);g.fillEllipse(-4,-44,12,7);const text=this.add.text(0,-88,label,{fontFamily:'sans-serif',fontSize:'12px',color:'#fff5d7',backgroundColor:'#203b36'}).setOrigin(.5);if(this.textures.exists('citizen-down')){g.clear();g.fillStyle(0x102823,.3);g.fillEllipse(0,0,30,13);const sprite=this.add.sprite(0,0,'citizen-down','frame-0').setOrigin(.5,characterStyle.origin).setScale(characterStyle.scale);sprite.play('idle-down');const doll=paper?new PaperDoll(this):undefined;const avatar=this.add.container(0,0,doll?[g,sprite,doll,text]:[g,sprite,text]).setData('sprite',sprite);if(doll){avatar.setData('paperDoll',doll);doll.setVisible(this.usePaperDoll);sprite.setVisible(!this.usePaperDoll);}return avatar;}return this.add.container(0,0,[g,text]);}
  enterWorld(){this.entryReady=true;this.input.keyboard!.enabled=true;this.input.keyboard!.resetKeys();this.accounts?.entered();}
  startPreview(message:string){this.enterWorld();this.online=false;this.preview=true;this.pending=[];document.querySelector('#connection')!.textContent='Local preview · No multiplayer';notice(message);}

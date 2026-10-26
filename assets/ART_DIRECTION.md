@@ -14,20 +14,22 @@ Avoid neon lime grass, polished plastic, oversized gold ornament and unrelated
 portrait/icon rendering styles. Keep consistent head/body proportions, camera,
 lighting and material treatment across characters, equipment, props and monsters.
 
-Elderwood's ground is 1536×1024. Woods uses four independently detailed PNG
-sections in `generated/woods-sections/`, assembled at 3072×2048. PNG masters
-remain intact; the game loads quality-96 WebP encodings to keep downloads near
-the old whole-map image's size (`npm run art:woods-sections` re-encodes masters).
-Each section
-covers 800×544 pixels of the preserved old 1536×1024 layout, at origins (0,0),
-(736,0), (0,480), (736,480). The shared 64-pixel borders are blended at runtime;
-preserve their geometry and cropped landmarks when repainting sections. UV
-registration in `apps/client/src/woods-map.ts` aligns painted landmarks before
-blending; review those coordinates whenever replacing a section. The
-old `woods-ground.png` remains a layout reference and is not loaded in-game.
+All live maps now use native 32×32 terrain tiles from `tilesets/shared-32/`.
+Grass, dirt, paving, water, decking and cliff stone each have four variants.
+Repeat borders match across variants; extruded atlas gutters prevent texture
+bleeding during zoom. The shared terrain plan builds paths, clearings, shores,
+bridges and walls from the existing layout/collision geometry. Boundary cells
+are cached as 32px edge tiles once per region, then rendered as ordinary culled
+Phaser TilemapLayers. Full-map images are previews/reference artwork only.
+Buildings, trees and other large map props are packed into 32px tile pieces,
+then composed once per prefab to preserve depth sorting and original pivots.
+Use `npm run art:map-tiles` to rebuild atlases from their preserved PNG masters;
+run `npm run art:map-previews` against a running Vite client to refresh previews.
+See `assets/tilesets/shared-32/README.md` for atlas dimensions and layout rules.
 The game uses a density-aware backing canvas (up to 2×) with matching camera
 zoom to retain the same field of view and touch coordinates. Do not use
-nearest-neighbor filtering to disguise softness in the painted art.
+nearest-neighbor filtering to disguise softness in the painted art. This is a
+cartoon tileset conversion; character/monster art and animation remain intact.
 
 All repaint batches should reference this same model, retain existing asset
 identities and silhouettes, and preserve alpha. Grounds retain exact geography;

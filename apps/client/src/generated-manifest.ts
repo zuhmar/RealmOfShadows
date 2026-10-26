@@ -1,8 +1,5 @@
 import {generatedFrames,type GeneratedFrame} from './generated-frames';
 export type {GeneratedFrame} from './generated-frames';
-import buildingsUrl from '../../../assets/generated/buildings.png?url';
-import villageUrl from '../../../assets/generated/village.png?url';
-import forestUrl from '../../../assets/generated/forest.png?url';
 import itemsUrl from '../../../assets/generated/items.png?url';
 import characterUrl from '../../../assets/generated/character.png?url';
 import hoodedUrl from '../../../assets/generated/hooded.png?url';
@@ -13,9 +10,11 @@ export const sharedEnvironmentSprites:Record<string,string>=Object.fromEntries(
  ['oak','pine','boulder','banner','lamp','gate-pier'].map(name=>[`woods-${name}`,`elderwood-${name}`]),
 );
 export const generatedSheets:GeneratedSheet[]=[
- {key:'generated-buildings',url:buildingsUrl,scale:2,frames:generatedFrames.buildings},
- {key:'generated-village',url:villageUrl,scale:2,frames:generatedFrames.village},
- {key:'generated-forest',url:forestUrl,scale:2,frames:generatedFrames.forest},
+ // Map prefabs are reconstructed from their 32px tile pages. Keep their trim
+ // metadata for tooling; the original master atlases are no longer downloaded.
+ {key:'generated-buildings',url:'',scale:2,frames:generatedFrames.buildings},
+ {key:'generated-village',url:'',scale:2,frames:generatedFrames.village},
+ {key:'generated-forest',url:'',scale:2,frames:generatedFrames.forest},
  {key:'generated-items',url:itemsUrl,scale:1,frames:generatedFrames.items},
  {key:'generated-character',url:characterUrl,scale:1,frames:generatedFrames.character},
  {key:'generated-hooded',url:hoodedUrl,scale:1,frames:generatedFrames.hooded},

@@ -35,3 +35,4 @@ export * from './equipment';
 export * from './island-layout';
 
 export * from './monsters';
+export * from './terrain-plan';

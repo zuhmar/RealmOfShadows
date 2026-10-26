@@ -23,6 +23,8 @@
     "test:island:browser": "node tests/browser-island.cjs",
     "art:woods": "tsx scripts/build-woods-svg.ts",
     "art:woods-sections": "node scripts/encode-woods-sections.cjs",
+    "art:map-tiles": "tsx scripts/build-map-tiles.ts && tsx scripts/build-terrain-tiles.ts",
+    "art:map-previews": "node scripts/export-tiled-map-previews.cjs",
     "art:monsters": "tsx scripts/build-monsters-svg.ts",
     "test:woods:browser": "node tests/browser-woods.cjs",
     "test:generated-art:browser": "node tests/browser-generated-art.cjs",

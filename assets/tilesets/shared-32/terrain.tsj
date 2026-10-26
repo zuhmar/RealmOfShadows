@@ -1,0 +1,256 @@
+{
+  "type": "tileset",
+  "version": "1.10",
+  "name": "Realm terrain 32",
+  "tilewidth": 32,
+  "tileheight": 32,
+  "tilecount": 24,
+  "columns": 6,
+  "margin": 2,
+  "spacing": 4,
+  "image": "terrain.png",
+  "imagewidth": 216,
+  "imageheight": 144,
+  "tiles": [
+    {
+      "id": 0,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "grass"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "dirt"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "stone"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "water"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "wood"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "cliff"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "grass"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "dirt"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "stone"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "water"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "wood"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "cliff"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "grass"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "dirt"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "stone"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "water"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "wood"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "cliff"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "grass"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "dirt"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "stone"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "water"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "wood"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "properties": [
+        {
+          "name": "material",
+          "type": "string",
+          "value": "cliff"
+        }
+      ]
+    }
+  ]
+}
