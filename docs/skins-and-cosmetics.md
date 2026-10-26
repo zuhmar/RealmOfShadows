@@ -3,7 +3,7 @@
 Players now use complete animated character sprites. The paper-doll renderer
 and its appearance toggle are no longer part of the live character renderer.
 Equipping armor or a weapon changes combat stats but does not change the skin.
-Mara keeps her existing NPC sprite and animation sheet.
+Mara uses a matching original pixel-art NPC sheet and keeps her trading behavior.
 
 ## Wardrobe
 
@@ -36,18 +36,26 @@ No database migration is required. Deploy Vercel and Render from the same commit
 
 ## Artwork and animation
 
-All five skins are original, distinct characters made without the supplied references:
+All five skins are original, distinct pixel-art characters made without the supplied references:
 Citizen courier (auburn hair and teal overalls), dwarf Knight (white beard and ruby armor),
 elf Archer (mint ponytail), moon-witch Mage (silver bob and crescent hat), and foxfolk Rogue
 (orange fur and indigo leathers). Each master contains two idle and four walk poses for down, left, right and up:
-120 character poses. No held weapon is baked into the outfits; combat still
+144 character poses including matching Mara NPC idle/walk artwork. No held weapon is baked into the outfits; combat still
 uses the equipped weapon. The Archer carries a decorative quiver.
 
-Original generated masters are preserved in `assets/skins/masters/`. Run
+Current generated pixel-art masters are preserved in `assets/skins/masters/pixel/`;
+previous illustration masters remain archived in the parent folder. Run
 `python3 scripts/extract-class-skins.py` to repeat measured atlas extraction.
-Some master rows are not exactly 256 pixels tall, so measured row bands keep
-feet and hoods intact. Runtime class poses share 160×160 transparent canvases,
-a common foot baseline at y=154 and a constant scale per class. The wing master uses measured column bands because full pairs are wider than
+Generated rows are separated at their emptiest nearby horizontal gap. Runtime
+characters use native 32×32 transparent canvases, a common foot baseline at y=31,
+a fixed per-character scale, a shared palette of at most 32 colors per character,
+and hard alpha. Nearest-neighbor sampling preserves pixel clusters. The engine
+displays characters at exactly 2×, sets their textures to NEAREST in both WebGL
+and Canvas, and disables image smoothing in profile portraits. Characters use
+compact classic MMORPG proportions and an overhead-oblique camera rather than
+the former glossy, large-head illustration style. Mara uses the same pixel-art
+pipeline and keeps her existing trading interaction.
+The wing master uses measured column bands because full pairs are wider than
 folded profile views. The pipeline also extracts twelve directional wing sprites (192×160) and three auras
 (192×64), all lossless WebP. `assets/skins/frames.json` records source bounds.
 Runtime assets are loaded from `assets/skins/runtime/` without loading masters.
