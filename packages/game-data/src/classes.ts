@@ -23,14 +23,14 @@ export const weapons={
  mythrilBow:{name:'Mythril Bow',skill:'distance',attack:62,range:7,cooldown:0.8,speed:13,kind:'arrow',tier:'mythril',level:31,price:2000},
  mythrilStaff:{name:'Mythril Staff',skill:'magic',attack:62,range:6,cooldown:0.8,speed:10,kind:'bolt',tier:'mythril',level:31,price:2000},
  mythrilDaggers:{name:'Mythril Daggers',skill:'melee',attack:50,range:1.25,cooldown:0.45,speed:0,kind:'melee',tier:'mythril',level:31,price:2000},
- dragonSword:{name:'Dragon Sword',skill:'melee',attack:82,range:1.4,cooldown:0.8,speed:0,kind:'melee',tier:'dragon',level:51,price:4800},
- dragonBow:{name:'Dragon Bow',skill:'distance',attack:82,range:7,cooldown:0.8,speed:13,kind:'arrow',tier:'dragon',level:51,price:4800},
- dragonStaff:{name:'Dragon Staff',skill:'magic',attack:82,range:6,cooldown:0.8,speed:10,kind:'bolt',tier:'dragon',level:51,price:4800},
- dragonDaggers:{name:'Dragon Daggers',skill:'melee',attack:66,range:1.25,cooldown:0.45,speed:0,kind:'melee',tier:'dragon',level:51,price:4800},
- shadowSword:{name:'Shadow Sword',skill:'melee',attack:105,range:1.4,cooldown:0.8,speed:0,kind:'melee',tier:'shadow',level:61,price:10000},
- shadowBow:{name:'Shadow Bow',skill:'distance',attack:105,range:7,cooldown:0.8,speed:13,kind:'arrow',tier:'shadow',level:61,price:10000},
- shadowStaff:{name:'Shadow Staff',skill:'magic',attack:105,range:6,cooldown:0.8,speed:10,kind:'bolt',tier:'shadow',level:61,price:10000},
- shadowDaggers:{name:'Shadow Daggers',skill:'melee',attack:84,range:1.25,cooldown:0.45,speed:0,kind:'melee',tier:'shadow',level:61,price:10000},
+ dragonSword:{name:'Dragon Sword',skill:'melee',attack:82,range:1.4,cooldown:0.8,speed:0,kind:'melee',tier:'dragon',level:41,price:4800},
+ dragonBow:{name:'Dragon Bow',skill:'distance',attack:82,range:7,cooldown:0.8,speed:13,kind:'arrow',tier:'dragon',level:41,price:4800},
+ dragonStaff:{name:'Dragon Staff',skill:'magic',attack:82,range:6,cooldown:0.8,speed:10,kind:'bolt',tier:'dragon',level:41,price:4800},
+ dragonDaggers:{name:'Dragon Daggers',skill:'melee',attack:66,range:1.25,cooldown:0.45,speed:0,kind:'melee',tier:'dragon',level:41,price:4800},
+ shadowSword:{name:'Shadow Sword',skill:'melee',attack:105,range:1.4,cooldown:0.8,speed:0,kind:'melee',tier:'shadow',level:51,price:10000},
+ shadowBow:{name:'Shadow Bow',skill:'distance',attack:105,range:7,cooldown:0.8,speed:13,kind:'arrow',tier:'shadow',level:51,price:10000},
+ shadowStaff:{name:'Shadow Staff',skill:'magic',attack:105,range:6,cooldown:0.8,speed:10,kind:'bolt',tier:'shadow',level:51,price:10000},
+ shadowDaggers:{name:'Shadow Daggers',skill:'melee',attack:84,range:1.25,cooldown:0.45,speed:0,kind:'melee',tier:'shadow',level:51,price:10000},
 } as const;
 export type WeaponId=keyof typeof weapons;
 export const classes={knight:{name:'Knight',description:'A close-range fighter, starting with a copper sword.',weapon:'knightSword'},archer:{name:'Archer',description:'A ranged hunter, starting with a copper bow.',weapon:'archerBow'},mage:{name:'Mage',description:'A spellcaster, starting with a copper staff.',weapon:'mageStaff'},rogue:{name:'Rogue',description:'A quick melee fighter, starting with copper daggers.',weapon:'rogueDaggers'}} as const;

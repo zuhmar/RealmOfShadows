@@ -42,3 +42,5 @@ export * from './terrain-plan';
 export * from './equipment-tiers';
 
 export * from './attributes';
+
+export * from './loot-equipment';

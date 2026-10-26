@@ -12,8 +12,8 @@ and paired daggers: 77 item sprites, plus 21 equipped head views.
 | Iron | 11 | 4 | 180 | 360 |
 | Gold | 21 | 6 | 450 | 900 |
 | Mythril | 31 | 9 | 1,000 | 2,000 |
-| Dragon | 51 | 13 | 2,400 | 4,800 |
-| Shadow | 61 | 18 | 5,000 | 10,000 |
+| Dragon | 41 | 13 | 2,400 | 4,800 |
+| Shadow | 51 | 18 | 5,000 | 10,000 |
 
 Higher-tier pendant/ring prices are half the armor price. Mara sells all tiers,
 with purchases enforced by server-owned level, gold, proximity and ownership.

@@ -38,3 +38,5 @@ export {Economy,type EconomySnapshot,type Drop} from './economy';
 export {attackPath} from './attack-path';
 
 export {sight} from "./combat";
+
+export {applyEquipment,effectiveAttributes,profileArmor} from './gear';

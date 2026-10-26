@@ -43,7 +43,8 @@
     "test:woods-ground:browser": "node tests/browser-woods-ground.cjs",
     "art:equipment": "python3 scripts/extract-equipment-sprites.py && python3 scripts/extract-equipment-heads.py",
     "test:equipment-tiers:browser": "node tests/browser-equipment-tiers.cjs",
-    "test:attributes:browser": "node tests/browser-attributes.cjs"
+    "test:attributes:browser": "node tests/browser-attributes.cjs",
+    "test:identification:browser": "node tests/browser-identification.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

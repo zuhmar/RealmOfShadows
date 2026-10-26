@@ -1,13 +1,13 @@
 import {newAttributes,attributeDamage,maxHealth,maxMana,shieldBlock,type Attributes,combat as C,monsters,monsterAggressive,monsterKind,allMonsterSpawns,combatRegion,monsterRegion,type MonsterKind,PORTAL,portalFor,weapons,weaponDamage,skillRules,spells,isSpell,canLearnSpell,skillLevel,type SpellAccess,type SpellId,type WeaponId,type SkillId,type RegionId,type Facing} from '@realm/game-data';
 import {legal,pathfind,type Point} from './index';
-export interface Fighter extends Point{attributes:Attributes;shieldArmor:number;shieldingXp:number;armor:number;weapon:WeaponId;meleeXp:number;distanceXp:number;magicXp:number;region:RegionId;hp:number;mana:number;deadUntil:number;shotAt:number;spellAt:number;target:string;auto:boolean}
+export interface Fighter extends Point{attributes:Attributes;weaponBonus:number;shieldArmor:number;shieldingXp:number;armor:number;weapon:WeaponId;meleeXp:number;distanceXp:number;magicXp:number;region:RegionId;hp:number;mana:number;deadUntil:number;shotAt:number;spellAt:number;target:string;auto:boolean}
 // Retain the existing Wolf/wolves API and wire collection for compatibility;
 // kind and region select the definition and its encounter island.
 export interface Wolf extends Point{region?:RegionId;kind:MonsterKind;id:string;hp:number;mode:string;facing:Facing;target:string;attackAt:number;respawnAt:number;spawnX:number;spawnY:number;windupUntil:number;aimX:number;aimY:number}
 export interface Kill {region?:RegionId;kind?:MonsterKind;id:number;owner:string;x:number;y:number}
 export interface Projectile extends Point{id:string;owner:string;target:string;region:RegionId;expires:number;weapon:WeaponId;damage:number;speed:number;skill:SkillId}
 export interface CombatEvent{kind:'bolt'|'arrow'|'melee'|'nova'|'hit'|'death'|'respawn'|'heal'|'warning'|'venom'|'charge'|'shard'|'block';region:RegionId;x:number;y:number;toX?:number;toY?:number;damage?:number;speed?:number;radius?:number}
-export function newFighter():Fighter{return {attributes:newAttributes(),shieldArmor:0,shieldingXp:0,armor:0,weapon:'wand',meleeXp:0,distanceXp:0,magicXp:0,x:16.5,y:14.5,region:'elderwood',hp:C.playerHp,mana:C.mana,deadUntil:0,shotAt:0,spellAt:0,target:'',auto:false};}
+export function newFighter():Fighter{return {attributes:newAttributes(),weaponBonus:0,shieldArmor:0,shieldingXp:0,armor:0,weapon:'wand',meleeXp:0,distanceXp:0,magicXp:0,x:16.5,y:14.5,region:'elderwood',hp:C.playerHp,mana:C.mana,deadUntil:0,shotAt:0,spellAt:0,target:'',auto:false};}
 const distance=(a:Point,b:Point)=>Math.hypot(a.x-b.x,a.y-b.y);
 const attack=(kind:MonsterKind)=>{
  if(kind==='bear'||kind==='golem')return {kind:'slam',range:monsters[kind].range,windup:kind==='bear'?.85:1,radius:kind==='bear'?1.8:1.9};
@@ -48,7 +48,7 @@ export class CombatSimulation{
  return true;
  }
  hit(w:Wolf,amount:number,id:string,p:Fighter,skill:SkillId,xp=skillRules.hitXp){if(w.hp<=0||w.mode==='return')return;const actual=Math.min(w.hp,amount);this.damage(w,amount,id);if(actual>0)p[`${skill}Xp`]=Math.min(skillRules.factor*(skillRules.cap-1)**2,p[`${skill}Xp`]+xp);}
- shoot(id:string,p:Fighter){const w=this.wolves.get(p.target);if(!w||monsterRegion(w)!==p.region||!w.hp||w.mode==='return'){this.clear(p);return;}const weapon=weapons[p.weapon];if(this.time<p.shotAt||distance(p,w)>weapon.range||!sight(p,w))return;p.shotAt=this.time+weapon.cooldown;const amount=weaponDamage(p.weapon,p[`${weapon.skill}Xp`],1,attributeDamage(p.attributes,weapon.skill));
+ shoot(id:string,p:Fighter){const w=this.wolves.get(p.target);if(!w||monsterRegion(w)!==p.region||!w.hp||w.mode==='return'){this.clear(p);return;}const weapon=weapons[p.weapon];if(this.time<p.shotAt||distance(p,w)>weapon.range||!sight(p,w))return;p.shotAt=this.time+weapon.cooldown;const amount=weaponDamage(p.weapon,p[`${weapon.skill}Xp`],1,attributeDamage(p.attributes,weapon.skill)+p.weaponBonus);
  if(weapon.kind==='melee'){this.events.push({kind:'melee',region:p.region,x:w.x,y:w.y});this.hit(w,amount,id,p,weapon.skill);return;}
  const shot={id:`bolt-${++this.serial}`,owner:id,target:w.id,region:p.region,x:p.x,y:p.y,expires:this.time+2,weapon:p.weapon,damage:amount,speed:weapon.speed,skill:weapon.skill};this.projectiles.set(shot.id,shot);this.events.push({kind:weapon.kind,region:p.region,x:p.x,y:p.y,toX:w.x,toY:w.y,speed:weapon.speed});}
 

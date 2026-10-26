@@ -1,0 +1,8 @@
+import {emptyGearLoadout,equipmentItems,equipmentArmor,gearStats,gearSlot,gearDefinition,isEquipment,maxHealth,maxMana,weapons,type GearInstance,type Attributes} from '@realm/game-data';
+import type {Profile} from './economy';
+import type {Fighter} from './combat';
+export function equippedInstance(profile:Profile,slot:keyof ReturnType<typeof emptyGearLoadout>){return profile.gear.find(item=>item.id===profile.equippedGear[slot]&&item.rarity!==null);}
+export function effectiveAttributes(profile:Profile):Attributes{const attrs={...profile.attributes};for(const id of Object.values(profile.equippedGear)){const item=profile.gear.find(i=>i.id===id);if(item?.rarity){const {bonuses}=gearStats(item);for(const key of Object.keys(attrs) as (keyof Attributes)[])attrs[key]+=bonuses[key];}}return attrs;}
+export function profileArmor(profile:Profile){let armor=equipmentArmor(profile.equipment);for(const item of profile.gear)if(item.rarity&&profile.equippedGear[gearSlot(item.base)]===item.id&&isEquipment(item.base))armor+=gearStats(item).armor-equipmentItems[item.base].armor;return armor;}
+export function applyEquipment(profile:Profile,p:Fighter){p.attributes=effectiveAttributes(profile);p.armor=profileArmor(profile);const shield=equippedInstance(profile,'offhand');p.shieldArmor=shield?gearStats(shield).armor:profile.equipment.offhand?equipmentItems[profile.equipment.offhand].armor:0;const weapon=equippedInstance(profile,'weapon');p.weapon=profile.weapon;p.weaponBonus=weapon?gearStats(weapon).attack-weapons[profile.weapon].attack:0;p.hp=Math.min(p.hp,maxHealth(p.attributes));p.mana=Math.min(p.mana,maxMana(p.attributes));}
+export const cloneGear=(item:GearInstance):GearInstance=>({...item});
