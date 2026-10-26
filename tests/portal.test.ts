@@ -12,7 +12,7 @@ test('all portal arrivals are walkable and can return home',()=>{
  for(const region of (Object.keys(regions) as RegionId[]).filter(r=>!isLowerFloor(r))){const portal=portalFor(region);assert.equal(legal(portal.arrival,region),true);assert.ok(pathfind(portal.arrival,portal,region).length);if(region!=='elderwood')assert.equal(canTravel(portal.arrival,region,'elderwood'),true);}
 });
 test('selected island determines water and solid cell collision',()=>{
- assert.equal(legal({x:8.5,y:5.5},'elderwood'),false);assert.equal(legal({x:8.5,y:5.5},'woods'),true);
+ assert.equal(legal({x:5.5,y:5.5},'elderwood'),false);assert.equal(legal({x:5.5,y:5.5},'woods'),true);
  assert.equal(legal({x:5.5,y:5.5},'swamp'),false);assert.ok(pathfind(portalFor('woods').arrival,{x:8.5,y:6.5},'woods').length);
 });
 test('Woods portal is centered independently of Elderwood, including travel validation',()=>{const portal=portalFor('woods');assert.equal(portal.x,34.5);assert.ok(Math.abs(portal.y-24)<3);assert.equal(PORTAL.x,16.5);assert.ok(canTravel(portal,'woods','elderwood'));assert.ok(!canTravel(PORTAL,'woods','elderwood'));const sim=new CombatSimulation();assert.ok(sim.safe({...portal,region:'woods'}));assert.ok(!sim.safe({...PORTAL,region:'woods'}));});

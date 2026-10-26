@@ -53,7 +53,10 @@
     "test:woods-floors:integration": "tsx tests/woods-floors.integration.ts",
     "test:grid:browser": "node tests/browser-grid-world.cjs",
     "test:grid:integration": "tsx tests/grid-world.integration.ts",
-    "art:island-terrain": "python3 scripts/extract-island-terrain.py"
+    "art:island-terrain": "python3 scripts/extract-island-terrain.py",
+    "test:depot:browser": "node tests/browser-depot.cjs",
+    "test:depot:integration": "tsx tests/depot.integration.ts",
+    "art:depot": "python3 scripts/extract-depot-sprites.py"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

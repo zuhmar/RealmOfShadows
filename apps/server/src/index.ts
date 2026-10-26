@@ -46,7 +46,7 @@ class Elderwood extends Room<State>{
  async onJoin(client:Client){
  this.economy.join(client.sessionId);const p=new Player();
  try{if(client.auth?.id){const save=new SaveSession(progressStore!,client.auth as Identity);const data=await save.claim(writeProgress(this.economy.profiles.get(client.sessionId)!,0));
- this.saves.set(client.sessionId,save);this.economy.profiles.set(client.sessionId,data.profile);this.economy.serial=Math.max(this.economy.serial,...data.profile.inventory.map(s=>s.id));
+ this.saves.set(client.sessionId,save);this.economy.profiles.set(client.sessionId,data.profile);this.economy.serial=Math.max(this.economy.serial,...[...data.profile.inventory,...data.profile.depot.supplies].map(s=>s.id));
  applyEquipment(data.profile,p);p.shieldingXp=data.profile.skillXp.shielding;p.hp=maxHealth(p.attributes);p.mana=maxMana(p.attributes);p.meleeXp=data.profile.skillXp.melee;p.distanceXp=data.profile.skillXp.distance;p.magicXp=data.profile.skillXp.magic;
  data.profile.potionReadyAt=this.simulation.time+data.potionRemaining;this.simulation.spellCooldowns.set(client.sessionId,Object.fromEntries(Object.entries(data.cooldowns).map(([id,remaining])=>[id,this.simulation.time+remaining!])));
  }

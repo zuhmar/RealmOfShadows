@@ -21,7 +21,7 @@ cell while the existing character scale remains readable. Camera zoom can
 change how large that appears on a device. Lower floors use their parent
 island's material set. The map has no underlying full-map background image.
 
-`assets/world/objects/` contains 74 independent transparent PNGs. Trees,
+`assets/world/objects/` contains 80 independent transparent PNGs. Trees,
 buildings, portal entrances and decorations may be several cells tall or wide.
 Vite discovers these files directly by filename. They are no longer split into
 32px terrain/object tile pages at runtime. Existing painted prop art is retained;

@@ -1,4 +1,4 @@
-import {emptyGearLoadout,isGearBase,isRarity,gearSlot,gearDefinition,lootEquipmentRules,newAttributes,attributeRules,attributeDefinitions,weapons,emptyEquipment,starterEquipment,equipmentSlots,equipmentItems,isEquipment,isEquipmentSlot,classes,classRules,isClassChoice,isWeapon,isSpell,canLearnSpell,items,rewards,totalXp,levelForXp,skillRules,skillLevel,spells,type SpellId} from '@realm/game-data';
+import {emptyDepot,depotUsage,depotRules,emptyGearLoadout,isGearBase,isRarity,gearSlot,gearDefinition,lootEquipmentRules,newAttributes,attributeRules,attributeDefinitions,weapons,emptyEquipment,starterEquipment,equipmentSlots,equipmentItems,isEquipment,isEquipmentSlot,classes,classRules,isClassChoice,isWeapon,isSpell,canLearnSpell,items,rewards,totalXp,levelForXp,skillRules,skillLevel,spells,type SpellId} from '@realm/game-data';
 import type {Profile} from './economy';
 export interface CharacterProgress{version:1;profile:Profile;cooldowns:Partial<Record<SpellId,number>>;potionRemaining:number}
 const integer=(v:unknown,max:number)=>typeof v==='number'&&Number.isSafeInteger(v)&&v>=0&&v<=max;
@@ -6,6 +6,11 @@ const integer=(v:unknown,max:number)=>typeof v==='number'&&Number.isSafeInteger(
 export function readProgress(value:unknown):CharacterProgress{
  const s=structuredClone(value) as CharacterProgress,p=s?.profile;
  if(s?.version!==1||!p||!integer(p.xp,totalXp(rewards.levelCap))||!integer(p.gold,Number.MAX_SAFE_INTEGER)||!(p.classId==='citizen'||isClassChoice(p.classId)))throw Error('Invalid character save.');
+ // Older saves receive an empty private Depot without changing bag ownership.
+ if(p.depot===undefined)p.depot=emptyDepot();
+ const d=p.depot;
+ const validGear=(g:unknown)=>{const v=g as {id:string;base:unknown;rarity:unknown};return !!v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===3&&typeof v.id==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v.id)&&isGearBase(v.base)&&(v.rarity===null||isRarity(v.rarity));};
+ if(!d||typeof d!=='object'||Array.isArray(d)||Object.keys(d).sort().join(',')!=='equipment,gear,supplies,weapons'||![d.supplies,d.gear,d.equipment,d.weapons].every(a=>Array.isArray(a)&&a.length<=depotRules.capacity)||depotUsage(d)>depotRules.capacity||d.gear.some(g=>!validGear(g))||d.equipment.some(id=>!isEquipment(id))||d.weapons.some(id=>!isWeapon(id)||weapons[id].level>levelForXp(p.xp))||new Set(d.equipment).size!==d.equipment.length||new Set(d.weapons).size!==d.weapons.length||d.supplies.some(stack=>!stack||Object.keys(stack).length!==3||!integer(stack.id,Number.MAX_SAFE_INTEGER)||!Object.hasOwn(items,stack.item)||!integer(stack.quantity,items[stack.item]?.stack)||stack.quantity<1))throw Error('Invalid saved Depot.');
  p.level=levelForXp(p.xp);if(p.classId!=='citizen'&&p.level<classRules.unlockLevel)throw Error('Invalid saved class.');
  // Individual drops coexist with the existing catalogue ownership and loadout.
  if(p.gear===undefined&&p.equippedGear===undefined){p.gear=[];p.equippedGear=emptyGearLoadout();}
@@ -23,6 +28,7 @@ export function readProgress(value:unknown):CharacterProgress{
  p.skills={melee:skillLevel(p.skillXp.melee),distance:skillLevel(p.skillXp.distance),magic:skillLevel(p.skillXp.magic),shielding:skillLevel(p.skillXp.shielding)};
  if(!Array.isArray(p.learnedSpells)||p.learnedSpells.length>Object.keys(spells).length||new Set(p.learnedSpells).size!==p.learnedSpells.length||p.learnedSpells.some(id=>!isSpell(id)||!canLearnSpell(id,p)))throw Error('Invalid saved spells.');
  if(!Array.isArray(p.inventory)||p.inventory.length>rewards.capacity||p.inventory.some(stack=>!stack||!integer(stack.id,Number.MAX_SAFE_INTEGER)||!Object.hasOwn(items,stack.item)||!integer(stack.quantity,items[stack.item]?.stack)||stack.quantity<1)||new Set(p.inventory.map(i=>i.id)).size!==p.inventory.length)throw Error('Invalid saved inventory.');
+ if(new Set([...p.gear,...d.gear].map(g=>g.id)).size!==p.gear.length+d.gear.length||new Set([...p.inventory,...d.supplies].map(stack=>stack.id)).size!==p.inventory.length+d.supplies.length)throw Error('Duplicate saved item ownership.');
  if(typeof s.potionRemaining!=='number'||!Number.isFinite(s.potionRemaining)||s.potionRemaining<0||s.potionRemaining>items.potion.cooldown||!s.cooldowns||Array.isArray(s.cooldowns)||typeof s.cooldowns!=='object'||Object.entries(s.cooldowns).some(([id,time])=>!isSpell(id)||!p.learnedSpells.includes(id)||typeof time!=='number'||!Number.isFinite(time)||time<0||time>spells[id].cooldown))throw Error('Invalid saved cooldowns.');
  p.potionReadyAt=0;return s;
 }

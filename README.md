@@ -2,6 +2,8 @@
 
 A multiplayer fantasy RPG with accounts, saved progression, equipment, island travel and layered maps. Current maps use individually authored grid cells, distinct 32×32 island terrain and standalone painted object sprites. Players and monsters use eight-direction grid movement with occupied cells and surrounding combat. See [Grid world](docs/grid-world.md) for current map authoring, artwork, controls and deployment.
 
+The village [Depot](docs/depot.md) is a visible walk-in tiled building with private, saved item storage.
+
 ## Local development
 
 Requires Node.js 22.12+ (validated on 24) and npm 11.

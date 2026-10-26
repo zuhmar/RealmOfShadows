@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {gridSpawns,monsters,portalFor} from '@realm/game-data';
+import {merchant,gridSpawns,monsters,portalFor} from '@realm/game-data';
 import {CombatSimulation,newFighter,Economy,legal,pathfind,attackPath,sight} from '@realm/shared';
 import {writeProgress,readProgress} from '../packages/shared/src/saves';
 
@@ -27,7 +27,7 @@ test('cross-island targeting and loot are rejected, and crystal shards can be co
  p.region='caverns';assert.equal(sim.action('p',p,'bolt','wolf-1'),false);assert.equal(sim.action('p',p,'bolt',s.id),true);
  const economy=new Economy();economy.join('p');sim.damage(sim.wolves.get(s.id)!,10000,'p');economy.process(sim.kills,new Map([['p',p]]),0);const drop=[...economy.drops.values()][0];p.region='woods';economy.act('p',p,{kind:'pickup',drop:drop.id},0);assert.equal(economy.drops.size,1);p.region='caverns';economy.act('p',p,{kind:'pickup',drop:drop.id},0);assert.equal(economy.drops.size,0);assert.equal(economy.profiles.get('p')!.inventory[0].item,'crystalShard');
  assert.equal(readProgress(writeProgress(economy.profiles.get('p')!,0)).profile.inventory[0].item,'crystalShard');
- p.region='elderwood';p.x=9.6875;p.y=7.9;assert.match(economy.act('p',p,{kind:'sell'},0),/Sold/);assert.equal(economy.profiles.get('p')!.gold,monsters.bat.gold+8);
+ p.region='elderwood';p.x=merchant.x;p.y=merchant.y;assert.match(economy.act('p',p,{kind:'sell'},0),/Sold/);assert.equal(economy.profiles.get('p')!.gold,monsters.bat.gold+8);
 });
 test('cave sanctuary and island travel cancel pursuit and incoming damage',()=>{
  const sim=new CombatSimulation(),s=cavernsSpawns.find(s=>s.kind==='wyrm')!,w=sim.wolves.get(s.id)!,p={...newFighter(),region:'caverns' as const,x:s.x+2,y:s.y};sim.wolves.clear();sim.wolves.set(w.id,w);sim.tick(.05,[['p',p]]);assert.equal(w.mode,'windup');Object.assign(p,{region:'elderwood',...portalFor('elderwood').arrival});for(let i=0;i<60;i++)sim.tick(.05,[['p',p]]);assert.equal(p.hp,100);assert.equal(w.target,'');
