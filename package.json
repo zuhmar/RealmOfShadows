@@ -63,7 +63,8 @@
     "test:cosmetics:peers": "node tests/browser-cosmetics-peers.cjs",
     "art:skins:legacy": "python3 scripts/extract-class-skins.py",
     "test:avatar-idle:browser": "node tests/browser-avatar-idle.cjs",
-    "test:combat-feedback:browser": "node tests/browser-combat-feedback.cjs"
+    "test:combat-feedback:browser": "node tests/browser-combat-feedback.cjs",
+    "test:quests:browser": "node tests/browser-quests.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

@@ -1,0 +1,13 @@
+import {quests,questComplete,regions,type QuestJournal} from '@realm/game-data';
+export function renderQuests(bag:{quests?:QuestJournal;level:number},atMara:boolean,action:(request:{kind:string;item:string})=>void){
+ const host=document.querySelector<HTMLElement>('#quest-list')!,journal=bag.quests??{},key=JSON.stringify([journal,bag.level,atMara]);if(host.dataset.state===key)return;host.dataset.state=key;
+ const open=new Set(Array.from(host.querySelectorAll<HTMLDetailsElement>('details[open]')).map(d=>d.dataset.island));host.replaceChildren();
+ const ready=quests.filter(q=>journal[q.id]&&!journal[q.id].claimed&&questComplete(q,journal[q.id])).length,active=Object.values(journal).filter(p=>!p.claimed).length;
+ document.querySelector('#quest-summary')!.textContent=`Quests · ${active} active${ready?` · ${ready} ready`:''}`;
+ for(const island of [...new Set(quests.map(q=>q.island))]){
+ const list=quests.filter(q=>q.island===island),section=document.createElement('details'),summary=document.createElement('summary');section.dataset.island=island;section.open=open.has(island);summary.textContent=`${regions[island as keyof typeof regions]?.name??island} · 2 main / 3 side${list[0].playable?'':' · Planned'}`;section.append(summary);
+ for(const q of list){const p=journal[q.id],done=!!p&&questComplete(q,p),card=document.createElement('article');card.className='quest-card';card.dataset.quest=q.id;const title=document.createElement('strong');title.textContent=`${q.type==='main'?'Main':'Side'} · ${q.name}${p?.claimed?' · Completed':done?' · Ready to claim':''}`;const description=document.createElement('p');description.textContent=q.description;const objectives=document.createElement('ul');for(let i=0;i<q.objectives.length;i++){const li=document.createElement('li');li.textContent=`${q.objectives[i].label} · ${p?.progress[i]??0}/${q.objectives[i].count}`;objectives.append(li);}const reward=document.createElement('p');reward.textContent=`Reward: ${q.gold} gold · ${q.xp} EXP · Level ${q.level}`;card.append(title,description,objectives,reward);
+ if(!p?.claimed){const button=document.createElement('button');button.type='button';button.dataset.questAction=p?'claim':'accept';const locked=!!q.requires&&!journal[q.requires]?.claimed;button.textContent=!q.playable?'Coming with this island':locked?'Finish the previous main quest':bag.level<q.level?`Requires level ${q.level}`:!atMara?'Visit Mara':p?done?'Claim reward':'In progress':'Accept quest';button.disabled=!q.playable||locked||bag.level<q.level||!atMara||!!p&&!done;button.addEventListener('click',()=>action({kind:p?'quest-claim':'quest-accept',item:q.id}));card.append(button);}section.append(card);
+ }host.append(section);
+ }
+}

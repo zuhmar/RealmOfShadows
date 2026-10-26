@@ -1,3 +1,4 @@
+import {renderQuests} from './quest-ui';
 import {renderDepot} from './depot-ui';
 import bagIconUrl from '../../../assets/generated/bag-icon.png?url';
 import {generatedSourceSheets,installGeneratedArt} from './generated-art';
@@ -146,6 +147,7 @@ class Elderwood extends Phaser.Scene {
  }
  renderRewards(){
  const bag=this.bag;if(!bag)return;
+ renderQuests(bag,this.region==='elderwood'&&Math.hypot(this.local.x-merchant.x,this.local.y-merchant.y)<=merchant.range,r=>this.economyAction(r));
  document.querySelector('#level-label')!.textContent=`Level ${bag.level} · ${bag.classId==='citizen'?'Citizen':classes[bag.classId].name}`;document.querySelector('#gold-label')!.textContent=`${bag.gold} gold`;document.querySelector('#profile-level')!.textContent=`Level ${bag.level} · ${bag.classId==='citizen'?'Citizen':classes[bag.classId].name}`;
  const spellSelect=document.querySelector<HTMLSelectElement>('#spell-select')!;
  if(spellSelect.dataset.known!==bag.learnedSpells.join(',')){const previous=spellSelect.value;spellSelect.replaceChildren();const bar=document.querySelector('#learned-spells')!;bar.replaceChildren();
