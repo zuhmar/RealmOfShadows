@@ -1,0 +1,52 @@
+{
+  "trees": [
+    "oakLog",
+    "birchLog",
+    "crystalrootLog",
+    "mangroveLog",
+    "frostpineLog",
+    "starwoodLog",
+    "emberwoodLog",
+    "nightwoodLog"
+  ],
+  "plants": [
+    "meadowleaf",
+    "whisperfern",
+    "glowcap",
+    "bogbloom",
+    "frostmint",
+    "sunblossom",
+    "ashroot",
+    "nightshade"
+  ],
+  "fish-1": [
+    "pondMinnow",
+    "brookPerch",
+    "goldenCarp",
+    "leafscaleMinnow",
+    "mossfinTrout",
+    "whisperPike",
+    "blindCavefish",
+    "crystalGuppy"
+  ],
+  "fish-2": [
+    "gemscaleChar",
+    "mudskipper",
+    "mireCatfish",
+    "bogEel",
+    "iceMinnow",
+    "frostTrout",
+    "glacierSalmon",
+    "starfinDace"
+  ],
+  "fish-3": [
+    "sunscaleKoi",
+    "moonray",
+    "ashfinCarp",
+    "emberPerch",
+    "flamefinSnapper",
+    "gloomMinnow",
+    "shadowBass",
+    "voidAngler"
+  ]
+}

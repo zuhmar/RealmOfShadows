@@ -1,21 +1,22 @@
-import {resourceNodes,craftRecipes,professionRules,professionLevel,craftingBench,items,gearDefinition,isGearBase,lootEquipmentRules,inventoryFits,type ProfessionId,type ItemId} from '@realm/game-data';
+import {resourceTarget,fishForIsland,fishingCastClear,craftRecipes,professionRules,professionLevel,craftingBench,items,gearDefinition,isGearBase,lootEquipmentRules,inventoryFits,type ProfessionId,type ItemId} from '@realm/game-data';
 import type {Profile,Stack} from './economy';
 import type {Fighter} from './combat';
 import {sight} from './combat';
 export class ProfessionSystem{
  depleted=new Map<string,number>();ready=new Map<string,number>();
  leave(id:string){this.ready.delete(id);}
- act(id:string,p:Fighter,profile:Profile,kind:string,item:unknown,time:number,add:(stacks:Stack[],item:ItemId,quantity:number)=>Stack[]|null):string{
+ act(id:string,p:Fighter,profile:Profile,kind:string,item:unknown,time:number,add:(stacks:Stack[],item:ItemId,quantity:number)=>Stack[]|null,random:()=>number=Math.random):string{
  if(p.auto)return 'Stop attacking before gathering or crafting.';
  if(typeof item!=='string')return 'Choose a resource or recipe.';
  const gain=(skill:ProfessionId,xp:number)=>profile.professions[skill]=Math.min(10*99**2,profile.professions[skill]+xp);
  if(kind==='gather'){
- const node=resourceNodes.find(n=>n.id===item);if(!node||node.region!==p.region||Math.hypot(p.x-node.x,p.y-node.y)>professionRules.range||!sight(p,{x:node.x,y:node.y},p.region))return 'Walk closer to that resource.';
+ const node=resourceTarget(item);if(!node||node.region!==p.region||Math.hypot(p.x-node.x,p.y-node.y)>professionRules.range||!(node.water?fishingCastClear(p,node,p.region):sight(p,{x:node.x,y:node.y},p.region)))return 'Walk closer to that resource.';
  if(professionLevel(profile.professions[node.skill])<node.level)return `Requires ${node.skill} level ${node.level}.`;
- if(time<(this.depleted.get(node.id)??0))return 'This resource is replenishing.';
+ if(time<(this.depleted.get(node.id)??0))return `This resource is replenishing · ${Math.ceil((this.depleted.get(node.id)!-time)/60)} min remaining.`;
  if(time<(this.ready.get(id)??0))return 'Wait a moment before gathering again.';
- const inventory=add(profile.inventory,node.item,1);if(!inventory||!inventoryFits(profile,{...profile,inventory}))return 'Your bag is full. Free a slot before gathering.';
- profile.inventory=inventory;gain(node.skill,node.xp);this.depleted.set(node.id,time+professionRules.nodeRespawn);this.ready.set(id,time+professionRules.gatherCooldown);return `Gathered ${items[node.item].name}. +${node.xp} ${node.skill} EXP.`;
+ const pool=node.water?fishForIsland(p.region).filter(f=>f.level<=professionLevel(profile.professions.fishing)):[],caught=node.water?pool[Math.min(pool.length-1,Math.floor(random()*pool.length))]:undefined,material=caught?.item??node.item,xp=caught?.xp??node.xp;
+ const inventory=add(profile.inventory,material,1);if(!inventory||!inventoryFits(profile,{...profile,inventory}))return 'Your bag is full. Free a slot before gathering.';
+ profile.inventory=inventory;gain(node.skill,xp);this.depleted.set(node.id,time+professionRules.nodeRespawn);this.ready.set(id,time+professionRules.gatherCooldown);return `${node.water?'Caught':'Gathered'} ${items[material].name}. +${xp} ${node.skill} EXP.`;
  }
  const recipe=craftRecipes.find(r=>r.id===item);if(!recipe)return 'Choose a valid recipe.';
  if(p.region!=='elderwood'||Math.hypot(p.x-craftingBench.x,p.y-craftingBench.y)>craftingBench.range)return 'Visit the crafting workbench in Elderwood.';

@@ -2,72 +2,128 @@
 
 All characters can train all eight skills independently, from level 1 to 100:
 
-| Gathering | Crafting | First processing recipe |
+| Gathering | Crafting | Legacy processing recipe |
 | --- | --- | --- |
 | Mining | Blacksmithing | 3 ore → 1 matching bar |
-| Fishing | Cooking | 2 raw fish → 1 cooked fish |
-| Herbalism | Alchemy | 3 healing herbs → 1 healing potion |
-| Woodcutting | Woodworking | 2 logs → 1 timber |
+| Fishing | Cooking | 2 legacy raw fish → 1 cooked fish |
+| Herbalism | Alchemy | 3 legacy healing herbs → 1 healing potion |
+| Woodcutting | Woodworking | 2 legacy logs → 1 timber |
 
-Click a resource to walk into gathering range. All nodes are on reachable land;
-fishing spots border water. Nodes do not add collision or change terrain. Successful
-gathering grants one material and profession EXP, with no character EXP or gold.
-Resources replenish after 45 seconds, shared by players in the same server room.
-Players have a two-second gathering cooldown. A depleted node fades and displays
-its countdown. Range, region, sight, skill level, alive state, combat state,
-cooldowns and bag space are checked by the server. No tool items are required.
+## Resources on every map
 
-| Ore | Mining / processing level | Vein region | Status |
-| --- | ---: | --- | --- |
-| Copper | 1 | Whispering Woods | Playable |
-| Iron | 11 | Crystal Caverns | Playable |
-| Gold | 21 | Murkmire Swamp | Playable on its current starter map |
-| Mythril | 31 | Frostfall Tundra | Defined for future map |
-| Dragon | 41 | Ember Peaks | Defined for future map |
-| Shadow | 51 | Shadow Fortress | Defined for future map |
+Every current map, including Elderwood and both lower floors, contains all six
+ore tiers, all eight tree varieties and all eight plants: 22 resource nodes per
+map. Island names describe a variety's origin; they do not restrict where that
+variety can spawn. A level-1 character with Mining 51 can mine a Shadow vein in
+Elderwood. Only the appropriate profession level, proximity, sight, alive state,
+combat state, gathering cooldown and bag space are required.
 
-There are two veins per configured region. Elderwood, Woods and Caverns also have
-fishing, herb and timber nodes. Advanced node definitions and material icons are
-ready, but this feature does not add unfinished islands. Mining node material
-progression is separate from monster equipment drop tiers; existing loot tiers
-and quest objectives are unchanged.
+Positions are deterministic and spread across reachable land, at least three
+tiles apart. They avoid water, cliffs, map-prop artwork, Depot interiors, arrivals,
+portal/stair entrances and NPC/workbench interaction space. They do not alter
+terrain or grid collision. Click a resource to approach and gather. Tree sprites
+become stumps when chopped; ore and plant nodes fade. Nearby/hovered labels show
+required levels or remaining refresh time without filling the map with labels.
+
+| Ore | Mining / processing level |
+| --- | ---: |
+| Copper | 1 |
+| Iron | 11 |
+| Gold | 21 |
+| Mythril | 31 |
+| Dragon | 41 |
+| Shadow | 51 |
+
+| Origin | Tree → log | Plant | Gathering / processing level |
+| --- | --- | --- | ---: |
+| Elderwood | Elderwood Oak → Oak Log | Meadowleaf | 1 |
+| Whispering Woods | Silver Birch → Birch Log | Whisperfern | 1 |
+| Crystal Caverns | Crystalroot Tree → Crystalroot Log | Glowcap | 11 |
+| Murkmire Swamp | Bog Mangrove → Mangrove Log | Bogbloom | 21 |
+| Frostfall Tundra | Frostpine → Frostpine Log | Frostmint | 31 |
+| Celestial Realm | Starwood Tree → Starwood Log | Sunblossom | 41 |
+| Ember Peaks | Emberwood Tree → Emberwood Log | Ashroot | 51 |
+| Shadow Fortress | Nightwood Tree → Nightwood Log | Nightshade | 61 |
+
+All of these trees, plants and ores are available on current maps, including
+varieties originating from islands whose full maps are still unfinished.
+
+## Click-water fishing
+
+Click any water tile to fish. A deep-water click resolves to the nearest fishable
+edge of that same connected water body. The player approaches a legal shoreline
+cell and casts into water; fishing never allows walking onto water. Bridges and
+wall/terrain visibility are checked. There are no standalone fishing-spot nodes.
+The selected water gets a brief targeting ripple; depleted water is marked by a
+muted ring and gives a remaining-time message when clicked again.
+
+Each island has three unique local fish. The server chooses uniformly among the
+species unlocked by the player's Fishing level; a client cannot choose its catch
+or quantity. Lower floors share their parent island's table. Elderwood also has
+its own three fish.
+
+| Island | First fish / level | Second fish / level | Third fish / level |
+| --- | --- | --- | --- |
+| Elderwood | Pond Minnow / 1 | Brook Perch / 4 | Golden Carp / 7 |
+| Whispering Woods | Leafscale Minnow / 1 | Mossfin Trout / 4 | Whisper Pike / 7 |
+| Crystal Caverns | Blind Cavefish / 11 | Crystal Guppy / 14 | Gemscale Char / 17 |
+| Murkmire Swamp | Mudskipper / 21 | Mire Catfish / 24 | Bog Eel / 27 |
+| Frostfall Tundra (planned map) | Ice Minnow / 31 | Frost Trout / 34 | Glacier Salmon / 37 |
+| Celestial Realm (planned map) | Starfin Dace / 41 | Sunscale Koi / 44 | Moonray / 47 |
+| Ember Peaks (planned map) | Ashfin Carp / 51 | Ember Perch / 54 | Flamefin Snapper / 57 |
+| Shadow Fortress (planned map) | Gloom Minnow / 61 | Shadow Bass / 64 | Void Angler / 67 |
+
+## Five-minute replenishment
+
+Every harvested land node and every fished shoreline water tile replenishes
+exactly 300 seconds after a successful harvest. Cooldowns are shared by everyone
+in the same server room. A brief two-second player gathering cooldown remains.
+Failed skill, range or inventory checks cost no resource and grant no EXP. Timers
+are transient room state and reset on server restart. Only active cooldowns are
+included in snapshots; expired entries disappear from the client view.
+
+## Crafting and persistence
 
 The workbench stands beside Elderwood's blacksmith at (20.5, 10.5). Click it to
 walk over and open Bag → Professions and crafting. Recipes can be inspected
-anywhere, but crafting requires standing within two tiles of the bench. Expand
-a profession pair to see its levels, EXP bars, costs, required levels and recipes.
-Skills use 10 × (level − 1)² EXP thresholds; successful crafting grants only its
-own crafting skill EXP. Gathering and crafting levels do not automatically raise
-each other, and no class restricts a profession.
+anywhere, but crafting requires standing within two tiles of the bench. Each
+pair includes a collapsed resource/catch guide, independent skill bars, material
+costs, output amounts and level requirements. No class restricts a profession.
+Skills use 10 × (level − 1)² EXP thresholds and cap at level 100.
 
-Blacksmithing produces all seven armor/accessory slots plus swords and daggers
-across Copper, Iron, Gold, Mythril, Dragon and Shadow. Woodworking produces bows
-and staffs across those six tiers, using timber and metal bars. There are 66 gear
-recipes plus six smelting recipes and the three basic processing recipes.
-Crafted equipment is an identified Uncommon item with a unique UUID and normal
-equip-level requirements. Monster drops retain their identification and higher
-rarity rolls. Crafting does not count as identifying monster equipment.
+There are 66 equipment recipes across Copper–Shadow, six smelting recipes,
+three legacy processing recipes, and 40 new processing recipes: 24 fish, eight
+plants and eight wood types. New fish yield cooked meals, new plants yield
+healing potions, and new logs yield timber. Higher-level resources give larger
+processing batches. Existing material IDs and recipes remain usable, so old
+inventory and Depot contents are preserved.
 
-Cooked fish restores up to 30 HP from the bag and shares the healing-potion
-cooldown. Alchemy creates the existing 40-HP healing potion. Materials and food
-use normal stack limits, 32-slot bag rules, Mara selling and personal Depot
-storage. Crafting consumes ingredients across stacks atomically; missing
-materials, insufficient output space or gear limits cost no items or EXP.
-Requests cannot override recipe costs, quantities, quality or skill rewards.
+Blacksmithing produces all seven armor/accessory slots plus swords and daggers.
+Woodworking produces bows and staffs using timber and bars. Crafted equipment is
+an identified Uncommon instance with a unique UUID and normal equip-level
+requirements. Monster drops keep their original island tiers, identification and
+higher rarity rolls. Crafting does not count as identifying monster equipment.
 
-The eight profession EXP values persist in private account saves and snapshots.
-Old saves migrate to eight level-1 skills. Validation rejects unknown/missing
-skills, negative/fractional EXP and values above the level-100 cap. World node
-respawn timers and brief player gathering cooldowns are transient room state;
-they reset on a server restart. Guest skills and materials remain session-only.
-No database migration is needed. Deploy Render and Vercel from the same commit.
+Cooked fish restores up to 30 HP and shares the potion cooldown. Materials use
+normal stack limits, the 32-slot bag, Mara selling and personal Depot storage.
+Crafting consumes stacks atomically; failed prerequisites or insufficient output
+space cost no ingredients or EXP. Gathering and crafting grant profession EXP,
+not character EXP, and do not automatically raise the paired skill.
 
-Generated masters are preserved under `assets/professions/masters/`. The 17 usable
-item icons plus a fishing-spot marker are true-alpha 96×96 PNGs under
-`assets/items/professions/`; the existing automatic item loader finds them.
-`npm run art:professions` reproduces crops from transparent gutters without
-clipping ore tips or changing the source art.
+Profession EXP and all new materials persist in private account saves. Existing
+saves migrate normally without resetting quests, items or skills. Snapshots clone
+private state and do not broadcast profession EXP in player schema. No SQL
+migration is required. Deploy Render and Vercel from the same commit.
 
-Validation: `npm test`, `npm run test:professions:browser` (TEST_CLIENT_URL),
-`npm run test:professions:integration` (TEST_SERVER_URL; defaults to port 2655),
-and `npm run test:accounts` for private skill and crafted-supply persistence.
+Generated masters and extraction layout are preserved under
+`assets/professions/masters/`. There are 58 true-alpha 96×96 item/marker PNGs under
+`assets/items/professions/` and eight 192×224 tree sprites under
+`assets/professions/runtime/`. `npm run art:professions` reproduces crops from
+transparent gutters. Item and tree loaders discover these files automatically.
+
+Validation: `npm test`, `npm run test:resource-varieties:browser`,
+`npm run test:professions:browser`, `npm run test:professions:integration`,
+and `npm run test:accounts`. Browser and multiplayer URLs use TEST_CLIENT_URL
+and TEST_SERVER_URL. Tests cover water clicks, shoreline movement, local catch
+selection, skill gating on beginner maps, all-map resource coverage, exact
+300-second replenishment, shared depletion, crafting and save/restart survival.

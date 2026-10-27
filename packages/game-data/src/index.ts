@@ -66,3 +66,6 @@ export * from './inventory';
 export * from './quests';
 
 export * from './professions';
+
+export * from './resource-varieties';
+export * from './fishing';

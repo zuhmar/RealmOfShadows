@@ -67,7 +67,8 @@
     "test:quests:browser": "node tests/browser-quests.cjs",
     "art:professions": "python3 scripts/extract-profession-icons.py",
     "test:professions:browser": "node tests/browser-professions.cjs",
-    "test:professions:integration": "tsx tests/professions.integration.ts"
+    "test:professions:integration": "tsx tests/professions.integration.ts",
+    "test:resource-varieties:browser": "node tests/browser-resource-varieties.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",
