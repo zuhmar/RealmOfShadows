@@ -64,7 +64,10 @@
     "art:skins:legacy": "python3 scripts/extract-class-skins.py",
     "test:avatar-idle:browser": "node tests/browser-avatar-idle.cjs",
     "test:combat-feedback:browser": "node tests/browser-combat-feedback.cjs",
-    "test:quests:browser": "node tests/browser-quests.cjs"
+    "test:quests:browser": "node tests/browser-quests.cjs",
+    "art:professions": "python3 scripts/extract-profession-icons.py",
+    "test:professions:browser": "node tests/browser-professions.cjs",
+    "test:professions:integration": "tsx tests/professions.integration.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

@@ -1,4 +1,4 @@
-import {validQuestJournal,defaultCosmetics,validCosmetics,migrateCosmetics,emptyDepot,depotUsage,depotRules,emptyGearLoadout,isGearBase,isRarity,gearSlot,gearDefinition,lootEquipmentRules,newAttributes,attributeRules,attributeDefinitions,weapons,emptyEquipment,starterEquipment,equipmentSlots,equipmentItems,isEquipment,isEquipmentSlot,classes,classRules,isClassChoice,isWeapon,isSpell,canLearnSpell,items,rewards,totalXp,levelForXp,skillRules,skillLevel,spells,type SpellId} from '@realm/game-data';
+import {newProfessions,professionDefinitions,validQuestJournal,defaultCosmetics,validCosmetics,migrateCosmetics,emptyDepot,depotUsage,depotRules,emptyGearLoadout,isGearBase,isRarity,gearSlot,gearDefinition,lootEquipmentRules,newAttributes,attributeRules,attributeDefinitions,weapons,emptyEquipment,starterEquipment,equipmentSlots,equipmentItems,isEquipment,isEquipmentSlot,classes,classRules,isClassChoice,isWeapon,isSpell,canLearnSpell,items,rewards,totalXp,levelForXp,skillRules,skillLevel,spells,type SpellId} from '@realm/game-data';
 import type {Profile} from './economy';
 export interface CharacterProgress{version:1;profile:Profile;cooldowns:Partial<Record<SpellId,number>>;potionRemaining:number}
 const integer=(v:unknown,max:number)=>typeof v==='number'&&Number.isSafeInteger(v)&&v>=0&&v<=max;
@@ -6,6 +6,8 @@ const integer=(v:unknown,max:number)=>typeof v==='number'&&Number.isSafeInteger(
 export function readProgress(value:unknown):CharacterProgress{
  const s=structuredClone(value) as CharacterProgress,p=s?.profile;
  if(s?.version!==1||!p||!integer(p.xp,totalXp(rewards.levelCap))||!integer(p.gold,Number.MAX_SAFE_INTEGER)||!(p.classId==='citizen'||isClassChoice(p.classId)))throw Error('Invalid character save.');
+ if(p.professions===undefined)p.professions=newProfessions();
+ if(!p.professions||typeof p.professions!=='object'||Array.isArray(p.professions)||Object.keys(p.professions).sort().join(',')!==Object.keys(professionDefinitions).sort().join(',')||Object.values(p.professions).some(xp=>!integer(xp,10*99**2)))throw Error('Invalid saved professions.');
  if(p.quests===undefined)p.quests={};
  if(!validQuestJournal(p.quests,levelForXp(p.xp)))throw Error('Invalid saved quests.');
  if(p.cosmetics===undefined)p.cosmetics=defaultCosmetics();

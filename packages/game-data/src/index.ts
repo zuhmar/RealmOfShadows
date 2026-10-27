@@ -64,3 +64,5 @@ export * from './loot-equipment';
 export * from './inventory';
 
 export * from './quests';
+
+export * from './professions';
