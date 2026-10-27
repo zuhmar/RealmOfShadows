@@ -69,3 +69,5 @@ header{top:116px;left:20px;gap:6px}.crest{font-size:17px}header small{font-size:
 .recipe-card{border:1px solid #b9aa7545;border-radius:10px;padding:12px;margin:10px 0;overflow:hidden}.recipe-card>.item-sprite{width:44px;height:44px;float:left;margin-right:10px}.recipe-card strong{font-size:12px;color:#ead9b0}.recipe-card button{width:100%}#profession-list>details{padding:8px}#profession-list progress{display:block}
 
 .profession-resource-catalogue{font-size:12px;line-height:1.7;padding-left:20px}
+
+#fishing-status{position:fixed;z-index:3;bottom:100px;left:50%;transform:translateX(-50%);width:min(280px,85vw);padding:12px;font-size:12px;text-align:center}#fishing-progress{display:block;margin-top:8px}

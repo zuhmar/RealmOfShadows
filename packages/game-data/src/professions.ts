@@ -24,10 +24,17 @@ const resourceKinds:Omit<ResourceNode,'id'|'region'|'x'|'y'>[]=[
  ...Object.values(islandResourceSets).map(s=>({skill:'woodcutting' as const,item:s.tree.item,level:s.level,name:s.tree.name,xp:25+Math.floor(s.level/10)*5})),
  ...Object.values(islandResourceSets).map(s=>({skill:'herbalism' as const,item:s.plant.item,level:s.level,name:s.plant.name,xp:25+Math.floor(s.level/10)*5})),
 ];
-export const resourceNodes:ResourceNode[]=resourceRegions.flatMap(region=>resourcePositions(region,resourceKinds.length).map((p,i)=>{
- const kind=resourceKinds[i],index=i<6?i+1:i<14?i-5:i-13,id=i<6?`${region}-ore-${index}`:i<14?`${region}-wood${index===1?'':`-${index}`}`:`${region}-herb${index===1?'':`-${index}`}`;
+export function localResourceKinds(region:string){
+ const island=region==='woods-depths'?'woods':region==='caverns-depths'?'caverns':region,set=islandResourceSets[island as keyof typeof islandResourceSets]??islandResourceSets.elderwood;
+ return [resourceKinds.filter(k=>k.skill==='mining'&&k.level<=set.level).at(-1)!,resourceKinds.find(k=>k.item===set.tree.item)!,resourceKinds.find(k=>k.item===set.plant.item)!];
+}
+export const resourceNodes:ResourceNode[]=resourceRegions.flatMap(region=>{
+ const local=localResourceKinds(region),kinds=[...resourceKinds,...Array.from({length:5},()=>local).flat()];
+ return resourcePositions(region,kinds.length).map((p,i)=>{
+ const kind=kinds[i],index=i<6?i+1:i<14?i-5:i-13,id=i>=22?`${region}-local-${kind.skill}-${Math.floor((i-22)/3)+1}`:i<6?`${region}-ore-${index}`:i<14?`${region}-wood${index===1?'':`-${index}`}`:`${region}-herb${index===1?'':`-${index}`}`;
  return {...kind,...p,region,id};
-}));
+ });
+});
 export interface CraftRecipe{id:string;name:string;skill:'blacksmithing'|'woodworking'|'alchemy'|'cooking';level:number;xp:number;ingredients:Partial<Record<ProfessionMaterial,number>>;output:{item:string;quantity:number;gear?:boolean}}
 export const craftRecipes:CraftRecipe[]=[
  ...metalTiers.map((tier,i)=>({id:`smelt-${tier}`,name:`Smelt ${tier} bar`,skill:'blacksmithing' as const,level:i*10+1,xp:75+i*15,ingredients:{[`${tier}Ore`]:3},output:{item:`${tier}Bar`,quantity:1}})),

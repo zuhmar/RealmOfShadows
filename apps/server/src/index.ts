@@ -36,7 +36,7 @@ class Elderwood extends Room<State>{
  for(const [id,p] of this.state.players){const input=this.inputs.get(id)??{x:0,y:0,sprint:false,seq:p.seq};if(p.hp>0)Object.assign(p,move(p,input,1/20,p.region,occupiedCells([...this.state.players.values(),...this.simulation.wolves.values()],p.region,p)));p.seq=input.seq;this.inputs.delete(id);}
  this.simulation.tick(.05,this.state.players as Iterable<[string,Fighter]>);
  for(const [id,p] of this.state.players)this.economy.sync(id,p);
- this.economy.process(this.simulation.kills.splice(0),this.state.players,this.simulation.time);if(++this.rewardTicks%4===0)for(const client of this.clients)this.sendSnapshot(client);
+ this.economy.process(this.simulation.kills.splice(0),this.state.players,this.simulation.time);for(const result of this.economy.professions.results.splice(0)){const client=this.clients.find(c=>c.sessionId===result.id);if(client){client.send('economy-result',result.message);void this.savePlayer(client);}}if(++this.rewardTicks%4===0)for(const client of this.clients)this.sendSnapshot(client);
  if(this.rewardTicks%100===0)for(const client of this.clients)void this.savePlayer(client);
  for(const [id,w] of this.simulation.wolves){if(!this.state.wolves.has(id))this.state.wolves.set(id,new WolfState());const state=this.state.wolves.get(id)!;state.stepX=w.stepX??w.x;state.stepY=w.stepY??w.y;state.kind=w.kind;state.region=w.region??'woods';state.x=w.x;state.y=w.y;state.hp=w.hp;state.mode=w.mode;state.facing=w.facing;state.aimX=w.aimX;state.aimY=w.aimY;}
  for(const event of this.simulation.events.splice(0))for(const client of this.clients)if(this.state.players.get(client.sessionId)?.region===event.region)client.send('combat-event',event);

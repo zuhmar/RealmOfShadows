@@ -12,14 +12,16 @@ All characters can train all eight skills independently, from level 1 to 100:
 ## Resources on every map
 
 Every current map, including Elderwood and both lower floors, contains all six
-ore tiers, all eight tree varieties and all eight plants: 22 resource nodes per
-map. Island names describe a variety's origin; they do not restrict where that
+ore tiers, all eight tree varieties and all eight plants. Each map has 37 land
+resource nodes: six copies of its local ore, tree and plant type, and one copy of
+every other variety. Local-level resources therefore outnumber the rarer higher
+tiers without removing them. Lower floors use their parent island’s local types. Island names describe a variety's origin; they do not restrict where that
 variety can spawn. A level-1 character with Mining 51 can mine a Shadow vein in
 Elderwood. Only the appropriate profession level, proximity, sight, alive state,
 combat state, gathering cooldown and bag space are required.
 
-Positions are deterministic and spread across reachable land, at least three
-tiles apart. They avoid water, cliffs, map-prop artwork, Depot interiors, arrivals,
+Positions are deterministic and spread across reachable land. The denser village
+keeps at least two tiles between centers; other maps keep at least three. They avoid water, cliffs, map-prop artwork, Depot interiors, arrivals,
 portal/stair entrances and NPC/workbench interaction space. They do not alter
 terrain or grid collision. Click a resource to approach and gather. Tree sprites
 become stumps when chopped; ore and plant nodes fade. Nearby/hovered labels show
@@ -54,8 +56,13 @@ Click any water tile to fish. A deep-water click resolves to the nearest fishabl
 edge of that same connected water body. The player approaches a legal shoreline
 cell and casts into water; fishing never allows walking onto water. Bridges and
 wall/terrain visibility are checked. There are no standalone fishing-spot nodes.
-The selected water gets a brief targeting ripple; depleted water is marked by a
-muted ring and gives a remaining-time message when clicked again.
+The selected water gets a targeting ripple, followed by a bobber and a visible
+cast countdown. The server chooses an integer duration from one to ten seconds.
+The player receives exactly one fish only when the cast completes. Click water
+again to recast immediately at the same location; fishing does not exhaust water
+or apply a five-minute water cooldown. There is no automatic repeat casting.
+Repeated clicks during a cast do not reset its timer or grant extra catches.
+Moving, attacking, travel, death or disconnect cancels the cast without a reward.
 
 Each island has three unique local fish. The server chooses uniformly among the
 species unlocked by the player's Fishing level; a client cannot choose its catch
@@ -73,14 +80,20 @@ its own three fish.
 | Ember Peaks (planned map) | Ashfin Carp / 51 | Ember Perch / 54 | Flamefin Snapper / 57 |
 | Shadow Fortress (planned map) | Gloom Minnow / 61 | Shadow Bass / 64 | Void Angler / 67 |
 
-## Five-minute replenishment
+## Land replenishment and fishing casts
 
-Every harvested land node and every fished shoreline water tile replenishes
-exactly 300 seconds after a successful harvest. Cooldowns are shared by everyone
-in the same server room. A brief two-second player gathering cooldown remains.
-Failed skill, range or inventory checks cost no resource and grant no EXP. Timers
-are transient room state and reset on server restart. Only active cooldowns are
-included in snapshots; expired entries disappear from the client view.
+Harvested land nodes replenish exactly 300 seconds after a successful harvest,
+shared by everyone in the same server room. The brief two-second player gathering
+cooldown applies to land gathering. Fishing instead uses its 1–10 second cast
+and can be manually recast as soon as the catch completes. Players can fish the
+same water simultaneously, with independent casts and catches.
+
+Range, terrain, skill and bag-space checks are authoritative. Casts start only
+from a completed grid step and award nothing early. If the bag fills while
+waiting, the cast ends without awarding or overflowing items. The private cast
+snapshot is cloned, never added to player schema or saved as character progress.
+Completion messages and account saves are triggered server-side. Timers are
+transient room state and reset on server restart or disconnect.
 
 ## Crafting and persistence
 
@@ -126,4 +139,6 @@ Validation: `npm test`, `npm run test:resource-varieties:browser`,
 and `npm run test:accounts`. Browser and multiplayer URLs use TEST_CLIENT_URL
 and TEST_SERVER_URL. Tests cover water clicks, shoreline movement, local catch
 selection, skill gating on beginner maps, all-map resource coverage, exact
-300-second replenishment, shared depletion, crafting and save/restart survival.
+300-second land replenishment, local-tier abundance, 1–10 second casts, manual
+recasting, cancellation, independent multiplayer fishing, crafting and
+save/restart survival.
