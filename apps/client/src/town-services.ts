@@ -5,7 +5,7 @@ export function drawTownServices(scene:Phaser.Scene,region:string,click:(id:stri
  if(region!=='elderwood')return;
  for(const station of craftingStations){
   if(!('npc'in station))continue;
-  const npc=station.npc,skin=new SkinAvatar(scene);skin.pose({skin:npc.skin,wings:'none',aura:'none'},'down',false,0);
+  const npc=station.npc,skin=new SkinAvatar(scene);skin.pose({skin:npc.skin,wings:'none',aura:'none'},npc.facing,false,0);
   const shadow=scene.add.ellipse(0,0,30,12,0x102823,.3),label=scene.add.text(0,-94,`${station.name}\n${station.skills.map(skill=>professionDefinitions[skill].name).join(' · ')}`,{fontSize:'11px',align:'center',color:'#ffe1a8',backgroundColor:'#203b36'}).setOrigin(.5);
   const hit=scene.add.zone(0,-38,72,92).setInteractive({useHandCursor:true});
   const bench=scene.children.list.find(o=>(o as Phaser.GameObjects.Image).texture?.key===station.bench.key) as Phaser.GameObjects.Image|undefined;

@@ -7,17 +7,18 @@ buildings, portal and pond remain in place.
 
 Four dedicated crafters stand behind their own customer-facing counters:
 
-| NPC | Profession | Custom bench |
+| NPC / corner | Profession | Custom bench |
 | --- | --- | --- |
-| Bram the Smith | Blacksmithing | Anvil, ingots, hammer and coals |
-| Elara the Woodworker | Woodworking | Timber, vise, saw and plan |
-| Tobin the Cook | Cooking | Stove, pot and preparation board |
-| Iris the Alchemist | Alchemy | Retort, bottles, herbs and mortar |
+| Bram the Smith · northwest | Blacksmithing | Anvil, ingots, hammer and coals |
+| Elara the Woodworker · northeast | Woodworking | Timber, vise, saw and plan |
+| Tobin the Cook · southwest | Cooking | Stove, pot and preparation board |
+| Iris the Alchemist · southeast | Alchemy | Retort, bottles, herbs and mortar |
 
 Each NPC uses an approved reference-based human outfit. The new painted benches
-share scale, camera and baseline. NPC reserve cells and the two-cell counter
-footprints are blocked in the authoritative grid. A broad customer aisle and
-three-cell doorway connect all four stations. NPCs and counter hit areas become
+share scale, camera and baseline. NPC reserve cells and the three-cell counter
+footprints are blocked in the authoritative grid. Each counter occupies the three grid cells directly ahead of its NPC. The
+northern crafters face south and southern crafters face north, toward the shared
+customer aisle. The three-cell center passage and doorway remain clear. NPCs and counter hit areas become
 available after entering the room; exterior roofs prevent accidental clicks.
 Click a crafter or their bench to approach a reachable service point and open
 their trade. Bram also links to existing free equipment identification.

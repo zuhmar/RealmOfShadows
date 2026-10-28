@@ -6,6 +6,8 @@ test('four dedicated crafters stand behind distinct solid benches in one reachab
  const map=gridMap('elderwood'),npcs=craftingStations.filter(s=>'npc'in s),hall=villageBuildings.find(b=>b.id==='workshop')!;
  assert.equal(hall.name,'Crafting Hall');assert.equal(npcs.length,4);assert.equal(new Set(npcs.flatMap(s=>s.skills)).size,4);
  assert.equal(new Set(npcs.map(s=>s.bench.key)).size,4);
+ assert.deepEqual(npcs.map(s=>[s.npc.x,s.npc.y]),[[3.5,13.5],[11.5,13.5],[3.5,17.5],[11.5,17.5]]);
+ for(const x of [6,7,8])for(let y=13;y<18;y++)assert.equal(map.blocked.has(`${x},${y}`),false,'clear central aisle');
  for(const station of craftingStations){
   assert.equal(map.blocked.has(`${Math.floor(station.x)},${Math.floor(station.y)}`),false,station.id+' service point');
   assert.ok(pathfind(portalFor('elderwood').arrival,station,'elderwood').length,station.id+' entrance route');
@@ -14,8 +16,11 @@ test('four dedicated crafters stand behind distinct solid benches in one reachab
   if('npc'in station){
    assert.equal(station.building,'workshop');assert.equal(station.skills.length,1);
    assert.ok(map.blocked.has(`${Math.floor(station.npc.x)},${Math.floor(station.npc.y)}`));
-   assert.ok(station.npc.y<station.bench.y+1);assert.equal(station.y,station.bench.y+2.5);
-   for(let dx=0;dx<2;dx++)assert.ok(map.blocked.has(`${station.bench.x+dx},${station.bench.y+1}`),'solid counter');
+   assert.equal(station.bench.width,3);assert.equal(station.bench.height,3);
+   const row=station.bench.y+station.bench.height-1;
+   assert.equal(row,Math.floor(station.npc.y)+(station.npc.facing==='down'?1:-1));
+   assert.equal(Math.floor(station.y),row+(station.npc.facing==='down'?1:-1));
+   for(let dx=0;dx<3;dx++)assert.ok(map.blocked.has(`${station.bench.x+dx},${row}`),'three solid cells directly in front');
    assert.equal(map.objects.filter(o=>o.key===station.bench.key).length,1);
   }
  }
@@ -29,9 +34,9 @@ test('server crafting enforces each counter skill, room, range and sight without
  profile.inventory=[{id:2,item:'log',quantity:2}];const before=structuredClone(profile);
  assert.match(e.act('a',p,{kind:'craft',item:'cut-timber'},0),/matching crafting/);assert.deepEqual(profile,before);
  at('workshop');assert.match(e.act('a',p,{kind:'craft',item:'cut-timber'},0),/Crafted/);assert.equal(profile.inventory[0].item,'timber');
- profile.inventory=[{id:3,item:'herb',quantity:3}];const wrong=structuredClone(profile);assert.match(e.act('a',p,{kind:'craft',item:'brew-potion'},0),/matching crafting/);assert.deepEqual(profile,wrong);
- at('alchemy');assert.match(e.act('a',p,{kind:'craft',item:'brew-potion'},0),/Crafted/);
+ profile.inventory=[{id:3,item:'rawFish',quantity:2}];const wrong=structuredClone(profile);assert.match(e.act('a',p,{kind:'craft',item:'cook-fish'},0),/matching crafting/);assert.deepEqual(profile,wrong);
+ at('alchemy');profile.inventory=[{id:6,item:'herb',quantity:3}];assert.match(e.act('a',p,{kind:'craft',item:'brew-potion'},0),/Crafted/);
  at('cooking');profile.inventory=[{id:4,item:'rawFish',quantity:2}];assert.match(e.act('a',p,{kind:'craft',item:'cook-fish'},0),/Crafted/);
- profile.inventory=[{id:5,item:'copperOre',quantity:3}];const rejected=structuredClone(profile);assert.match(e.act('a',p,{kind:'craft',item:'smelt-copper'},0),/matching crafting/);assert.deepEqual(profile,rejected);
+ profile.inventory=[{id:5,item:'log',quantity:2}];const rejected=structuredClone(profile);assert.match(e.act('a',p,{kind:'craft',item:'cut-timber'},0),/matching crafting/);assert.deepEqual(profile,rejected);
  for(const point of [{x:6.5,y:18.5},{x:25.5,y:6.5},{x:4.5,y:15.5,region:'woods'}]){Object.assign(p,{region:'elderwood'},point);assert.match(e.act('a',p,{kind:'craft',item:'smelt-copper'},0),/matching crafting/);assert.deepEqual(profile,rejected);}
 });

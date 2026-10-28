@@ -11,8 +11,10 @@ each counter into a 128×128 RGBA frame with its base at pixel 124. Transparent
 padding and complete silhouettes are preserved. Runtime images are the four
 `assets/world/objects/craft-bench-*.png` files.
 
-Each bench renders across two cells, with a two-cell-wide, one-row-deep collision
-footprint at its front. NPCs stand on reserved cells behind that footprint and
+Each bench renders across three cells at uniform scale, using the preserved
+128px artwork, with a three-cell-wide, one-row-deep collision footprint directly
+in front of its NPC. The north-corner NPCs face down; the south-corner NPCs face
+up. NPCs stand on reserved cells behind that footprint and
 customers use the aisle in front. Work points and image positions come from
 `packages/game-data/src/town-services.ts`.
 

@@ -11,7 +11,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  for(const [i,station]of stations.entries()){
   const bench=i%2===1;await page.waitForTimeout(350);
   const point=await page.evaluate(({id,bench})=>{const o=s.worldObjects.find(o=>o.getData(bench?'townBench':'townService')===id),r=s.game.canvas.getBoundingClientRect(),c=s.cameras.main;if(!o)throw Error('Missing station '+id);const x=o.x+(bench?o.displayWidth/2:0),y=o.y+(bench?o.displayHeight*.8:-38);return {x:r.x+(x-c.worldView.x)*c.zoom*r.width/s.game.canvas.width,y:r.y+(y-c.worldView.y)*c.zoom*r.height/s.game.canvas.height}},{id:station.id,bench});
-  if(mobile){const within=point.x>=0&&point.x<390&&point.y>=0&&point.y<844;if(!within)await walk({x:station.x,y:16.5});}
+  if(mobile){const within=point.x>=0&&point.x<390&&point.y>=0&&point.y<844;if(!within){await walk({x:station.x,y:station.y});await page.waitForTimeout(350);}}
   const click=await page.evaluate(({id,bench})=>{const o=s.worldObjects.find(o=>o.getData(bench?'townBench':'townService')===id),r=s.game.canvas.getBoundingClientRect(),c=s.cameras.main;return {x:r.x+(o.x+(bench?o.displayWidth/2:0)-c.worldView.x)*c.zoom*r.width/s.game.canvas.width,y:r.y+(o.y+(bench?o.displayHeight*.8:-38)-c.worldView.y)*c.zoom*r.height/s.game.canvas.height}},{id:station.id,bench});
   if(mobile)await page.touchscreen.tap(click.x,click.y);else await page.mouse.click(click.x,click.y);
   await page.locator('#inventory-dialog').waitFor({state:'visible'});await page.waitForFunction(name=>document.querySelector('#inventory-title').textContent===name,station.name);
