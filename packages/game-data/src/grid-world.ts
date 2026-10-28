@@ -71,9 +71,23 @@ export function gridMap(region:string):GridMap{
  }else if(cave||lower){
   // Cell-authored chambers and orthogonal corridors, independent of reference images.
   const rooms=lower?[[20,28,9,6],[4,21,11,8],[32,18,11,10],[6,4,12,9],[32,3,11,9]]:[[26,36,13,9],[5,26,14,10],[43,25,15,11],[6,5,15,13],[41,3,17,14]];
-  for(const [x,y,w,h]of rooms)rect(x,y,w,h,cave?2:0);
+  for(const [x,y,w,h]of rooms){
+   rect(x,y,w,h,0);
+   if(cave){
+    // Uneven rock shoulders, with broad clear floors for grid combat.
+    rect(x-1,y+3,1,3,0);rect(x+w,y+h-5,1,3,0);
+    for(const [cx,cy]of [[x,y],[x+w-1,y],[x,y+h-1],[x+w-1,y+h-1]])rect(cx,cy,1,1,5);
+   }
+  }
   const route:readonly (readonly[number,number])[]=lower?[[24,31],[24,24],[9,24],[9,8],[37,8],[37,23],[24,23]]:[[32,40],[32,31],[12,31],[12,11],[32,11],[32,31],[50,31],[50,10]];
   path(route,cave?2:1);if(lower)path([[24,31],[24,8]],cave?2:1);if(!lower)path([[32,11],[32,22],[50,22],[50,31]],2);
+  if(cave){
+   if(lower){rect(18,3,8,3,0);path([[24,8],[24,5]],2);rect(19,3,3,2,3);}
+   else{rect(22,5,7,6,0);path([[20,11],[25,11],[27,9]],2);rect(23,6,3,3,3);}
+   // Recessed crystal and mining details sit beside, rather than across, the routes.
+   const details=lower?[['caverns-geode',17,4,2,2],['caverns-ore-vein',40,24,2,2],['caverns-old-crate',5,26,1,1],['caverns-mushroom-luminous',33,10,2,1]] as const:[['caverns-geode',27,5,2,2],['caverns-mine-cart',28,42,2,1.5],['caverns-old-crate',36,42,1,1],['caverns-rune-obelisk',55,5,1.5,2],['caverns-bones',54,13,2,1]] as const;
+   for(const [key,x,y,w,h]of details)prop(key,x,y,w,h);
+  }
   const bx=lower?24:32,by=lower?21:28;rect(bx-3,by,7,2,3);rect(bx,by-1,1,4,4);
   if(lower){prop('caverns-stairs-up',23,28,3,3);}else{prop('elderwood-portal',31,37.5,3,3);prop('caverns-stairs-down',31,21,3,2);}
   for(const [x,y,w,h]of rooms){if(cave){prop('caverns-crystal-violet',x,y,2,2);prop('caverns-crystal-teal',x+w-2,y+h-2,2,2);prop('caverns-lantern-blue',x+w-1,y+1,.6,1.5);}else{prop('woods-stump',x,y,2,2);prop('woods-mushrooms',x+w-2,y+h-2,1,1);prop('woods-lamp',x+w-1,y+1,.6,1.5);}}

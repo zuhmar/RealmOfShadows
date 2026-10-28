@@ -1,4 +1,4 @@
-export const usesConnectedTerrain=(region:string)=>['elderwood','woods','woods-depths'].includes(region);
+export const usesConnectedTerrain=(region:string)=>['elderwood','woods','woods-depths','caverns','caverns-depths'].includes(region);
 /** Visual terrain connectivity follows the same cells used for movement and fishing. */
 export function connectedCellPath(ctx:CanvasRenderingContext2D,cells:number[][],x:number,y:number,size:number){
  const material=cells[y][x],same=(dx:number,dy:number)=>cells[y+dy]?.[x+dx]===material;

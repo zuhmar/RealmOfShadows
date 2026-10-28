@@ -9,8 +9,8 @@ unchanged.
 surfaces, rounds exposed outer corners and adds shoreline/rock outlines only
 along exposed edges. Bridges paint above water. This is rendering only:
 `gridMap()` remains the source for collision, fishing and pathfinding. The map
-editor and terrain preview use the same painter. Whispering Woods and Root Hollow also use this renderer; other islands retain
-their existing renderer until individually revised.
+editor and terrain preview use the same painter. Whispering Woods, Root Hollow and both Crystal Caverns floors also use this
+renderer; other islands retain their existing renderer until individually revised.
 
 The generated six-material Elderwood master is preserved at
 `assets/world/terrain/elderwood/master.png`. `npm run art:island-terrain` extracts
