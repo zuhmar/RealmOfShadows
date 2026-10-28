@@ -1,3 +1,4 @@
+export * from './building-visuals';
 export * from './village-buildings';
 export * from './cosmetics';
 export * from './depot';

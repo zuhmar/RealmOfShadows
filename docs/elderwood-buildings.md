@@ -2,7 +2,8 @@
 
 All five active Elderwood buildings now use native 32px floor tiles and a shared
 edge-aligned wall kit. The Smithy, Workshop, Bank and Hall replace their former
-whole-building sprites with roofless, same-map interiors. The Depot keeps its
+whole-building sprites with same-map interiors. Full-height walls and cutaway roofs are now described in
+[the house artwork notes](elderwood-house-art.md). The Depot keeps its
 existing footprint, three storage boxes, sign and behavior.
 
 `packages/game-data/src/village-buildings.ts` defines each rectangle and its

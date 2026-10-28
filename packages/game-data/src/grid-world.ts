@@ -16,7 +16,12 @@ export function gridMap(region:string):GridMap{
  const cells=Array.from({length:height},()=>Array<number>(width).fill(cave||lower||isVillageUpper(region)?5:0)),objects:IslandObject[]=[],blocked=new Set<string>(),edges=new Set<string>();
  const rect=(x:number,y:number,w:number,h:number,material:number)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(j>=0&&i>=0&&j<height&&i<width)cells[j][i]=material;};
  const path=(points:readonly (readonly [number,number])[],material=1)=>{for(let i=1;i<points.length;i++){let [x,y]=points[i-1];const [tx,ty]=points[i];rect(x-1,y-1,3,3,material);while(x!==tx||y!==ty){x+=Math.sign(tx-x);y+=Math.sign(ty-y);rect(x-1,y-1,3,3,material);}}};
- const prop=(key:string,x:number,y:number,w:number,h:number,solidW=0,solidH=0)=>{objects.push(mapObject(key,x*48,y*48,w*48,h*48));for(let dy=0;dy<solidH;dy++)for(let dx=0;dx<solidW;dx++)blocked.add(`${x+dx},${y+h-solidH+dy}`);};
+ const prop=(key:string,x:number,y:number,w:number,h:number,solidW=0,solidH=0)=>{
+  if(village){
+   const names:Record<string,string>={'depot-box':'chest-down','village-forge':'forge-down','village-workbench':'workbench-down','village-counter':'counter-down','village-table':'meeting-down','town-bookshelf':x===27?'bookshelf-left':'bookshelf-down','town-bed':'bed-down','town-table':'table-left','town-armor':'armor-left','town-tools':'tools-down','town-chair':'chair-right','town-well':'well-down','elderwood-bench':'bench-down','elderwood-planter':'planter-down','elderwood-barrel':x===26?'barrel-up':'barrel-down','town-stairs-up':'stairsup-down','town-stairs-down':'stairsdown-down'};
+   if(names[key]){if(key==='elderwood-bench'){y+=h-2;h=2;}if(key==='elderwood-planter'){y+=h-1;h=1;}key=`furn-${names[key]}`;}
+  }
+  objects.push(mapObject(key,x*48,y*48,w*48,h*48));for(let dy=0;dy<solidH;dy++)for(let dx=0;dx<solidW;dx++)blocked.add(`${x+dx},${y+h-solidH+dy}`);};
  if(village){
   if(!isVillageUpper(region)){rect(1,1,30,22,0);rect(1,19,30,4,3);rect(14,2,5,17,2);rect(3,9,26,3,1);rect(3,15,26,3,1);rect(14,19,5,4,4);rect(19,17,10,6,0);path([[27,16],[27,22],[23,22]]);
   // A sheltered southern pond, stepped banks and a continuous timber crossing.
@@ -44,7 +49,7 @@ export function gridMap(region:string):GridMap{
   prop('depot-sign',8,1,3,1.25);
   prop('village-forge',23,4,2,2,2,1);prop('elderwood-barrel',26,4,1,1,1,1);
   prop('village-workbench',4,12,2,2,2,1);prop('elderwood-barrel',7,13,1,1,1,1);
-  prop('village-counter',24,12,3,2,3,1);prop('village-table',21,18,3,2,3,1);
+  prop('village-counter',24,12,2,2,2,1);prop('village-table',21,18,2,2,2,1);
   rect(13,11,7,6,2);prop('elderwood-portal',15,10.5,3,3);
   for(const [x,y]of [[2,2],[2,5],[28,1],[28,7]])prop('elderwood-oak',x,y,2,3,1,1);
   for(const [x,y]of [[2,7],[29,11],[1,15],[29,18]])prop('elderwood-oak',x,y,2,3,1,1);

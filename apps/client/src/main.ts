@@ -14,7 +14,7 @@ import {SkinAvatar,skinAssets,installSkinAnimations} from './skin-avatar';
 import {setupWardrobe,renderWardrobe} from './wardrobe';
 import {setupAccounts,type AccountUI} from './accounts';
 import {Client,type Room} from 'colyseus.js';
-import {isBuildingFloor,villageDoors,closedVillageDoors,isVillageUpper,buildingsFor,villageBuildings,resolveFishingWater,resourceTarget,fishingCastClear,fishingShores,professionLevel,resourceNodes,craftingBench,professionRules,compareGear,supplySellPrice,catalogueSellPrice,droppedSellPrice,gearDefinition,gearStats,gearName,gearSlot,rarityDefinitions,type GearSlot,cosmeticLook,readCosmeticLook,type Cosmetics,depotBoxes,atDepot,gridDirections,gridMap,rootsMap,rootsObjects,stairsFor,availableStair,isLowerFloor,depthsMap,depthsObjects,attributeDefinitions,attributeRules,maxHealth,maxMana,type AttributeId,regionSize,monsters,monsterKind,monsterRegion,combatRegion,cavernsMap,cavernsObjects,woodsMap,woodsObjects,WORLD,equipmentTiers,readAppearance,equipmentItems,equipmentSlots,type EquipmentSlot,elderwoodMap,elderwoodObjects,landmarks,characterSprite,regions,portalFor,canTravel,combat as C,items,merchant,rewards,weapons,classes,classRules,skillRequirement,spells,canLearnSpell,isSpell,type RegionId,type Facing} from '@realm/game-data';
+import {buildingVisuals,insideBuilding,isBuildingFloor,villageDoors,closedVillageDoors,isVillageUpper,buildingsFor,villageBuildings,resolveFishingWater,resourceTarget,fishingCastClear,fishingShores,professionLevel,resourceNodes,craftingBench,professionRules,compareGear,supplySellPrice,catalogueSellPrice,droppedSellPrice,gearDefinition,gearStats,gearName,gearSlot,rarityDefinitions,type GearSlot,cosmeticLook,readCosmeticLook,type Cosmetics,depotBoxes,atDepot,gridDirections,gridMap,rootsMap,rootsObjects,stairsFor,availableStair,isLowerFloor,depthsMap,depthsObjects,attributeDefinitions,attributeRules,maxHealth,maxMana,type AttributeId,regionSize,monsters,monsterKind,monsterRegion,combatRegion,cavernsMap,cavernsObjects,woodsMap,woodsObjects,WORLD,equipmentTiers,readAppearance,equipmentItems,equipmentSlots,type EquipmentSlot,elderwoodMap,elderwoodObjects,landmarks,characterSprite,regions,portalFor,canTravel,combat as C,items,merchant,rewards,weapons,classes,classRules,skillRequirement,spells,canLearnSpell,isSpell,type RegionId,type Facing} from '@realm/game-data';
 import {toggleVillageDoor,inAttackRange,attackPath,sight,move,occupiedCells,pathfind,CombatSimulation,newFighter,Economy,type EconomySnapshot,type Fighter,type Wolf,type CombatEvent,type Point,type Motion,type Input} from '@realm/shared';
 import './style.css';
 import {animatedMonsters,animatedMonster,installMonsterAnimations,playMonster} from './monster-animations';
@@ -248,12 +248,12 @@ class Elderwood extends Phaser.Scene {
  for(const obj of this.worldObjects)obj.destroy();
  const existing=new Set(this.children.list),config=regions[this.region];
  this.cameras.main.setBackgroundColor(isVillageUpper(this.region)?'#10222b':'#233c38');this.terrainCleanup=drawTiledTerrain(this,this.region);
- const grid=gridMap(this.region),mapConfig={width:grid.width*48,height:grid.height*48,worldWidth:grid.width,worldHeight:grid.height,offsetY:0},mapObjects=grid.objects;
+ const grid=gridMap(this.region),mapConfig={width:grid.width*48,height:grid.height*48,worldWidth:grid.width,worldHeight:grid.height,offsetY:0},mapObjects=buildingVisuals(this.region,grid.objects);
  const illustratedMap=true;
  if(illustratedMap){
  for(const object of mapObjects){const sx=mapConfig.worldWidth*64/mapConfig.width,sy=mapConfig.worldHeight*64/mapConfig.height;
  if((this.region==='caverns'||this.region==='caverns-depths')&&(object.key.includes('crystal')||object.key.includes('lantern')))this.add.ellipse((object.x+object.w/2)*sx,(object.y+object.h*.9)*sy+mapConfig.offsetY*64,object.w*sx*1.4,object.h*sy*.35,0x6ddcff,.09).setDepth(-2);
- this.add.image(object.x*sx,object.y*sy+mapConfig.offsetY*64,object.key).setOrigin(0).setDisplaySize(object.w*sx,object.h*sy).setDepth(isBuildingFloor(object.key)?-10:object.footY*sy+mapConfig.offsetY*64).setData('buildingFront',/^(depot|village)-wall-/.test(object.key)?buildingsFor(this.region).find(b=>object.x>=b.x*48&&object.x<(b.x+b.width)*48&&object.y===(b.y+b.height-1)*48):undefined);}
+ this.add.image(object.x*sx,object.y*sy+mapConfig.offsetY*64,object.key).setOrigin(0).setDisplaySize(object.w*sx,object.h*sy).setDepth(isBuildingFloor(object.key)?-10:object.footY*sy+mapConfig.offsetY*64).setData('buildingFront',object.wallFor?buildingsFor(this.region).find(b=>b.id===object.wallFor):undefined).setData('wallSide',object.wallSide).setData('roofFor',object.roofFor).setData('signFor',object.signFor);}
  }else{
  for(let x=0;x<WORLD.width;x++)for(const y of [0,23])this.tree(x*64+32,y*64+32);
  for(let y=1;y<23;y++)for(const x of [0,31])this.tree(x*64+32,y*64+32);
@@ -399,7 +399,11 @@ class Elderwood extends Phaser.Scene {
  if(this.pendingDoor){const door=villageDoors(this.region).find(d=>d.id===this.pendingDoor);if(!door)this.pendingDoor=undefined;else if(Math.hypot(this.local.x-door.x,this.local.y-door.y)<=2.2&&Math.hypot((this.local.stepX??this.local.x)-this.local.x,(this.local.stepY??this.local.y)-this.local.y)<.01){const id=this.pendingDoor;this.pendingDoor=undefined;this.route=[];if(this.preview)notice(toggleVillageDoor(this.doors,{...this.local,region:this.region,hp:this.fighter.hp},id,[{...this.local,region:this.region,hp:this.fighter.hp}]));else this.room?.send('door',id);}}
  if(this.pendingDepot&&atDepot({...this.local,region:this.region},this.pendingDepot))this.openDepot(this.pendingDepot);
  if(document.querySelector<HTMLDialogElement>('#depot-dialog')!.open)this.drawDepot();
- for(const object of this.worldObjects){const b=object.getData('buildingFront') as typeof villageBuildings[number]|undefined;if(b)(object as Phaser.GameObjects.Image).setAlpha((this.region==='elderwood'||isVillageUpper(this.region))&&this.local.x>b.x&&this.local.x<b.x+b.width&&this.local.y>b.y&&this.local.y<b.y+b.height?.35:1);}
+ for(const object of this.worldObjects){
+ const b=object.getData('buildingFront') as typeof villageBuildings[number]|undefined,side=object.getData('wallSide');
+ if(b)(object as Phaser.GameObjects.Image).setAlpha(insideBuilding(this.local,b)&&['s','sw','se','e'].includes(side)?.35:1);
+ const id=object.getData('roofFor')??object.getData('signFor');if(id){const building=buildingsFor(this.region).find(b=>b.id===id);(object as Phaser.GameObjects.Image).setVisible(!building||!insideBuilding(this.local,building));}
+ }
  if(this.pendingStair&&availableStair(this.local,this.region,this.pendingStair))this.useStairs(this.pendingStair);
  if(this.pendingInteraction){const kind=this.pendingInteraction,target=kind==='portal'?portalFor(this.region):merchant,range=kind==='portal'?portalFor(this.region).radius:merchant.range;if(Math.hypot(this.local.x-target.x,this.local.y-target.y)<=range){this.pendingInteraction=undefined;this.pendingStair=undefined;this.pendingDoor=undefined;this.pendingDepot=undefined;this.pendingLoot=undefined;this.pendingResource=undefined;this.pendingWorkbench=false;this.route=[];if(kind==='portal')this.openPortal();else this.openInventory(true);}}
  this.renderCombat(delta);this.renderRewards();
