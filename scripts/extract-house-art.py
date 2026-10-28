@@ -85,14 +85,8 @@ roofs=matrix(root/'assets/world/architecture/elevated-masters/roofs.png',2,3)
 for name,piece in zip(['depot','smithy','workshop','bank','hall'],[p for row in roofs for p in row]):
  # Roof planes cover the exact authored footprint; preserve their transparent eaves.
  canvas=Image.new('RGBA',(320,256));canvas.alpha_composite(piece.resize((316,252),Image.Resampling.LANCZOS),(2,2));canvas.save(dest/f'house-roof-{name}.png')
-frames=matrix(root/'assets/world/architecture/elevated-masters/walls.png',2,4)
-for row,names in enumerate([['n','e','s','w'],['nw','ne','sw','se']]):
- for name,piece in zip(names,frames[row]):
-  size=(64,64) if name in ['n','s'] else (32,64)
-  canvas=Image.new('RGBA',size);width=12 if name in ['e','w'] else size[0];x=20 if name=='e' else 0
-  canvas.alpha_composite(piece.resize((width,64),Image.Resampling.LANCZOS),(x,0));canvas.save(dest/f'house-wall-{name}.png')
-  if name in ['n','s']:
-   # One-cell ends use half of the same two-cell panel, without changing its pitch.
-   half=canvas.crop((0,0,32,64));half.save(dest/f'house-wall-{name}-half.png')
+# Wall geometry is code-native: use one shared cap thickness and exact joins.
+import subprocess
+subprocess.run(['node',str(root/'scripts/build-town-walls.cjs')],check=True)
 (root/'assets/world/architecture/layout.json').write_text(json.dumps(layout,indent=2)+'\n')
 print('Extracted 68 directional furniture/prop sprites, five roofs and ten elevated wall pieces')

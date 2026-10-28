@@ -42,7 +42,7 @@ to rotate town furnishings. Inventory/equipment icons and characters are unchang
 
 Run `python3 scripts/extract-house-art.py` to reproduce 68 directional frames,
 five roof sprites and ten elevated wall pieces. Structural wall canvases
-are 32×64 or 64×64; roofs are 320×256. Original masters are preserved, and no character or
+are 64×80 or 128×80 for faces/corners and 64×64 for side rails; roofs are 320×256. Original masters are preserved, and no character or
 monster references are changed. The editor's Roofs checkbox exposes interiors
 without changing the exported collision grid.
 

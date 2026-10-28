@@ -1,4 +1,4 @@
-/** Same-map, roofless rooms. Walls sit on cell edges; door offsets are south-facing. */
+/** Same-map room footprints with render-only wall shells and cutaway roofs. Walls sit on cell edges; door offsets are south-facing. */
 export const villageBuildings=[
  {id:'depot',name:'Depot',x:5,y:2,width:9,height:7,door:3,doorWidth:3},
  {id:'smithy',name:'Smithy',x:22,y:3,width:6,height:5,door:2,doorWidth:2},

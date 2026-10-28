@@ -6,10 +6,15 @@ same camera. This replaces the more frontal furniture and house treatment;
 characters retain their approved artwork.
 
 `townView` in `building-visuals.ts` is shared by the game, editor and full-map
-export. Wall height is projected to 1.25 world cells. Two-cell horizontal panels
-preserve their painted top/face angle; one-cell ends use matching half panels.
-Corner joins retain literal orthogonal L-shaped tops. Windows, signs, doors and
-roof eaves use the same wall projection. Structural collision remains on the
+export. Wall height is projected to 1.25 world cells. All wall faces use equal X/Y scale. Horizontal panels, halves, side rails and
+four handed corners share a 0.1875-cell cap thickness. Side runs stop at corner
+caps rather than overlapping them. Code-native SVG geometry reuses sampled
+wood, plaster and stone textures from the preserved approved wall atlas.
+`node scripts/build-town-walls.cjs` rebuilds these exact fitting pieces. Windows, signs, doors and
+roof eaves use the same wall projection. The Depot and Hall have two visible
+stories outside, with continuous upper walls and windows underneath their raised
+roofs. Entering the ground floor hides both the roof and upper shell; upstairs
+retains its own walls. The editor roof toggle also hides the upper shell. Structural collision remains on the
 original grid boundaries.
 
 Furniture canvases render at equal X and Y scale, centered on the original

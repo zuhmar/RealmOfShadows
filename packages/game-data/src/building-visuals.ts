@@ -1,8 +1,8 @@
 import {buildingsFor,type villageBuildings,isBuildingFloor} from './village-buildings';
 import {mapObject,type IslandObject} from './island-layout';
 /** Shared elevated view: grid axes stay square; vertical faces are foreshortened. */
-export const townView={wallHeight:1.25,roofOverhang:.25} as const;
-export interface BuildingVisual extends IslandObject{roofFor?:string;wallFor?:string;wallSide?:string;signFor?:string}
+export const townView={wallHeight:1.25,roofOverhang:.25,wallThickness:.1875} as const;
+export interface BuildingVisual extends IslandObject{roofFor?:string;wallFor?:string;wallSide?:string;signFor?:string;upperFor?:string}
 export function insideBuilding(p:{x:number;y:number},b:typeof villageBuildings[number]){return p.x>b.x&&p.x<b.x+b.width&&p.y>b.y&&p.y<b.y+b.height;}
 export function buildingVisuals(region:string,objects:readonly IslandObject[],roofs=true):BuildingVisual[]{
  const buildings=buildingsFor(region),result:BuildingVisual[]=[],height=townView.wallHeight;
@@ -22,23 +22,33 @@ export function buildingVisuals(region:string,objects:readonly IslandObject[],ro
   result.push(copy);
  }
  for(const b of buildings){
-  const bottom=b.y+b.height,door=(x:number)=>region==='elderwood'&&x>=b.x+b.door&&x<b.x+b.door+b.doorWidth;
-  // Two-cell panels retain the painted cap/face angle. One-cell ends use half-panels.
-  for(const side of ['n','s']){
-   let x=b.x+1;
-   while(x<b.x+b.width-1){
-    if(side==='s'&&door(x)){x++;continue;}
-    const width=x+1<b.x+b.width-1&&!(side==='s'&&door(x+1))?2:1,base=side==='n'?b.y:bottom;
-    put(`house-wall-${side}${width===1?'-half':''}`,x,base-height,width,height,base,{wallFor:b.id,wallSide:side});x+=width;
+  const bottom=b.y+b.height,twoStories=b.id==='depot'||b.id==='hall';
+  const stories=region==='elderwood'&&twoStories&&roofs?2:1;
+  for(let story=0;story<stories;story++){
+   const lift=story*height,meta={wallFor:b.id,...(story?{upperFor:b.id}:{})};
+   const door=(x:number)=>region==='elderwood'&&story===0&&x>=b.x+b.door&&x<b.x+b.door+b.doorWidth;
+   // Every panel has the same native pixels per cell and a 12px cap.
+   for(const side of ['n','s']){
+    let x=b.x+1;
+    while(x<b.x+b.width-1){
+     if(side==='s'&&door(x)){x++;continue;}
+     const width=x+1<b.x+b.width-1&&!(side==='s'&&door(x+1))?2:1,base=(side==='n'?b.y:bottom)-lift;
+     put(`house-wall-${side}${width===1?'-half':''}`,x,base-height,width,height,base+lift,{...meta,wallSide:side});x+=width;
+    }
    }
+   // Side caps join the horizontal caps exactly; no overlapping corner sprites.
+   const start=b.y-height-lift+townView.wallThickness,end=bottom-height-lift;
+   for(let y=start;y<end-1e-6;y++){
+    const length=Math.min(1,end-y);
+    put('house-wall-w',b.x,y,1,length,y+height+lift,{...meta,wallSide:'w'});
+    put('house-wall-e',b.x+b.width-1,y,1,length,y+height+lift,{...meta,wallSide:'e'});
+   }
+   for(const [side,x,base]of [['nw',b.x,b.y],['ne',b.x+b.width-1,b.y],['sw',b.x,bottom],['se',b.x+b.width-1,bottom]] as const)
+    put(`house-wall-${side}`,x,base-height-lift,1,height,base+.01,{...meta,wallSide:side});
+   put('town-window',b.x+1.1,bottom-.7-lift,.8,.6,bottom+.02,{...meta,wallSide:'s'});
+   if(story)put('town-window',b.x+b.width-1.9,bottom-.7-lift,.8,.6,bottom+.02,{...meta,wallSide:'s'});
   }
-  for(let y=b.y;y<bottom;y++){
-   put('house-wall-w',b.x,y+1-height,1,height,y+1,{wallFor:b.id,wallSide:'w'});
-   put('house-wall-e',b.x+b.width-1,y+1-height,1,height,y+1,{wallFor:b.id,wallSide:'e'});
-  }
-  for(const [side,x,y,base]of [['nw',b.x,b.y-height,b.y],['ne',b.x+b.width-1,b.y-height,b.y],['sw',b.x,bottom-height,bottom],['se',b.x+b.width-1,bottom-height,bottom]] as const)put(`house-wall-${side}`,x,y,1,height,base+.01,{wallFor:b.id,wallSide:side});
-  put('town-window',b.x+1.1,bottom-.7,.8,.6,bottom+.02,{wallFor:b.id,wallSide:'s'});
-  if(roofs)put(`house-roof-${b.id}`,b.x-townView.roofOverhang,b.y-height,b.width+townView.roofOverhang*2,b.height+.1,bottom+.05,{roofFor:b.id});
+  if(roofs)put(`house-roof-${b.id}`,b.x-townView.roofOverhang,b.y-stories*height,b.width+townView.roofOverhang*2,b.height+.1,bottom+.05,{roofFor:b.id});
  }
  return result;
 }
