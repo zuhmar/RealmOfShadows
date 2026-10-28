@@ -9,17 +9,21 @@ Four dedicated crafters stand behind their own customer-facing counters:
 
 | NPC / corner | Profession | Custom bench |
 | --- | --- | --- |
-| Bram the Smith · northwest | Blacksmithing | Anvil, ingots, hammer and coals |
-| Elara the Woodworker · northeast | Woodworking | Timber, vise, saw and plan |
-| Tobin the Cook · southwest | Cooking | Stove, pot and preparation board |
+| Bram the Smith · northwest | Blacksmithing | Anvil, copper ingots and hammer |
+| Elara the Woodworker · northeast | Woodworking | Timber, hand plane and saw |
+| Tobin the Cook · southwest | Cooking | Soup pot, spoon, bread and carrots |
 | Iris the Alchemist · southeast | Alchemy | Retort, bottles, herbs and mortar |
 
-Each NPC uses an approved reference-based human outfit. The new painted benches
-share scale, camera and baseline. NPC reserve cells and the three-cell counter
-footprints are blocked in the authoritative grid. Each counter occupies the three grid cells directly ahead of its NPC. The
-northern crafters face south and southern crafters face north, toward the shared
-customer aisle. The three-cell center passage and doorway remain clear. NPCs and counter hit areas become
-available after entering the room; exterior roofs prevent accidental clicks.
+Each NPC uses an approved reference-based human outfit and occupies the actual
+corner grid cell against the hall walls. Three counter cells fill the other cells
+of a 2×2 square: the two adjacent cells and the inward diagonal. This L shape
+closes the NPC into the corner without a walkable gap. North NPCs face south;
+south NPCs face north. The central aisle and doorway stay open.
+
+Counter tops join using their north/east/south/west neighbor masks; shared edges
+have no end caps or exposed front faces. Separate generated tool clusters sit on
+the inward elbow. All counter sections and tool clusters open their NPC service,
+and become noninteractive outside the room.
 Click a crafter or their bench to approach a reachable service point and open
 their trade. Bram also links to existing free equipment identification.
 
@@ -36,7 +40,8 @@ materials and capacity on each craft request. Rejected attempts preserve materia
 and EXP. NPCs and benches use the same collision on client and server.
 
 Artwork sources and extraction are documented in `assets/world/crafting-hall/`.
-`npm run art:crafting-hall` rebuilds the packed counter PNGs and hall sign. These
+`npm run art:map-furniture` rebuilds connected counters and tool sprites.
+`npm run art:crafting-hall` preserves the legacy packed benches and hall sign. These
 are committed artifacts; production builds do not run the Python/art tools.
 
 Validation covers four individual crafting skills and benches, reachability,

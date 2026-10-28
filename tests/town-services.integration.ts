@@ -11,8 +11,9 @@ try{
  await until(()=>!!bag&&room.state.players.has(room.sessionId));await reject('smelt-copper',/matching crafting/);
  const smith=craftingStation('smithy')!;let seq=await walkTo(room,smith,1);
  await reject('cut-timber',/matching crafting/);await reject('smelt-copper',/Missing crafting materials/);
+ seq=await walkTo(room,{x:3.5,y:14.5},seq);
  for(let i=0;i<10;i++){room.send('input',{x:0,y:-1,sprint:false,seq:++seq});await new Promise(r=>setTimeout(r,65));}
- await new Promise(r=>setTimeout(r,150));assert.equal(room.state.players.get(room.sessionId).y,smith.y,'custom bench blocks forged movement through the counter');
+ await new Promise(r=>setTimeout(r,150));assert.equal(room.state.players.get(room.sessionId).y,14.5,'custom bench blocks forged movement through the counter');
  for(const [id,recipe,wrong]of [['workshop','cut-timber','cook-fish'],['cooking','cook-fish','cut-timber'],['alchemy','brew-potion','smelt-copper']]){seq=await walkTo(room,craftingStation(id)!,seq);await reject(wrong,/matching crafting/);await reject(recipe,/Missing crafting materials/);}
  console.log('PASS server crafting hall: four dedicated counters, matching recipe checks, remote/wrong-trade/forged output rejection, unchanged EXP and solid benches');
 }finally{await room.leave(true)}

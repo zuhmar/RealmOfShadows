@@ -50,7 +50,7 @@ export function gridMap(region:string):GridMap{
   prop('depot-sign',8,1,3,1.25);
   prop('village-forge',23,4,2,2,2,1);prop('elderwood-barrel',26,4,1,1,1,1);
   prop('furn-chest-down',23,6,1,1,1,1);prop('town-tools',26,3,1,1);
-  for(const station of craftingStations)if('npc'in station){blocked.add(`${Math.floor(station.npc.x)},${Math.floor(station.npc.y)}`);prop(station.bench.key,station.bench.x,station.bench.y,station.bench.width,station.bench.height,station.bench.width,1);}
+  for(const station of craftingStations)if('npc'in station){blocked.add(`${Math.floor(station.npc.x)},${Math.floor(station.npc.y)}`);objects.push(mapObject(station.bench.key,station.bench.x*48,station.bench.y*48,96,96));for(const [x,y]of station.bench.cells)blocked.add(`${x},${y}`);}
   rect(2,18,12,1,2);rect(13,14,1,5,2);
   prop('village-counter',24,12,2,2,2,1);prop('village-table',21,18,2,2,2,1);
   rect(13,11,7,6,2);prop('elderwood-portal',15,10.5,3,3);
