@@ -72,3 +72,5 @@ export * from './professions';
 
 export * from './resource-varieties';
 export * from './fishing';
+
+export * from './town-services';

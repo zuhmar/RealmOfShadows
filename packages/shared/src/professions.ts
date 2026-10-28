@@ -1,4 +1,4 @@
-import {resourceTarget,fishForIsland,fishingCastClear,craftRecipes,professionRules,professionLevel,craftingBench,items,gearDefinition,isGearBase,lootEquipmentRules,inventoryFits,type ProfessionId,type ItemId} from '@realm/game-data';
+import {resourceTarget,fishForIsland,fishingCastClear,craftRecipes,professionRules,professionLevel,craftingStations,canUseCraftingStation,items,gearDefinition,isGearBase,lootEquipmentRules,inventoryFits,type ProfessionId,type ItemId} from '@realm/game-data';
 import type {Profile,Stack} from './economy';
 import type {Fighter} from './combat';
 import {sight} from './combat';
@@ -38,7 +38,7 @@ export class ProfessionSystem{
  profile.inventory=inventory;gain(node.skill,node.xp);this.depleted.set(node.id,time+professionRules.nodeRespawn);this.ready.set(id,time+professionRules.gatherCooldown);return `Gathered ${items[node.item].name}. +${node.xp} ${node.skill} EXP.`;
  }
  const recipe=craftRecipes.find(r=>r.id===item);if(!recipe)return 'Choose a valid recipe.';
- if(p.region!=='elderwood'||Math.hypot(p.x-craftingBench.x,p.y-craftingBench.y)>craftingBench.range)return 'Visit the crafting workbench in Elderwood.';
+ if(!craftingStations.some(station=>canUseCraftingStation(p,station,recipe.skill)&&sight(p,station,p.region)))return 'Visit the matching crafting workbench: Smithy for metalwork, Workshop for wood, food and potions.';
  if(professionLevel(profile.professions[recipe.skill])<recipe.level)return `Requires ${recipe.skill} level ${recipe.level}.`;
  for(const [key,count]of Object.entries(recipe.ingredients))if(profile.inventory.filter(s=>s.item===key).reduce((n,s)=>n+s.quantity,0)<count)return 'Missing crafting materials.';
  // Work on copies; neither ingredients nor EXP are lost when output cannot fit.

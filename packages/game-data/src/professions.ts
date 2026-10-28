@@ -1,3 +1,4 @@
+import {craftingStations} from './town-services';
 import {islandResourceSets,resourceVarietyMaterials} from './resource-varieties';
 import {resourcePositions,resourceRegions} from './resource-spawns';
 import {equipmentItems} from './equipment';
@@ -54,4 +55,4 @@ for(const [base,definition]of Object.entries({...equipmentItems,...weapons})){
  const woodworking='skill'in definition&&(definition.skill==='distance'||definition.skill==='magic');
  craftRecipes.push({id:`craft-${base}`,name:`Craft ${definition.name}`,skill:woodworking?'woodworking':'blacksmithing',level:tier*10+1,xp:40+tier*10,ingredients:woodworking?{timber:6,[`${definition.tier}Bar`]:2}:{[`${definition.tier}Bar`]:4},output:{item:base,quantity:1,gear:true}});
 }
-export const craftingBench={x:20.5,y:10.5,range:2};
+export const craftingBench=craftingStations[0];

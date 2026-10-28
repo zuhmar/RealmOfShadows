@@ -55,6 +55,8 @@
     "test:grid:integration": "tsx tests/grid-world.integration.ts",
     "art:town-roofs": "node scripts/build-town-roofs.cjs",
     "art:town-walls": "node scripts/build-town-walls.cjs",
+    "test:town-services:browser": "node tests/browser-town-services.cjs",
+    "test:town-services:integration": "tsx tests/town-services.integration.ts",
     "test:house-joins:browser": "node tests/browser-house-joins.cjs",
     "art:island-terrain": "python3 scripts/extract-island-terrain.py",
     "test:depot:browser": "node tests/browser-depot.cjs",

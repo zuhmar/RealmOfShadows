@@ -1,3 +1,4 @@
+import {craftingStations} from './town-services';
 import {villageBuildings,buildingsFor,isVillageUpper} from './village-buildings';
 import {woodsGridEncounters} from './woods-grid-spawns';
 import {depotBoxes} from './depot';
@@ -49,6 +50,9 @@ export function gridMap(region:string):GridMap{
   prop('depot-sign',8,1,3,1.25);
   prop('village-forge',23,4,2,2,2,1);prop('elderwood-barrel',26,4,1,1,1,1);
   prop('village-workbench',4,12,2,2,2,1);prop('elderwood-barrel',7,13,1,1,1,1);
+  prop('furn-chest-down',23,6,1,1,1,1);prop('town-tools',26,3,1,1);
+  prop('town-bookshelf',3,12,1,2,1,1);prop('furn-planter-down',7,14,1,1,1,1);
+  for(const station of craftingStations)if('npc'in station)blocked.add(`${Math.floor(station.npc.x)},${Math.floor(station.npc.y)}`);
   prop('village-counter',24,12,2,2,2,1);prop('village-table',21,18,2,2,2,1);
   rect(13,11,7,6,2);prop('elderwood-portal',15,10.5,3,3);
   for(const [x,y]of [[2,2],[2,5],[28,1],[28,7]])prop('elderwood-oak',x,y,2,3,1,1);

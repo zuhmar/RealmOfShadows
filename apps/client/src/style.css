@@ -71,3 +71,7 @@ header{top:116px;left:20px;gap:6px}.crest{font-size:17px}header small{font-size:
 .profession-resource-catalogue{font-size:12px;line-height:1.7;padding-left:20px}
 
 #fishing-status{position:fixed;z-index:3;bottom:100px;left:50%;transform:translateX(-50%);width:min(280px,85vw);padding:12px;font-size:12px;text-align:center}#fishing-progress{display:block;margin-top:8px}
+/* Keep service actions and the close control usable while browsing long recipe lists. */
+#inventory-dialog>.portal-heading{position:sticky;top:0;z-index:5;background:#203f38;padding:8px 0;border-bottom:1px solid #b9a66e44}
+#town-service-panel{padding:12px;border:1px solid #b9a66e44;border-radius:12px;margin:12px 0;background:#17383188}#town-service-panel h3{margin-top:0}#town-service-panel>button{margin:4px 6px 0 0}
+#profession-list>details,#loot-equipment{scroll-margin-top:78px}
