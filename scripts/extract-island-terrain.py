@@ -15,7 +15,7 @@ for row,biome in enumerate(biomes):
  dest=folder/biome;dest.mkdir(exist_ok=True);atlas=Image.new('RGB',(216,36))
  for col,material in enumerate(materials):
   custom=dest/'master.png'
-  if biome=='elderwood' and custom.exists():
+  if custom.exists():
    source=Image.open(custom).convert('RGB');cx=col%3;cy=col//3
    tile=source.crop((round(cx*source.width/3),round(cy*source.height/2),round((cx+1)*source.width/3),round((cy+1)*source.height/2))).resize((32,32),Image.Resampling.LANCZOS)
   else:

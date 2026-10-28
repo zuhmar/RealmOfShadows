@@ -44,17 +44,29 @@ export function gridMap(region:string):GridMap{
   for(const x of [13,19])for(const y of [8,17])prop('elderwood-lamp',x,y, .6,1.5);
  }else if(region==='woods'){
   for(const [x,y]of [[7,5],[51,5],[7,32],[51,32]])rect(x,y,11,9,0);
-  path([[10,8],[34,8],[57,8],[57,36],[34,36],[10,36],[10,8]]);path([[34,8],[34,40]]);path([[10,23],[57,23]]);
+  path([[10,8],[22,8],[27,10],[34,8],[43,8],[48,10],[57,8],[57,36],[34,36],[10,36],[10,8]]);path([[34,8],[34,40]]);path([[10,23],[22,23],[27,25],[34,24],[42,23],[57,23]]);
+  // Keep every approach encounter on the trail as its bends follow the forest.
+  for(const area of Object.values(woodsGridEncounters))for(const [x,y]of area.approach)rect(x,y,1,1,1);
+  // Quiet fishing pools off the main trail; banks never cut the encounter routes.
+  rect(21,14,5,3,3);rect(22,13,3,1,3);rect(22,17,3,1,3);
+  rect(43,27,4,3,3);rect(44,26,2,1,3);rect(44,30,2,1,3);
+  path([[24,23],[24,20],[26,18]]);path([[40,23],[40,28],[41,31],[44,32]]);
   rect(30,21,9,10,2);rect(1,20,8,3,3);rect(1,21,8,1,4);rect(60,20,7,3,3);rect(60,21,7,1,4);
   // Enclosed boss grove with one clearly marked south entrance.
   rect(49,30,14,1,5);rect(49,30,1,12,5);rect(62,30,1,12,5);rect(49,41,6,1,5);rect(58,41,5,1,5);path([[56,41],[56,36]]);path([[34,36],[34,43],[56,43],[56,41]]);
   prop('woods-portal',33,22.5,3,3);prop('caverns-stairs-down',33,11,3,2);
-  for(let y=2;y<44;y+=3)for(let x=2;x<64;x+=3){
+  for(let gy=2;gy<44;gy+=3)for(let gx=2;gx<64;gx+=3){
+   // Stable one-cell offsets break up planted rows without moving encounter clearings.
+   const hash=(Math.imul(gx,73856093)^Math.imul(gy,19349663))>>>0,x=gx+(hash%2),y=gy+((hash>>>3)%2);
    const inClearing=(x>=5&&x<=19&&(y<=15||y>=29))||(x>=49&&(y<=15||y>=27))||(x>=29&&x<=40&&y>=19&&y<=32);
    const trunkY=y+2,nearRoad=[-1,0,1].some(dx=>[-1,0,1].some(dy=>[1,2,4].includes(cells[trunkY+dy]?.[x+dx])));
    if(inClearing||nearRoad||cells[trunkY][x]!==0)continue;prop((x+y)%2?'woods-oak':'woods-pine',x,y,2,3,1,1);
   }
-  prop('woods-den',7,3,3,2);for(const [x,y]of [[7,33],[15,34],[7,38]])prop('woods-web',x,y,2,2);
+  prop('woods-den',7,3,3,2);
+  for(const [key,x,y]of [['woods-log',20,15],['woods-stump',26,16],['woods-flowers',24,19],['woods-mushrooms',42,29],['woods-boulder',46,31],['woods-ruin',37,17],['woods-fern',28,18]] as const)prop(key,x,y,key==='woods-flowers'||key==='woods-mushrooms'||key==='woods-fern'?1:2, key==='woods-ruin'?2:1);
+  for(const [x,y]of [[7,33],[15,34],[7,38]])prop('woods-web',x,y,2,2);
+  // Small habitat details keep the huntable clearings open and visually distinct.
+  for(const [key,x,y]of [['woods-boulder',5,5],['woods-log',17,13],['woods-fern',6,14],['woods-mushrooms',15,30],['woods-fern',5,35],['woods-bones',18,39],['woods-boulder',53,4],['woods-stump',60,15],['woods-ancient',59,32],['woods-bones',51,38]] as const)prop(key,x,y,key==='woods-ancient'?3:key==='woods-fern'||key==='woods-mushrooms'?1:2,key==='woods-ancient'?4:1);
   for(const [x,y]of [[31,7],[36,22],[31,35],[54,41]])prop('woods-lamp',x,y,.6,1.5);
  }else if(cave||lower){
   // Cell-authored chambers and orthogonal corridors, independent of reference images.
