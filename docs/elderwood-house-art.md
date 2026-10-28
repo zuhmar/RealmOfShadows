@@ -41,8 +41,8 @@ to rotate town furnishings. Inventory/equipment icons and characters are unchang
 - `assets/world/architecture/layout.json`: recorded source rectangles.
 
 Run `python3 scripts/extract-house-art.py` to reproduce 68 directional frames,
-five roof sprites, ten plain wall pieces, four integrated window panels and four fitted door panels. Structural wall canvases
-are 64×80 or 128×80 for faces/corners and 64×64 for side rails; roofs are 320×256. Original masters are preserved, and no character or
+the modular roof kit, ten plain wall pieces, four integrated window panels and four fitted door panels. Structural wall canvases
+are 64×80 or 128×80 for faces/corners and 64×64 for side rails; roof slope tiles are 88×88 (64px cores plus edge gutters). The original complete-roof sprites are preserved but not rendered. Original masters are preserved, and no character or
 monster references are changed. The editor's Roofs checkbox exposes interiors
 without changing the exported collision grid.
 

@@ -4,8 +4,8 @@ import {existsSync,readFileSync} from 'node:fs';
 import {buildingVisuals,gridMap,insideBuilding,villageBuildings,townView,townDoorTexture} from '@realm/game-data';
 test('full house shells add roofs and upright walls without replacing collision footprints',()=>{
  const grid=gridMap('elderwood'),before=[...grid.blocked],edges=[...grid.edges],objects=buildingVisuals('elderwood',grid.objects);
- assert.equal(objects.filter(o=>o.roofFor).length,5);assert.ok(!objects.some(o=>/^(depot|village)-wall-/.test(o.key)));
- for(const b of villageBuildings){const roof=objects.find(o=>o.roofFor===b.id)!;assert.equal(roof.key,`house-roof-${b.id}`);assert.ok(roof.w>=b.width*48);assert.ok(objects.some(o=>o.wallFor===b.id&&o.wallSide==='s'));assert.ok(insideBuilding({x:b.x+1.5,y:b.y+1.5},b));assert.equal(insideBuilding({x:b.x+b.door+.5,y:b.y+b.height+.5},b),false);}
+ assert.equal(new Set(objects.filter(o=>o.roofFor).map(o=>o.roofFor)).size,5);assert.ok(!objects.some(o=>/^(depot|village)-wall-/.test(o.key)));
+ for(const b of villageBuildings){const roof=objects.filter(o=>o.roofFor===b.id);assert.equal(roof.filter(o=>o.roofPart==='tile').length,b.width*b.height);assert.ok(!roof.some(o=>o.key.startsWith('house-roof-')));assert.ok(objects.some(o=>o.wallFor===b.id&&o.wallSide==='s'));assert.ok(insideBuilding({x:b.x+1.5,y:b.y+1.5},b));assert.equal(insideBuilding({x:b.x+b.door+.5,y:b.y+b.height+.5},b),false);}
  assert.deepEqual([...grid.blocked],before);assert.deepEqual([...grid.edges],edges);assert.equal(buildingVisuals('elderwood',grid.objects,false).filter(o=>o.roofFor).length,0);
  for(const o of objects)assert.ok(existsSync(new URL(`../assets/world/objects/${o.key}.png`,import.meta.url)),o.key);
 });
@@ -28,7 +28,7 @@ test('wall caps meet flush and upper-story shells support the Depot and Hall roo
   const upper=ground.filter(v=>v.upperFor===b.id),roof=ground.find(v=>v.roofFor===b.id)!;
   const stories=b.id==='depot'||b.id==='hall'?2:1;
   assert.equal(upper.length>0,stories===2,b.id+' upper shell');
-  assert.equal(roof.y,(b.y-stories*townView.wallHeight)*48);
+  assert.equal(roof.y,(b.y-stories*townView.wallHeight-townView.roofOverhang)*48);
   for(let story=0;story<stories;story++){
    const shell=ground.filter(v=>v.wallFor===b.id&&!!v.upperFor===!!story);
    const nw=shell.find(v=>v.wallSide==='nw')!,sw=shell.find(v=>v.wallSide==='sw')!;
@@ -45,7 +45,7 @@ test('wall caps meet flush and upper-story shells support the Depot and Hall roo
  assert.equal(buildingVisuals('elderwood',gridMap('elderwood').objects,false).some(v=>v.upperFor),false,'editor cutaway exposes ground-floor furnishings');
  const upstairs=buildingVisuals('elderwood-upper',gridMap('elderwood-upper').objects);
  assert.equal(upstairs.some(v=>v.upperFor),false,'upstairs shows its own walls instead of a duplicate ground-floor shell');
- assert.equal(upstairs.filter(v=>v.roofFor).length,2);
+ assert.equal(new Set(upstairs.filter(v=>v.roofFor).map(v=>v.roofFor)).size,2);
 });
 
 test('windows belong to wall panels and fitted doors retain the exact grid opening',()=>{
@@ -59,5 +59,23 @@ test('windows belong to wall panels and fitted doors retain the exact grid openi
  for(const width of [2,3])for(const open of [true,false]){
   const png=readFileSync(new URL(`../assets/world/objects/${townDoorTexture(width,open)}.png`,import.meta.url));
   assert.equal(png.readUInt32BE(16),width*64);assert.equal(png.readUInt32BE(20),townView.wallHeight*64);
+ }
+});
+
+test('modular roof cores cover every building cell once without stretching its corners or ridge',()=>{
+ for(const region of ['elderwood','elderwood-upper']){
+  const objects=buildingVisuals(region,gridMap(region).objects);
+  for(const b of villageBuildings){
+   const roof=objects.filter(o=>o.roofFor===b.id);if(!roof.length)continue;
+   const stories=region==='elderwood'&&(b.id==='depot'||b.id==='hall')?2:1,top=b.y-stories*townView.wallHeight;
+   assert.equal(roof.filter(o=>o.roofPart==='ridge').length,b.width);assert.equal(roof.filter(o=>o.roofPart==='chimney').length,1);
+   for(let y=0;y<b.height;y++)for(let x=0;x<b.width;x++){
+    const matches=roof.filter(o=>o.roofPart==='tile'&&Math.abs(o.x-(b.x+x-townView.roofOverhang)*48)<1e-6&&Math.abs(o.y-(top+y-townView.roofOverhang)*48)<1e-6);
+    assert.equal(matches.length,1,b.id+' cell '+x+','+y);
+    const tile=matches[0],png=readFileSync(new URL(`../assets/world/objects/${tile.key}.png`,import.meta.url));
+    assert.equal(png.readUInt32BE(16),88);assert.equal(png.readUInt32BE(20),88);assert.equal(tile.w,66);assert.equal(tile.h,66);
+   }
+   for(const corner of ['nw','ne','sw','se'])assert.equal(roof.filter(o=>o.roofPart==='tile'&&o.key.endsWith('-'+corner)).length,1,b.id+' fitted corner '+corner);
+  }
  }
 });

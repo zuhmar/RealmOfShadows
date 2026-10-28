@@ -88,5 +88,6 @@ for name,piece in zip(['depot','smithy','workshop','bank','hall'],[p for row in 
 # Wall geometry is code-native: use one shared cap thickness and exact joins.
 import subprocess
 subprocess.run(['node',str(root/'scripts/build-town-walls.cjs')],check=True)
+subprocess.run(['node',str(root/'scripts/build-town-roofs.cjs')],check=True)
 (root/'assets/world/architecture/layout.json').write_text(json.dumps(layout,indent=2)+'\n')
 print('Extracted 68 directional furniture/prop sprites, five roofs and the fitted wall/window/door kit')

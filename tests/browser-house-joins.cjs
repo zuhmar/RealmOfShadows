@@ -12,15 +12,21 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
    for(const region of ['elderwood','elderwood-upper']){
     const visuals=buildingVisuals(region,gridMap(region).objects);
     if(visuals.some(v=>v.key==='town-window'))throw Error('Loose window overlay in '+region);
-    for(const roof of visuals.filter(v=>v.roofFor)){
-     const b=villageBuildings.find(b=>b.id===roof.roofFor),wall=visuals.find(v=>v.wallFor===b.id&&v.wallSide==='sw'&&!!v.upperFor===(region==='elderwood'&&(b.id==='depot'||b.id==='hall'))),im=raster(roof.key);
+    for(const id of new Set(visuals.filter(v=>v.roofFor).map(v=>v.roofFor))){
+     const b=villageBuildings.find(b=>b.id===id),parts=visuals.filter(v=>v.roofFor===id);
+     const wall=visuals.find(v=>v.wallFor===id&&v.wallSide==='sw'&&!!v.upperFor===(region==='elderwood'&&(id==='depot'||id==='hall')));
+     const tiles=parts.filter(v=>v.roofPart==='tile'),left=b.x*48-townView.roofOverhang*48,top=Math.min(...tiles.map(v=>v.y));
+     const c=document.createElement('canvas');c.width=b.width*64+24;c.height=b.height*64+24;const ctx=c.getContext('2d',{willReadFrequently:true});
+     for(const part of parts)ctx.drawImage(s.textures.get(part.key).getSourceImage(),(part.x-left)*4/3,(part.y-top)*4/3,part.w*4/3,part.h*4/3);
+     const im={w:c.width,h:c.height,p:ctx.getImageData(0,0,c.width,c.height).data};
+     // Measure every pixel in the tiled core, so a seam inside the roof cannot pass.
+     for(let y=12;y<im.h-12;y++)for(let x=12;x<im.w-12;x++)if(im.p[(y*im.w+x)*4+3]!==255)throw Error(region+'/'+id+' roof hole at '+x+','+y);
      let minOverlap=Infinity,maxOverlap=-Infinity;
-     for(let column=0;column<b.width*64;column++){
-      const worldX=b.x*48+(column+.5)*48/64,nativeX=Math.max(0,Math.min(im.w-1,Math.floor((worldX-roof.x)/roof.w*im.w)));
-      let last=-1;for(let y=0;y<im.h;y++)if(im.p[(y*im.w+nativeX)*4+3]>=128)last=y;
-      const overlap=roof.y+(last+1)/im.h*roof.h-wall.y;minOverlap=Math.min(minOverlap,overlap);maxOverlap=Math.max(maxOverlap,overlap);
+     for(let x=12;x<im.w-12;x++){
+      let last=-1;for(let y=0;y<im.h;y++)if(im.p[(y*im.w+x)*4+3]>=128)last=y;
+      const overlap=top+(last+1)*3/4-wall.y;minOverlap=Math.min(minOverlap,overlap);maxOverlap=Math.max(maxOverlap,overlap);
      }
-     roofs.push({id:region+'/'+b.id,minOverlap,maxOverlap,wallHeight:townView.wallHeight*48});
+     roofs.push({id:region+'/'+id,minOverlap,maxOverlap,wallHeight:townView.wallHeight*48});
     }
    }
    const doors=[];
@@ -40,7 +46,11 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
    await page.waitForFunction(closed=>s.doors.get('elderwood/smithy')===!closed,closed);
    await page.waitForFunction(closed=>s.worldObjects.find(o=>o.getData('townDoor')==='elderwood/smithy').texture.key===`house-door-2-${closed?'closed':'open'}`,closed);
   }
+  for(const inside of [true,false]){
+   await page.evaluate(inside=>s.applyTravel('elderwood',{x:24.5,y:inside?6.5:8.5,stamina:100}),inside);await page.waitForTimeout(150);
+   assert.equal(await page.evaluate(inside=>{const parts=s.worldObjects.filter(o=>o.getData('roofFor')==='smithy');return parts.length>30&&parts.every(o=>o.visible===!inside)},inside),true,'the entire tile/ridge/chimney assembly cuts away together');
+  }
   await page.screenshot({path:`/tmp/house-joins-${mobile?'mobile':'desktop'}.png`});
-  console.log(`PASS ${mobile?'mobile':'desktop'}: seven roof eaves overlap walls, window panels are integrated, both door widths fit flush and clicking toggles the fitted door`);await page.close();
+  console.log(`PASS ${mobile?'mobile':'desktop'}: seven tiled roofs have no internal seams and their eaves overlap walls, window panels are integrated, both door widths fit flush and clicking toggles the fitted door`);await page.close();
  }}finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

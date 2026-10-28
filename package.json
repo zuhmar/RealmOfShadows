@@ -53,6 +53,7 @@
     "test:woods-floors:integration": "tsx tests/woods-floors.integration.ts",
     "test:grid:browser": "node tests/browser-grid-world.cjs",
     "test:grid:integration": "tsx tests/grid-world.integration.ts",
+    "art:town-roofs": "node scripts/build-town-roofs.cjs",
     "art:town-walls": "node scripts/build-town-walls.cjs",
     "test:house-joins:browser": "node tests/browser-house-joins.cjs",
     "art:island-terrain": "python3 scripts/extract-island-terrain.py",

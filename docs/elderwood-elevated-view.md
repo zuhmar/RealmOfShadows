@@ -55,7 +55,15 @@ at the exact native width of each two-/three-cell opening, sharing the wall cap
 and jamb materials. Runtime switching retains the same bounds and lower hit area.
 The game, editor and preview exporter all select the matching door-width variant.
 
-Roofs use a shared 90%-height eave anchor rather than their transparent canvas
-bottom. Their solid lower edge overlaps the uppermost wall cap across the whole
-facade, while the projected gable can extend below the eave. Roof cutaways and
-the Depot/Hall upper-floor shell cutaways retain their existing behavior.
+Roof eaves now come from modular perimeter pieces. All roof fields, corners,
+ridges and chimneys share their building's cutaway identifier.
+
+## Modular roofs
+
+Elderwood now builds roofs entirely from one-cell slope tiles, four matching
+corners, perimeter eaves, separate ridge caps and an independent chimney. All
+pieces use fixed native scale. Each core fits one building cell, and the edge pieces
+overhang the wall cap by 0.1875 cells. See
+`assets/world/architecture/modular-roofs/README.md` for generation and assembly.
+All roof pieces share the existing building cutaway identifier; window walls,
+doors, upstairs connections and collision remain unchanged.

@@ -1,13 +1,13 @@
 import {buildingsFor,type villageBuildings,isBuildingFloor} from './village-buildings';
 import {mapObject,type IslandObject} from './island-layout';
 /** Shared elevated view: grid axes stay square; vertical faces are foreshortened. */
-export const townView={wallHeight:1.25,roofOverhang:.25,wallThickness:.1875,roofEave:.9} as const;
+export const townView={wallHeight:1.25,roofOverhang:.1875,wallThickness:.1875} as const;
 export const townDoorTexture=(width:number,open:boolean)=>`house-door-${width}-${open?'open':'closed'}`;
 /** Door panels share the shell coordinate system and sort below mounted signs. */
 export function townDoorVisual(door:{x:number;y:number;width:number},open:boolean):IslandObject{
  return {...mapObject(townDoorTexture(door.width,open),(door.x-door.width/2)*48,(door.y+.5-townView.wallHeight)*48,door.width*48,townView.wallHeight*48),footY:(door.y+.5+1/32)*48};
 }
-export interface BuildingVisual extends IslandObject{roofFor?:string;wallFor?:string;wallSide?:string;signFor?:string;upperFor?:string}
+export interface BuildingVisual extends IslandObject{roofFor?:string;wallFor?:string;wallSide?:string;signFor?:string;upperFor?:string;roofPart?:'tile'|'ridge'|'chimney'}
 export function insideBuilding(p:{x:number;y:number},b:typeof villageBuildings[number]){return p.x>b.x&&p.x<b.x+b.width&&p.y>b.y&&p.y<b.y+b.height;}
 export function buildingVisuals(region:string,objects:readonly IslandObject[],roofs=true):BuildingVisual[]{
  const buildings=buildingsFor(region),result:BuildingVisual[]=[],height=townView.wallHeight;
@@ -50,8 +50,17 @@ export function buildingVisuals(region:string,objects:readonly IslandObject[],ro
    for(const [side,x,base]of [['nw',b.x,b.y],['ne',b.x+b.width-1,b.y],['sw',b.x,bottom],['se',b.x+b.width-1,bottom]] as const)
     put(`house-wall-${side}`,x,base-height-lift,1,height,base+.01,{...meta,wallSide:side});
   }
-  // Painted eaves sit above the alpha canvas bottom; align the solid eave, not padding.
-  if(roofs)put(`house-roof-${b.id}`,b.x-townView.roofOverhang,b.y-stories*height,b.width+townView.roofOverhang*2,b.height/townView.roofEave,bottom+.05,{roofFor:b.id});
+  if(roofs){
+   const top=b.y-stories*height,pad=townView.roofOverhang;
+   // Each 64px core covers one cell. Transparent gutters carry only outer eaves.
+   for(let row=0;row<b.height;row++)for(let col=0;col<b.width;col++){
+    const slope=row+1<=b.height/2?'back':row>=b.height/2?'front':'join';
+    const edge=(row===0?'n':row===b.height-1?'s':'')+(col===0?'w':col===b.width-1?'e':'')||'field';
+    put(`roof-tile-${b.id}-${slope}-${edge}`,b.x+col-pad,top+row-pad,1+pad*2,1+pad*2,bottom+.05,{roofFor:b.id,roofPart:'tile'});
+   }
+   for(let col=0;col<b.width;col++)put(`roof-ridge-${b.id}-${col===0?'w':col===b.width-1?'e':'field'}`,b.x+col-pad,top+b.height/2-pad,1+pad*2,.375,bottom+.06,{roofFor:b.id,roofPart:'ridge'});
+   put('roof-chimney',b.x+b.width-1.6,top+.15,1,1.5,bottom+.07,{roofFor:b.id,roofPart:'chimney'});
+  }
  }
  return result;
 }

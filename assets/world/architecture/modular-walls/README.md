@@ -26,8 +26,7 @@ and full-height jambs at the canvas edges. Open and closed variants have identic
 bounds; open leaves preserve a transparent passage. They use the wall materials
 and replace the old alpha-padded door overlays without changing doorway collision.
 
-Roof placement scales to the solid eave at 90% of its native canvas height,
-which makes even the shallowest painted eaves overlap the top of the wall.
-`tests/browser-house-joins.cjs` measures actual roof alpha over every facade
-column and both door panel edges, checks that facades remain visible, and tests
-click/touch door toggles on desktop and mobile.
+Roofs use the separate modular kit documented in `../modular-roofs/README.md`.
+`tests/browser-house-joins.cjs` measures every pixel in each assembled roof core,
+eave coverage and both door panel edges, and tests click/touch door toggles and
+group cutaways on desktop and mobile.
