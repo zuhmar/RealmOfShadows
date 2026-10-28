@@ -18,6 +18,12 @@ export function gridMap(region:string):GridMap{
  const prop=(key:string,x:number,y:number,w:number,h:number,solidW=0,solidH=0)=>{objects.push(mapObject(key,x*48,y*48,w*48,h*48));for(let dy=0;dy<solidH;dy++)for(let dx=0;dx<solidW;dx++)blocked.add(`${x+dx},${y+h-solidH+dy}`);};
  if(village){
   rect(1,1,30,22,0);rect(1,19,30,4,3);rect(14,2,5,17,2);rect(3,9,26,3,1);rect(3,15,26,3,1);rect(14,19,5,4,4);rect(19,17,10,6,0);path([[27,16],[27,22],[23,22]]);
+  // A sheltered southern pond, stepped banks and a continuous timber crossing.
+  rect(1,19,12,4,0);rect(2,20,11,3,3);rect(4,19,6,1,3);rect(1,21,1,2,3);rect(12,21,2,2,3);
+  rect(14,19,5,4,3);rect(15,19,3,4,4);
+  // Short routes lead to each service; the central square remains unobstructed.
+  path([[17,9],[24,9],[25,8]],2);path([[10,10],[9,10],[9,9]],2);
+  path([[8,17],[12,17],[12,14],[14,14]]);path([[19,16],[22,16],[25,17]]);
   // A roofless Depot is part of the same village grid, with a three-cell entrance.
   rect(5,2,9,7,4);
   for(let y=2;y<=8;y++)for(let x=5;x<=13;x++)prop('depot-floor',x,y,1,1);
@@ -32,6 +38,9 @@ export function gridMap(region:string):GridMap{
   prop('elderwood-blacksmith',22,3,6,5,6,4);prop('elderwood-workshop',3,12,6,4,6,3);prop('elderwood-bank',23,12,6,4,6,3);prop('elderwood-hall',20,18,6,4,6,3);
   rect(13,11,7,6,2);prop('elderwood-portal',15,10.5,3,3);
   for(const [x,y]of [[2,2],[2,5],[28,1],[28,7]])prop('elderwood-oak',x,y,2,3,1,1);
+  for(const [x,y]of [[2,7],[29,11],[1,15],[29,18]])prop('elderwood-oak',x,y,2,3,1,1);
+  prop('elderwood-bench',18.5,14,1.6,.65);prop('elderwood-planter',18.5,13,1,.8);
+  prop('woods-flowers',12,18,1,.6);prop('woods-flowers',20,10,1,.6);
   for(const x of [13,19])for(const y of [8,17])prop('elderwood-lamp',x,y, .6,1.5);
  }else if(region==='woods'){
   for(const [x,y]of [[7,5],[51,5],[7,32],[51,32]])rect(x,y,11,9,0);

@@ -14,7 +14,12 @@ materials=['ground','path','stone','water','bridge','wall']
 for row,biome in enumerate(biomes):
  dest=folder/biome;dest.mkdir(exist_ok=True);atlas=Image.new('RGB',(216,36))
  for col,material in enumerate(materials):
-  tile=im.crop((round(col*im.width/6),round(row*im.height/8),round((col+1)*im.width/6),round((row+1)*im.height/8))).resize((32,32),Image.Resampling.LANCZOS)
+  custom=dest/'master.png'
+  if biome=='elderwood' and custom.exists():
+   source=Image.open(custom).convert('RGB');cx=col%3;cy=col//3
+   tile=source.crop((round(cx*source.width/3),round(cy*source.height/2),round((cx+1)*source.width/3),round((cy+1)*source.height/2))).resize((32,32),Image.Resampling.LANCZOS)
+  else:
+   tile=im.crop((round(col*im.width/6),round(row*im.height/8),round((col+1)*im.width/6),round((row+1)*im.height/8))).resize((32,32),Image.Resampling.LANCZOS)
   tile.save(dest/f'{material}.png');x=col*36+2;atlas.paste(tile,(x,2))
   for ox in range(-2,34):
    for oy in range(-2,34):
