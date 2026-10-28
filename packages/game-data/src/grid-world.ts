@@ -43,20 +43,19 @@ export function gridMap(region:string):GridMap{
    for(const [corner,cx,cy]of [['nw',x,y],['ne',x+w-1,y],['sw',x,y+h-1],['se',x+w-1,y+h-1]] as const)prop(`${prefix}-wall-${corner}`,cx,cy,1,1);
    for(let row=y;row<y+h;row++){edges.add(`v:${x},${row}`);edges.add(`v:${x+w},${row}`);}
    for(let column=x;column<x+w;column++){edges.add(`h:${column},${y}`);if(!doorway(column))edges.add(`h:${column},${y+h}`);}
-   if(!isVillageUpper(region)&&building.id!=='depot')prop(`village-sign-${building.id}`,x+1,y-1,w-2,.8);
+   if(!isVillageUpper(region)&&building.id!=='depot')prop(building.id==='workshop'?'crafting-hall-sign':`village-sign-${building.id}`,x+1,y-1,w-2,.8);
   }
   if(!isVillageUpper(region)){
   for(const box of depotBoxes)prop('depot-box',box.x-.5,box.y-.5,1,1,1,1);
   prop('depot-sign',8,1,3,1.25);
   prop('village-forge',23,4,2,2,2,1);prop('elderwood-barrel',26,4,1,1,1,1);
-  prop('village-workbench',4,12,2,2,2,1);prop('elderwood-barrel',7,13,1,1,1,1);
   prop('furn-chest-down',23,6,1,1,1,1);prop('town-tools',26,3,1,1);
-  prop('town-bookshelf',3,12,1,2,1,1);prop('furn-planter-down',7,14,1,1,1,1);
-  for(const station of craftingStations)if('npc'in station)blocked.add(`${Math.floor(station.npc.x)},${Math.floor(station.npc.y)}`);
+  for(const station of craftingStations)if('npc'in station){blocked.add(`${Math.floor(station.npc.x)},${Math.floor(station.npc.y)}`);prop(station.bench.key,station.bench.x,station.bench.y,2,2,2,1);}
+  rect(2,18,12,1,2);rect(13,14,1,5,2);
   prop('village-counter',24,12,2,2,2,1);prop('village-table',21,18,2,2,2,1);
   rect(13,11,7,6,2);prop('elderwood-portal',15,10.5,3,3);
   for(const [x,y]of [[2,2],[2,5],[28,1],[28,7]])prop('elderwood-oak',x,y,2,3,1,1);
-  for(const [x,y]of [[2,7],[29,11],[1,15],[29,18]])prop('elderwood-oak',x,y,2,3,1,1);
+  for(const [x,y]of [[2,7],[29,11],[1,9],[29,18]])prop('elderwood-oak',x,y,2,3,1,1);
   prop('elderwood-bench',18.5,14,1.6,.65);prop('elderwood-planter',18.5,13,1,.8);
   prop('woods-flowers',12,18,1,.6);prop('woods-flowers',20,10,1,.6);
   for(const x of [13,19])for(const y of [8,17])prop('elderwood-lamp',x,y, .6,1.5);
@@ -70,7 +69,7 @@ export function gridMap(region:string):GridMap{
    if(b.width>6)prop('town-window',b.x+b.width-3,b.y-.15,1.3,.9);
   }
   if(!isVillageUpper(region)){
-   prop('town-armor',26,5,1,2,1,1);prop('town-tools',7,12,1,1);
+   prop('town-armor',26,5,1,2,1,1);
    prop('town-bookshelf',27,12,1,2,1,1);prop('town-chair',20,20,1,1,1,1);
    prop('town-well',20,8,1.5,2,1,1);prop('elderwood-bench',6,6,2,1,2,1);
   }

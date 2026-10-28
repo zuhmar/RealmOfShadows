@@ -20,7 +20,7 @@ export function buildingVisuals(region:string,objects:readonly IslandObject[],ro
    const size=Math.min(object.w,object.h);copy.x=object.x+(object.w-size)/2;copy.y=object.y+object.h-size;copy.w=size;copy.h=size;
   }
   if(object.key==='furn-tools-down')copy.y-=48;
-  const sign=buildings.find(b=>object.key===(b.id==='depot'?'depot-sign':`village-sign-${b.id}`));
+  const sign=buildings.find(b=>object.key===(b.id==='depot'?'depot-sign':b.id==='workshop'?'crafting-hall-sign':`village-sign-${b.id}`));
   if(sign){copy.x=(sign.x+(sign.width-3)/2)*48;copy.y=(sign.y+sign.height-1.9)*48;copy.w=3*48;copy.h=.9*48;copy.footY=(sign.y+sign.height+.12)*48;copy.signFor=sign.id;}
   if(isBuildingFloor(copy.key))copy.footY=-480;
   result.push(copy);

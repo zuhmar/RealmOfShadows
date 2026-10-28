@@ -38,7 +38,7 @@ export class ProfessionSystem{
  profile.inventory=inventory;gain(node.skill,node.xp);this.depleted.set(node.id,time+professionRules.nodeRespawn);this.ready.set(id,time+professionRules.gatherCooldown);return `Gathered ${items[node.item].name}. +${node.xp} ${node.skill} EXP.`;
  }
  const recipe=craftRecipes.find(r=>r.id===item);if(!recipe)return 'Choose a valid recipe.';
- if(!craftingStations.some(station=>canUseCraftingStation(p,station,recipe.skill)&&sight(p,station,p.region)))return 'Visit the matching crafting workbench: Smithy for metalwork, Workshop for wood, food and potions.';
+ if(!craftingStations.some(station=>canUseCraftingStation(p,station,recipe.skill)&&sight(p,station,p.region)))return 'Visit the matching crafting workbench in the Crafting Hall.';
  if(professionLevel(profile.professions[recipe.skill])<recipe.level)return `Requires ${recipe.skill} level ${recipe.level}.`;
  for(const [key,count]of Object.entries(recipe.ingredients))if(profile.inventory.filter(s=>s.item===key).reduce((n,s)=>n+s.quantity,0)<count)return 'Missing crafting materials.';
  // Work on copies; neither ingredients nor EXP are lost when output cannot fit.
