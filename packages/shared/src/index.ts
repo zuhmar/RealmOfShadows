@@ -48,3 +48,5 @@ export {attackPath,inAttackRange} from './attack-path';
 export {sight} from "./combat";
 
 export {applyEquipment,effectiveAttributes,profileArmor} from './gear';
+
+export {toggleVillageDoor} from './village-doors';

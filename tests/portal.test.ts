@@ -9,7 +9,7 @@ test('portal accepts known destinations only within interaction range',()=>{
  assert.equal(canTravel({x:2,y:2},'elderwood','woods'),false);
 });
 test('all portal arrivals are walkable and can return home',()=>{
- for(const region of (Object.keys(regions) as RegionId[]).filter(r=>!isLowerFloor(r))){const portal=portalFor(region);assert.equal(legal(portal.arrival,region),true);assert.ok(pathfind(portal.arrival,portal,region).length);if(region!=='elderwood')assert.equal(canTravel(portal.arrival,region,'elderwood'),true);}
+ for(const region of (Object.keys(regions) as RegionId[]).filter(r=>!isLowerFloor(r)&&r!=='elderwood-upper')){const portal=portalFor(region);assert.equal(legal(portal.arrival,region),true);assert.ok(pathfind(portal.arrival,portal,region).length);if(region!=='elderwood')assert.equal(canTravel(portal.arrival,region,'elderwood'),true);}
 });
 test('selected island determines water and solid cell collision',()=>{
  assert.equal(legal({x:23.5,y:5.5},'elderwood'),false);assert.equal(legal({x:23.5,y:5.5},'woods'),true);

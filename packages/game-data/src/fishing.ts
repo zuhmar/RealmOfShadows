@@ -11,7 +11,7 @@ export function fishingShores(node:{x:number;y:number;region:string}){
  const region=node.region as RegionId,map=gridMap(region);return gridDirections.map(([dx,dy])=>({x:node.x+dx,y:node.y+dy})).filter(p=>p.x>0&&p.y>0&&p.x<map.width&&p.y<map.height&&!map.blocked.has(`${Math.floor(p.x)},${Math.floor(p.y)}`)&&fishingCastClear(p,node,region));
 }
 export function fishingTarget(id:string):ResourceNode|undefined{
- const match=/^fish:([a-z-]+):(\d+):(\d+)$/.exec(id);if(!match||!resourceRegions.includes(match[1] as RegionId))return;
+ const match=/^fish:([a-z-]+):(\d+):(\d+)$/.exec(id);if(!match||!resourceRegions.some(r=>r===match[1]))return;
  const region=match[1] as RegionId,x=Number(match[2]),y=Number(match[3]),map=gridMap(region);if(!Number.isSafeInteger(x)||!Number.isSafeInteger(y)||map.cells[y]?.[x]!==3)return;
  const fish=fishForIsland(region)[0];if(!fish)return;const node:ResourceNode={id,region,x:x+.5,y:y+.5,skill:'fishing',item:fish.item,level:fish.level,name:'Fishing water',xp:fish.xp,water:true};return fishingShores(node).length?node:undefined;
 }

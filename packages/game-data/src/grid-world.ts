@@ -1,4 +1,4 @@
-import {villageBuildings} from './village-buildings';
+import {villageBuildings,buildingsFor,isVillageUpper} from './village-buildings';
 import {woodsGridEncounters} from './woods-grid-spawns';
 import {depotBoxes} from './depot';
 import overrides from './grid-overrides.json';
@@ -11,33 +11,35 @@ export const gridCell=(p:{x:number;y:number})=>({x:Math.floor(p.x)+.5,y:Math.flo
 export const gridKey=(p:{x:number;y:number})=>`${Math.floor(p.x)},${Math.floor(p.y)}`;
 export function gridMap(region:string):GridMap{
  const old=cache.get(region);if(old)return old;
- const lower=region.endsWith('-depths'),village=region==='elderwood',cave=region.startsWith('caverns');
+ const lower=region.endsWith('-depths'),village=region==='elderwood'||isVillageUpper(region),cave=region.startsWith('caverns');
  const width=lower?48:region==='woods'?68:region==='caverns'?64:32,height=lower?36:region==='woods'||region==='caverns'?48:24;
- const cells=Array.from({length:height},()=>Array<number>(width).fill(cave||lower?5:0)),objects:IslandObject[]=[],blocked=new Set<string>(),edges=new Set<string>();
+ const cells=Array.from({length:height},()=>Array<number>(width).fill(cave||lower||isVillageUpper(region)?5:0)),objects:IslandObject[]=[],blocked=new Set<string>(),edges=new Set<string>();
  const rect=(x:number,y:number,w:number,h:number,material:number)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(j>=0&&i>=0&&j<height&&i<width)cells[j][i]=material;};
  const path=(points:readonly (readonly [number,number])[],material=1)=>{for(let i=1;i<points.length;i++){let [x,y]=points[i-1];const [tx,ty]=points[i];rect(x-1,y-1,3,3,material);while(x!==tx||y!==ty){x+=Math.sign(tx-x);y+=Math.sign(ty-y);rect(x-1,y-1,3,3,material);}}};
  const prop=(key:string,x:number,y:number,w:number,h:number,solidW=0,solidH=0)=>{objects.push(mapObject(key,x*48,y*48,w*48,h*48));for(let dy=0;dy<solidH;dy++)for(let dx=0;dx<solidW;dx++)blocked.add(`${x+dx},${y+h-solidH+dy}`);};
  if(village){
-  rect(1,1,30,22,0);rect(1,19,30,4,3);rect(14,2,5,17,2);rect(3,9,26,3,1);rect(3,15,26,3,1);rect(14,19,5,4,4);rect(19,17,10,6,0);path([[27,16],[27,22],[23,22]]);
+  if(!isVillageUpper(region)){rect(1,1,30,22,0);rect(1,19,30,4,3);rect(14,2,5,17,2);rect(3,9,26,3,1);rect(3,15,26,3,1);rect(14,19,5,4,4);rect(19,17,10,6,0);path([[27,16],[27,22],[23,22]]);
   // A sheltered southern pond, stepped banks and a continuous timber crossing.
   rect(1,19,12,4,0);rect(2,20,11,3,3);rect(4,19,6,1,3);rect(1,21,1,2,3);rect(12,21,2,2,3);
   rect(14,19,5,4,3);rect(15,19,3,4,4);
   // Short routes lead to each service; the central square remains unobstructed.
   path([[17,9],[24,9],[25,8]],2);path([[10,10],[9,10],[9,9]],2);
   path([[8,17],[12,17],[12,14],[14,14]]);path([[19,16],[22,16],[25,17]]);
+  }
   // Every village building is assembled from the same edge-aligned tile kit.
-  for(const building of villageBuildings){
+  for(const building of buildingsFor(region)){
    const {x,y,width:w,height:h,door,doorWidth}=building,prefix=building.id==='depot'?'depot':'village';
-   const doorway=(column:number)=>column>=x+door&&column<x+door+doorWidth;
+   const doorway=(column:number)=>!isVillageUpper(region)&&column>=x+door&&column<x+door+doorWidth;
    rect(x,y,w,h,4);
-   for(let row=y;row<y+h;row++)for(let column=x;column<x+w;column++)prop('depot-floor',column,row,1,1);
+   for(let row=y;row<y+h;row++)for(let column=x;column<x+w;column++)prop(building.id==='smithy'||building.id==='bank'?'town-floor-stone':'depot-floor',column,row,1,1);
    for(let column=x+1;column<x+w-1;column++){prop(`${prefix}-wall-n`,column,y,1,1);if(!doorway(column))prop(`${prefix}-wall-s`,column,y+h-1,1,1);}
    for(let row=y+1;row<y+h-1;row++){prop(`${prefix}-wall-w`,x,row,1,1);prop(`${prefix}-wall-e`,x+w-1,row,1,1);}
    for(const [corner,cx,cy]of [['nw',x,y],['ne',x+w-1,y],['sw',x,y+h-1],['se',x+w-1,y+h-1]] as const)prop(`${prefix}-wall-${corner}`,cx,cy,1,1);
    for(let row=y;row<y+h;row++){edges.add(`v:${x},${row}`);edges.add(`v:${x+w},${row}`);}
    for(let column=x;column<x+w;column++){edges.add(`h:${column},${y}`);if(!doorway(column))edges.add(`h:${column},${y+h}`);}
-   if(building.id!=='depot')prop(`village-sign-${building.id}`,x+1,y-1,w-2,.8);
+   if(!isVillageUpper(region)&&building.id!=='depot')prop(`village-sign-${building.id}`,x+1,y-1,w-2,.8);
   }
+  if(!isVillageUpper(region)){
   for(const box of depotBoxes)prop('depot-box',box.x-.5,box.y-.5,1,1,1,1);
   prop('depot-sign',8,1,3,1.25);
   prop('village-forge',23,4,2,2,2,1);prop('elderwood-barrel',26,4,1,1,1,1);
@@ -49,6 +51,22 @@ export function gridMap(region:string):GridMap{
   prop('elderwood-bench',18.5,14,1.6,.65);prop('elderwood-planter',18.5,13,1,.8);
   prop('woods-flowers',12,18,1,.6);prop('woods-flowers',20,10,1,.6);
   for(const x of [13,19])for(const y of [8,17])prop('elderwood-lamp',x,y, .6,1.5);
+  }else{
+   prop('town-bookshelf',6,2,2,2,2,1);prop('town-bed',6,5,2,2,1,1);prop('town-table',9,3,2,2,1,1);
+   prop('town-bookshelf',20,18,2,2,2,1);prop('town-bookshelf',22,18,2,2,2,1);
+  }
+  // Directional windows, room furnishings and wooden staircases share the same grid.
+  for(const b of buildingsFor(region)){
+   prop('town-window',b.x+1,b.y-.15,1.3,.9);
+   if(b.width>6)prop('town-window',b.x+b.width-3,b.y-.15,1.3,.9);
+  }
+  if(!isVillageUpper(region)){
+   prop('town-armor',26,5,1,2,1,1);prop('town-tools',7,12,1,1);
+   prop('town-bookshelf',27,12,1,2,1,1);prop('town-chair',20,20,1,1,1,1);
+   prop('town-well',20,8,1.5,2,1,1);prop('elderwood-bench',6,6,2,1,2,1);
+  }
+  prop(isVillageUpper(region)?'town-stairs-down':'town-stairs-up',10.5,4.5,2,2);
+  prop(isVillageUpper(region)?'town-stairs-down':'town-stairs-up',23.5,18.5,2,2);
  }else if(region==='woods'){
   for(const [x,y]of [[7,5],[51,5],[7,32],[51,32]])rect(x,y,11,9,0);
   path([[10,8],[22,8],[27,10],[34,8],[43,8],[48,10],[57,8],[57,36],[34,36],[10,36],[10,8]]);path([[34,8],[34,40]]);path([[10,23],[22,23],[27,25],[34,24],[42,23],[57,23]]);

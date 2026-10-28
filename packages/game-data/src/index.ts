@@ -31,6 +31,7 @@ export interface SpriteManifest {key:string;url:string;frameWidth:number;frameHe
 export const characterSprite:SpriteManifest|null=null;
 
 export const regions = {
+ 'elderwood-upper':{name:'Elderwood · Upper Rooms',description:'Depot loft and Adventurers’ Hall library.',ground:[0x426a50,0x456e52],road:[0xb4aa84,0xbab18d],accent:0x76d6d3,obstacles:[]},
  elderwood:{name:'Elderwood',description:'The shared village and your safe haven.',ground:[0x426a50,0x456e52],road:[0xb4aa84,0xbab18d],accent:0x76d6d3,obstacles:[]},
  woods:{name:'Whispering Woods',description:'Levels 1–10 · Wolves, thorn spiders, wild boars and the Forest Bear.',ground:[0x294b38,0x31573e],road:[0x7d8060,0x878867],accent:0x9be5ad,obstacles:[]},
  caverns:{name:'Crystal Caverns',description:'Levels 11–20 · Cave bats, shard crawlers, crystal golems and the Crystal Wyrm.',ground:[0x34364f,0x3b4059],road:[0x66667b,0x717187],accent:0xc6a0ff,obstacles:[]},
@@ -41,8 +42,8 @@ export const regions = {
 export type RegionId=keyof typeof regions;
 export const PORTAL={x:16.5,y:13.5,radius:2.5,arrival:{x:16.5,y:15.5}};
 export function isRegion(value:unknown):value is RegionId{return typeof value==='string'&&Object.hasOwn(regions,value);}
-export const portalFor=(region:RegionId)=>isLowerFloor(region)?{x:24.5,y:30.5,radius:2.5,arrival:{x:24.5,y:32.5}}:region==='woods'?{x:34.5,y:25.5,radius:2.5,arrival:{x:34.5,y:27.5}}:region==='caverns'?{x:32.5,y:40.5,radius:2.5,arrival:{x:32.5,y:42.5}}:PORTAL;
-export function canTravel(position:{x:number;y:number},from:RegionId,to:unknown):to is RegionId{return isRegion(to)&&!isLowerFloor(from)&&!isLowerFloor(to)&&from!==to&&Math.hypot(position.x-portalFor(from).x,position.y-portalFor(from).y)<=portalFor(from).radius;}
+export const portalFor=(region:RegionId)=>region==='elderwood-upper'?{x:11.5,y:6.5,radius:2.5,arrival:{x:11.5,y:7.5}}:isLowerFloor(region)?{x:24.5,y:30.5,radius:2.5,arrival:{x:24.5,y:32.5}}:region==='woods'?{x:34.5,y:25.5,radius:2.5,arrival:{x:34.5,y:27.5}}:region==='caverns'?{x:32.5,y:40.5,radius:2.5,arrival:{x:32.5,y:42.5}}:PORTAL;
+export function canTravel(position:{x:number;y:number},from:RegionId,to:unknown):to is RegionId{return isRegion(to)&&!isLowerFloor(from)&&!isLowerFloor(to)&&from!=='elderwood-upper'&&to!=='elderwood-upper'&&from!==to&&Math.hypot(position.x-portalFor(from).x,position.y-portalFor(from).y)<=portalFor(from).radius;}
 export {combat,wolfSpawns} from './combat';
 export {items,rewards,merchant,totalXp,levelForXp,type ItemId} from './economy';
 export * from './classes';

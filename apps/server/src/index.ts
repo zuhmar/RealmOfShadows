@@ -4,36 +4,39 @@ import {writeProgress} from '../../../packages/shared/src/saves';
 import {Server,Room,Client} from '@colyseus/core';
 import {WebSocketTransport} from '@colyseus/ws-transport';
 import {Schema,MapSchema,defineTypes} from '@colyseus/schema';
-import {cosmeticLook,availableStair,newAttributes,maxHealth,maxMana,equipmentItems,WORLD,portalFor,equipmentArmor,canTravel,type RegionId,type WeaponId} from '@realm/game-data';
-import {applyEquipment,move,occupiedCells,freeLanding,CombatSimulation,Economy,type Input,type Fighter} from '@realm/shared';
+import {villageDoors,closedVillageDoors,cosmeticLook,availableStair,newAttributes,maxHealth,maxMana,equipmentItems,WORLD,portalFor,equipmentArmor,canTravel,type RegionId,type WeaponId} from '@realm/game-data';
+import {toggleVillageDoor,applyEquipment,move,occupiedCells,freeLanding,CombatSimulation,Economy,type Input,type Fighter} from '@realm/shared';
 class Player extends Schema {attributes=newAttributes();weaponBonus=0;shieldArmor=0;shieldingXp=0;appearance='';look='';armor=0;weapon:WeaponId='wand';meleeXp=0;distanceXp=0;magicXp=0;x=WORLD.spawn.x;y=WORLD.spawn.y;stepX=WORLD.spawn.x;stepY=WORLD.spawn.y;stamina=100;seq=0;region:RegionId='elderwood';hp=100;mana=100;deadUntil=0;shotAt=0;spellAt=0;target='';auto=false;}
 defineTypes(Player,{look:'string',stepX:'number',stepY:'number',weaponBonus:'number',shieldArmor:'number',shieldingXp:'number',appearance:'string',armor:'number',weapon:'string',meleeXp:'number',distanceXp:'number',magicXp:'number',x:'number',y:'number',stamina:'number',seq:'number',region:'string',hp:'number',mana:'number',deadUntil:'number',shotAt:'number',spellAt:'number',target:'string',auto:'boolean'});
 class WolfState extends Schema{stepX=0;stepY=0;kind='wolf';region='woods';x=0;y=0;hp=65;mode='idle';facing='down';aimX=0;aimY=0;}
 defineTypes(WolfState,{stepX:'number',stepY:'number',kind:'string',region:'string',x:'number',y:'number',hp:'number',mode:'string',facing:'string',aimX:'number',aimY:'number'});
-class State extends Schema {players=new MapSchema<Player>();wolves=new MapSchema<WolfState>();}
-defineTypes(State,{players:{map:Player},wolves:{map:WolfState}});
+class State extends Schema {doors=new MapSchema<boolean>();players=new MapSchema<Player>();wolves=new MapSchema<WolfState>();}
+defineTypes(State,{doors:{map:'boolean'},players:{map:Player},wolves:{map:WolfState}});
 class Elderwood extends Room<State>{
  saves=new Map<string,SaveSession>();saving=new Set<string>();saveFailed=new Set<string>();
  economy=new Economy();economyReceived=new Map<string,{tokens:number;time:number}>();rewardTicks=0;combatReceived=new Map<string,number>();simulation=new CombatSimulation();maxClients=WORLD.capacity;inputs=new Map<string,Input>();received=new Map<string,number>();
- onCreate(){this.setState(new State());this.setPatchRate(50);
+ doorReceived=new Map<string,number>();
+ occupied(region:RegionId,except?:Fighter){const cells=occupiedCells([...this.state.players.values(),...this.simulation.wolves.values()],region,except);for(const cell of closedVillageDoors(this.state.doors,region))cells.add(cell);return cells;}
+ onCreate(){this.setState(new State());this.setPatchRate(50);for(const door of villageDoors('elderwood'))this.state.doors.set(door.id,true);
+ this.onMessage('door',(client:Client,id:unknown)=>{const p=this.state.players.get(client.sessionId),time=this.simulation.time;if(!p||this.saveFailed.has(client.sessionId)||time-(this.doorReceived.get(client.sessionId)??-Infinity)<.25)return;this.doorReceived.set(client.sessionId,time);client.send('door-result',toggleVillageDoor(this.state.doors,p,id,this.state.players.values()));});
  this.onMessage('travel',(client:Client,destination:unknown)=>{
  const p=this.state.players.get(client.sessionId);
  if(this.saveFailed.has(client.sessionId)||!p||p.hp<=0||!canTravel(p,p.region,destination)){client.send('travel-error','Walk closer to the portal and choose another destination.');return;}
  this.inputs.delete(client.sessionId);p.seq=this.received.get(client.sessionId)??p.seq;
- this.simulation.clear(p);p.region=destination;p.x=portalFor(destination).arrival.x;p.y=portalFor(destination).arrival.y;Object.assign(p,freeLanding(p,p.region,occupiedCells([...this.state.players.values(),...this.simulation.wolves.values()],p.region,p)));p.stepX=p.x;p.stepY=p.y;
+ this.simulation.clear(p);p.region=destination;p.x=portalFor(destination).arrival.x;p.y=portalFor(destination).arrival.y;Object.assign(p,freeLanding(p,p.region,this.occupied(p.region,p)));p.stepX=p.x;p.stepY=p.y;
  client.send('travel-complete',{region:p.region,x:p.x,y:p.y,stamina:p.stamina,seq:p.seq});
  });
  this.onMessage('stairs',(client:Client,id:unknown)=>{
  const p=this.state.players.get(client.sessionId),stair=p?availableStair(p,p.region,id):undefined;
  if(!p||p.hp<=0||this.saveFailed.has(client.sessionId)||!stair){client.send('travel-error','Move closer to the stairs to change depth.');return;}
- this.inputs.delete(client.sessionId);p.seq=this.received.get(client.sessionId)??p.seq;this.simulation.clear(p);p.region=stair.to;p.x=stair.arrival.x;p.y=stair.arrival.y;Object.assign(p,freeLanding(p,p.region,occupiedCells([...this.state.players.values(),...this.simulation.wolves.values()],p.region,p)));p.stepX=p.x;p.stepY=p.y;client.send('travel-complete',{region:p.region,x:p.x,y:p.y,stamina:p.stamina,seq:p.seq});
+ this.inputs.delete(client.sessionId);p.seq=this.received.get(client.sessionId)??p.seq;this.simulation.clear(p);p.region=stair.to;p.x=stair.arrival.x;p.y=stair.arrival.y;Object.assign(p,freeLanding(p,p.region,this.occupied(p.region,p)));p.stepX=p.x;p.stepY=p.y;client.send('travel-complete',{region:p.region,x:p.x,y:p.y,stamina:p.stamina,seq:p.seq});
  });
  this.onMessage('economy',(client:Client,request:unknown)=>{const now=this.simulation.time;const budget=this.economyReceived.get(client.sessionId)??{tokens:4,time:now};budget.tokens=Math.min(4,budget.tokens+(now-budget.time)*10);budget.time=now;this.economyReceived.set(client.sessionId,budget);if(budget.tokens<1)return;budget.tokens--; const p=this.state.players.get(client.sessionId);if(!p||this.saveFailed.has(client.sessionId))return;const message=this.economy.act(client.sessionId,p,request,now);p.appearance=JSON.stringify(this.economy.profiles.get(client.sessionId)!.equipment);p.look=JSON.stringify(cosmeticLook(this.economy.profiles.get(client.sessionId)!.cosmetics,this.economy.profiles.get(client.sessionId)!.classId));client.send('economy-result',message);this.sendSnapshot(client);void this.savePlayer(client);});
  this.onMessage('combat',(client:Client,data:unknown)=>{if(this.saveFailed.has(client.sessionId)||!data||typeof data!=='object')return;const now=this.simulation.time;if(now-(this.combatReceived.get(client.sessionId)??-Infinity)<.1)return;this.combatReceived.set(client.sessionId,now);const p=this.state.players.get(client.sessionId);if(p){const {kind,target,spell}=data as {kind:unknown;target:unknown;spell:unknown};if(!(kind==='spell'?this.simulation.castSpell(client.sessionId,p,spell,target,this.economy.profiles.get(client.sessionId)):this.simulation.action(client.sessionId,p,kind,target)))client.send('combat-error','Attack unavailable: check your target, range, mana, cooldown, and portal sanctuary.');}});
  this.onMessage('input',(client:Client,data:unknown)=>{if(this.saveFailed.has(client.sessionId))return;const d=data as Input;if(!d||!Number.isFinite(d.x)||!Number.isFinite(d.y)||Math.abs(d.x)>1||Math.abs(d.y)>1||typeof d.sprint!=='boolean'||!Number.isSafeInteger(d.seq)||d.seq<0||d.seq<=(this.received.get(client.sessionId)??-1))return;this.received.set(client.sessionId,d.seq);this.inputs.set(client.sessionId,{x:d.x,y:d.y,sprint:d.sprint,seq:d.seq});});
  // One input is consumed per server tick; flooding cannot increase speed.
  this.setSimulationInterval(()=>{
- for(const [id,p] of this.state.players){const input=this.inputs.get(id)??{x:0,y:0,sprint:false,seq:p.seq};if(p.hp>0)Object.assign(p,move(p,input,1/20,p.region,occupiedCells([...this.state.players.values(),...this.simulation.wolves.values()],p.region,p)));p.seq=input.seq;this.inputs.delete(id);}
+ for(const [id,p] of this.state.players){const input=this.inputs.get(id)??{x:0,y:0,sprint:false,seq:p.seq};if(p.hp>0)Object.assign(p,move(p,input,1/20,p.region,this.occupied(p.region,p)));p.seq=input.seq;this.inputs.delete(id);}
  this.simulation.tick(.05,this.state.players as Iterable<[string,Fighter]>);
  for(const [id,p] of this.state.players)this.economy.sync(id,p);
  this.economy.process(this.simulation.kills.splice(0),this.state.players,this.simulation.time);for(const result of this.economy.professions.results.splice(0)){const client=this.clients.find(c=>c.sessionId===result.id);if(client){client.send('economy-result',result.message);void this.savePlayer(client);}}if(++this.rewardTicks%4===0)for(const client of this.clients)this.sendSnapshot(client);
@@ -50,7 +53,7 @@ class Elderwood extends Room<State>{
  applyEquipment(data.profile,p);p.shieldingXp=data.profile.skillXp.shielding;p.hp=maxHealth(p.attributes);p.mana=maxMana(p.attributes);p.meleeXp=data.profile.skillXp.melee;p.distanceXp=data.profile.skillXp.distance;p.magicXp=data.profile.skillXp.magic;
  data.profile.potionReadyAt=this.simulation.time+data.potionRemaining;this.simulation.spellCooldowns.set(client.sessionId,Object.fromEntries(Object.entries(data.cooldowns).map(([id,remaining])=>[id,this.simulation.time+remaining!])));
  }
- Object.assign(p,freeLanding(p,p.region,occupiedCells(this.state.players.values(),p.region)));p.stepX=p.x;p.stepY=p.y;p.appearance=JSON.stringify(this.economy.profiles.get(client.sessionId)!.equipment);p.look=JSON.stringify(cosmeticLook(this.economy.profiles.get(client.sessionId)!.cosmetics,this.economy.profiles.get(client.sessionId)!.classId));this.state.players.set(client.sessionId,p);
+ Object.assign(p,freeLanding(p,p.region,this.occupied(p.region)));p.stepX=p.x;p.stepY=p.y;p.appearance=JSON.stringify(this.economy.profiles.get(client.sessionId)!.equipment);p.look=JSON.stringify(cosmeticLook(this.economy.profiles.get(client.sessionId)!.cosmetics,this.economy.profiles.get(client.sessionId)!.classId));this.state.players.set(client.sessionId,p);
  }catch(err){this.economy.leave(client.sessionId);throw err;}
  }
  sendSnapshot(client:Client){if(!this.economy.profiles.has(client.sessionId)||!this.state.players.has(client.sessionId))return;const save=this.saves.get(client.sessionId);client.send('economy-state',{...this.economy.snapshot(client.sessionId,this.simulation.time),account:save?{email:save.identity.email,savedAt:save.savedAt,state:this.saveFailed.has(client.sessionId)?'error':this.saving.has(client.sessionId)?'saving':'ready'}:null});}
@@ -60,7 +63,7 @@ class Elderwood extends Room<State>{
  finally{this.saving.delete(id);}
  }
  async onLeave(client:Client){const id=client.sessionId,save=this.saves.get(id),profile=this.economy.profiles.get(id);const final=save&&profile?writeProgress(profile,this.simulation.time,this.simulation.spellCooldowns.get(id)):undefined;
- this.state.players.delete(id);this.economy.leave(id);this.simulation.spellCooldowns.delete(id);this.economyReceived.delete(id);this.inputs.delete(id);this.received.delete(id);this.combatReceived.delete(id);this.saves.delete(id);this.saveFailed.delete(id);
+ this.state.players.delete(id);this.economy.leave(id);this.simulation.spellCooldowns.delete(id);this.economyReceived.delete(id);this.inputs.delete(id);this.received.delete(id);this.doorReceived.delete(id);this.combatReceived.delete(id);this.saves.delete(id);this.saveFailed.delete(id);
  if(save&&final)try{await save.save(final,true);}catch{console.error('Final character save failed; database session will expire.');}
  }
 
