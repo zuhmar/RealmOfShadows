@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync,readFileSync} from 'node:fs';
-import {buildingVisuals,gridMap,insideBuilding,villageBuildings,townView,townDoorTexture} from '@realm/game-data';
+import {buildingVisuals,gridMap,insideBuilding,villageBuildings,townView,townDoorTexture,modularFurniture} from '@realm/game-data';
 test('full house shells add roofs and upright walls without replacing collision footprints',()=>{
  const grid=gridMap('elderwood'),before=[...grid.blocked],edges=[...grid.edges],objects=buildingVisuals('elderwood',grid.objects);
  assert.equal(new Set(objects.filter(o=>o.roofFor).map(o=>o.roofFor)).size,5);assert.ok(!objects.some(o=>/^(depot|village)-wall-/.test(o.key)));
@@ -16,7 +16,7 @@ test('placed furniture has four purpose-drawn directional views with stable nati
 test('elevated furniture keeps uniform scale and its floor anchor, and wall runs leave doors open',()=>{
  for(const region of ['elderwood','elderwood-upper']){
   const map=gridMap(region),visuals=buildingVisuals(region,map.objects);
-  for(const object of map.objects.filter(o=>o.key.startsWith('furn-'))){const visual=visuals.find(v=>v.key===object.key&&v.footY===object.footY&&Math.abs((v.x+v.w/2)-(object.x+object.w/2))<1e-6)!;assert.ok(visual,object.key);assert.equal(visual.w,visual.h,object.key+' cannot stretch one axis');if(object.key!=='furn-tools-down')assert.ok(Math.abs(visual.y+visual.h-object.y-object.h)<1e-6,object.key+' stays planted');}
+  for(const object of map.objects.filter(o=>o.key.startsWith('furn-')&&!modularFurniture(o))){const visual=visuals.find(v=>v.key===object.key&&v.footY===object.footY&&Math.abs((v.x+v.w/2)-(object.x+object.w/2))<1e-6)!;assert.ok(visual,object.key);assert.equal(visual.w,visual.h,object.key+' cannot stretch one axis');if(object.key!=='furn-tools-down')assert.ok(Math.abs(visual.y+visual.h-object.y-object.h)<1e-6,object.key+' stays planted');}
  }
  const visuals=buildingVisuals('elderwood',gridMap('elderwood').objects);
  for(const b of villageBuildings)for(let x=b.x+1;x<b.x+b.width-1;x++)for(const side of ['n','s']){const center=(x+.5)*48,count=visuals.filter(v=>v.wallFor===b.id&&!v.upperFor&&v.wallSide===side&&v.key.startsWith('house-wall-')&&center>v.x&&center<v.x+v.w).length;assert.equal(count,side==='s'&&x>=b.x+b.door&&x<b.x+b.door+b.doorWidth?0:1,b.id+' wall coverage');}

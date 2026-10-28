@@ -256,7 +256,7 @@ class Elderwood extends Phaser.Scene {
  if(illustratedMap){
  for(const object of mapObjects){const sx=mapConfig.worldWidth*64/mapConfig.width,sy=mapConfig.worldHeight*64/mapConfig.height;
  if((this.region==='caverns'||this.region==='caverns-depths')&&(object.key.includes('crystal')||object.key.includes('lantern')))this.add.ellipse((object.x+object.w/2)*sx,(object.y+object.h*.9)*sy+mapConfig.offsetY*64,object.w*sx*1.4,object.h*sy*.35,0x6ddcff,.09).setDepth(-2);
- this.add.image(object.x*sx,object.y*sy+mapConfig.offsetY*64,object.key).setOrigin(0).setDisplaySize(object.w*sx,object.h*sy).setDepth(isBuildingFloor(object.key)?-10:object.footY*sy+mapConfig.offsetY*64).setData('buildingFront',object.wallFor?buildingsFor(this.region).find(b=>b.id===object.wallFor):undefined).setData('wallSide',object.wallSide).setData('upperFor',object.upperFor).setData('roofFor',object.roofFor).setData('signFor',object.signFor);}
+ this.add.image(object.x*sx,object.y*sy+mapConfig.offsetY*64,object.key).setOrigin(0).setDisplaySize(object.w*sx,object.h*sy).setDepth(isBuildingFloor(object.key)?-10:object.footY*sy+mapConfig.offsetY*64).setData('sourceKey',object.sourceKey).setData('buildingFront',object.wallFor?buildingsFor(this.region).find(b=>b.id===object.wallFor):undefined).setData('wallSide',object.wallSide).setData('upperFor',object.upperFor).setData('roofFor',object.roofFor).setData('signFor',object.signFor);}
  }else{
  for(let x=0;x<WORLD.width;x++)for(const y of [0,23])this.tree(x*64+32,y*64+32);
  for(let y=1;y<23;y++)for(const x of [0,31])this.tree(x*64+32,y*64+32);

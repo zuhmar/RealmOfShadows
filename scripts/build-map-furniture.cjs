@@ -1,0 +1,19 @@
+const fs=require('node:fs/promises'),path=require('node:path'),{chromium}=require('playwright');
+(async()=>{
+ const root=path.resolve(__dirname,'..'),folder=path.join(root,'assets/world/architecture/modular-furniture');await fs.mkdir(folder,{recursive:true});
+ const wood=(await fs.readFile(path.join(root,'assets/world/architecture/modular-walls/wood.png'))).toString('base64');
+ const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
+ try{const page=await browser.newPage();
+ for(const family of ['counter','table','bench','shelf','blacksmithing','woodworking','cooking','alchemy'])for(const end of ['single','start','middle','end','corner-nw','corner-ne','corner-sw','corner-se']){
+ const left=end==='single'||end==='start',right=end==='single'||end==='end';
+ const color=family==='alchemy'?'#665081':family==='cooking'?'#bda985':family==='blacksmithing'?'#6b777b':'#ad7946';
+ const tools=family==='blacksmithing'?'<path d="M14 29H47L40 36H32V43H20V36Z" fill="#687f86" stroke="#293f45" stroke-width="2"/><path d="M46 18L38 30" stroke="#694428" stroke-width="5"/><path d="M39 17L49 24" stroke="#b1bec0" stroke-width="7"/>':family==='woodworking'?'<path d="M10 22L43 34L49 25L17 15Z" fill="#d4ad6c" stroke="#62432c" stroke-width="2"/><path d="M19 34L48 16L52 22L24 40Z" fill="#b2c3c4" stroke="#394e50" stroke-width="2"/>':family==='cooking'?'<ellipse cx="31" cy="29" rx="17" ry="12" fill="#374f54" stroke="#23383b" stroke-width="3"/><ellipse cx="31" cy="25" rx="16" ry="7" fill="#c88a45" stroke="#7b9796" stroke-width="3"/><path d="M43 22L52 10" stroke="#b98e53" stroke-width="4"/>':family==='alchemy'?'<path d="M18 13V23L11 34Q10 41 22 41Q34 41 32 34L25 23V13Z" fill="#74c5a5" stroke="#29494d" stroke-width="2"/><path d="M39 21V28L34 36Q32 42 44 42Q54 42 51 36L46 28V21Z" fill="#b290d7" stroke="#45365d" stroke-width="2"/>':'';
+ const open=family==='table'||family==='bench';
+ const front=open?`<path d="M4 47H12V78H4ZM52 47H60V78H52Z" fill="url(#wood)" stroke="#493a29" stroke-width="2"/><path d="M0 49H64V57H0Z" fill="url(#wood)" stroke="#493a29" stroke-width="2"/>`:`<path d="M0 46H64V78H0Z" fill="url(#wood)"/><path d="M0 49H64M0 76H64" stroke="#493a29" stroke-width="4"/><path d="M0 55H64" stroke="#d5a460" stroke-width="2"/><path d="M5 63H26M36 68H59M12 71H33" stroke="#714d2c" opacity=".4"/>`;
+ const corner=end.startsWith('corner')?`<path d="M${end.endsWith('w')?8:56} 16V48" stroke="#5f422c" stroke-width="3"/>`:'';
+ const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="80"><defs><pattern id="wood" width="64" height="64" patternUnits="userSpaceOnUse"><rect width="64" height="64" fill="#aa763d"/><image href="data:image/png;base64,${wood}" width="64" height="64" opacity=".55"/></pattern></defs>${front}<path d="M0 16H64V49H0Z" fill="url(#wood)"/><path d="M0 16H64V49H0Z" fill="${color}" opacity=".55"/><path d="M0 29H64M0 40H64" stroke="#553c27" stroke-width="1" opacity=".35"/><path d="M4 20H60" stroke="#ffe0a1" stroke-width="2" opacity=".35"/><path d="M0 17H64" stroke="#e3bc7c" stroke-width="3"/><path d="M0 47H64" stroke="#503b2a" stroke-width="4"/>${left?'<path d="M2 16V78" stroke="#493a29" stroke-width="4"/>':''}${right?'<path d="M62 16V78" stroke="#493a29" stroke-width="4"/>':''}${corner}${family==='shelf'?'<path d="M6 20H58V41H6Z" fill="#4c3c2e"/><path d="M12 23V39M22 21V39M33 24V39M43 22V39M53 24V39" stroke="#879d84" stroke-width="7"/>':''}${tools}</svg>`;
+ const key=`map-furniture-${family}-${end}`;await fs.writeFile(path.join(folder,key+'.svg'),svg);
+ const data=await page.evaluate(async svg=>{const im=new Image();im.src='data:image/svg+xml;base64,'+btoa(svg);await im.decode();const c=document.createElement('canvas');c.width=64;c.height=80;c.getContext('2d').drawImage(im,0,0);return c.toDataURL().split(',')[1]},svg);await fs.writeFile(path.join(root,'assets/world/objects',key+'.png'),Buffer.from(data,'base64'));
+ }
+ }finally{await browser.close()}
+})();

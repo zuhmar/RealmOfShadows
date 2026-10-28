@@ -1,3 +1,4 @@
+import {modularFurniture} from './map-furniture';
 import {buildingsFor,type villageBuildings,isBuildingFloor} from './village-buildings';
 import {mapObject,type IslandObject} from './island-layout';
 /** Shared elevated view: grid axes stay square; vertical faces are foreshortened. */
@@ -7,13 +8,14 @@ export const townDoorTexture=(width:number,open:boolean)=>`house-door-${width}-$
 export function townDoorVisual(door:{x:number;y:number;width:number},open:boolean):IslandObject{
  return {...mapObject(townDoorTexture(door.width,open),(door.x-door.width/2)*48,(door.y+.5-townView.wallHeight)*48,door.width*48,townView.wallHeight*48),footY:(door.y+.5+1/32)*48};
 }
-export interface BuildingVisual extends IslandObject{roofFor?:string;wallFor?:string;wallSide?:string;signFor?:string;upperFor?:string;roofPart?:'tile'|'ridge'|'chimney'}
+export interface BuildingVisual extends IslandObject{roofFor?:string;wallFor?:string;wallSide?:string;signFor?:string;upperFor?:string;sourceKey?:string;roofPart?:'tile'|'ridge'|'chimney'}
 export function insideBuilding(p:{x:number;y:number},b:typeof villageBuildings[number]){return p.x>b.x&&p.x<b.x+b.width&&p.y>b.y&&p.y<b.y+b.height;}
 export function buildingVisuals(region:string,objects:readonly IslandObject[],roofs=true):BuildingVisual[]{
  const buildings=buildingsFor(region),result:BuildingVisual[]=[],height=townView.wallHeight;
  const put=(key:string,x:number,y:number,w:number,h:number,footY:number,meta:Partial<BuildingVisual>={})=>result.push({...mapObject(key,x*48,y*48,w*48,h*48),footY:footY*48,...meta});
  for(const object of objects){
   if(buildings.length&&(/^(depot|village)-wall-/.test(object.key)||object.key==='town-window'))continue;
+  const pieces=modularFurniture(object);if(pieces){result.push(...pieces);continue;}
   const copy:BuildingVisual={...object};
   if(copy.key.startsWith('furn-')){
    // All directional canvases use equal X/Y scale; footprints never shear artwork.

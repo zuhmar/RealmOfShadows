@@ -74,3 +74,5 @@ export * from './resource-varieties';
 export * from './fishing';
 
 export * from './town-services';
+
+export * from './map-furniture';

@@ -74,7 +74,8 @@
     "art:professions": "python3 scripts/extract-profession-icons.py",
     "test:professions:browser": "node tests/browser-professions.cjs",
     "test:professions:integration": "tsx tests/professions.integration.ts",
-    "test:resource-varieties:browser": "node tests/browser-resource-varieties.cjs"
+    "test:resource-varieties:browser": "node tests/browser-resource-varieties.cjs",
+    "art:map-furniture": "node scripts/build-map-furniture.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",
