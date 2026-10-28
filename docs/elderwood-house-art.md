@@ -1,5 +1,8 @@
 # Elderwood houses and directional furniture
 
+The current camera and source atlases are documented in
+[the elevated-view notes](elderwood-elevated-view.md).
+
 All five ground buildings, plus the Depot loft and Hall library, now render as
 full-height houses. The original floor plans, perimeter collision edges and door
 rules remain authoritative. `buildingVisuals()` projects full wall faces, four
@@ -38,8 +41,8 @@ to rotate town furnishings. Inventory/equipment icons and characters are unchang
 - `assets/world/architecture/layout.json`: recorded source rectangles.
 
 Run `python3 scripts/extract-house-art.py` to reproduce 68 directional frames,
-five roof sprites and eight full-height wall pieces. Structural wall canvases
-are 32×64; roofs are 320×256. Original masters are preserved, and no character or
+five roof sprites and ten elevated wall pieces. Structural wall canvases
+are 32×64 or 64×64; roofs are 320×256. Original masters are preserved, and no character or
 monster references are changed. The editor's Roofs checkbox exposes interiors
 without changing the exported collision grid.
 

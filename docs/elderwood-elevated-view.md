@@ -1,0 +1,43 @@
+# Elderwood elevated square-grid view
+
+Elderwood now uses a fixed elevated view: broad visible top surfaces, shorter
+front/side faces, square floor axes and four directional views drawn from the
+same camera. This replaces the more frontal furniture and house treatment;
+characters retain their approved artwork.
+
+`townView` in `building-visuals.ts` is shared by the game, editor and full-map
+export. Wall height is projected to 1.25 world cells. Two-cell horizontal panels
+preserve their painted top/face angle; one-cell ends use matching half panels.
+Corner joins retain literal orthogonal L-shaped tops. Windows, signs, doors and
+roof eaves use the same wall projection. Structural collision remains on the
+original grid boundaries.
+
+Furniture canvases render at equal X and Y scale, centered on the original
+footprint and anchored to its original base. A narrow collision rectangle no
+longer stretches the image into a tall side elevation. Four views retain their
+common native size and baseline. Roof cutaways, front-wall fading, doors, Depot
+storage and both upper-floor connections retain their existing behavior.
+
+## Artwork
+
+The new source atlases are preserved in:
+
+- `assets/world/furniture/elevated-masters/`: forge, benches/counters/tables,
+  shelving, beds, racks, chests, chairs, barrels, well, planter and ascending stairs.
+- `assets/world/architecture/elevated-masters/`: roofs and wall tops/faces.
+
+Descending stairs retain the already elevated four-view source. Older masters
+remain available as source history. `python3 scripts/extract-house-art.py`
+reproduces the runtime frames; the extraction tool needs Pillow, NumPy and SciPy.
+Node production builds use committed PNGs and do not run this script.
+
+Elevated silhouettes can protrude into the next row of an atlas. Extraction
+assigns connected alpha components to their parent sprite and preserves their
+edge fringes, rather than relying on rectangular cells that can pick up a
+neighbor's corners. Source pixels and original masters are retained. All
+furniture canvases remain 96×96; wall panels span multiples of the 32px grid.
+
+Validation covers unchanged collision, open door gaps, uniform sprite scale and
+floor anchors, frame dimensions, preview/editor loading, roof hide/restore,
+real entry/exit and Depot/upper-floor interactions on desktop/mobile in guest
+and multiplayer, plus authoritative multiplayer door checks.

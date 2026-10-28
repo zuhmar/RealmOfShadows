@@ -16,9 +16,42 @@ def cuts(values,count):
   if not runs:raise ValueError(f'No transparent gutter at {target}')
   a,b=min(runs,key=lambda r:abs((r[0]+r[1])/2-target));result.append((a+b)//2)
  return result+[n]
+def components_matrix(path,rows,cols):
+ import numpy as np
+ from scipy import ndimage
+ im=Image.open(path).convert('RGBA');mask=np.asarray(im.getchannel('A'))>32
+ labels,count=ndimage.label(mask,structure=np.ones((3,3)));areas=np.bincount(labels.ravel());parts=[];dominant={}
+ for label,bounds in enumerate(ndimage.find_objects(labels),1):
+  if bounds is None or areas[label]<8:continue
+  sy,sx=bounds;box=(sx.start,sy.start,sx.stop,sy.stop);cx=(box[0]+box[2])/2;cy=(box[1]+box[3])/2
+  cell=(min(rows-1,int(cy/im.height*rows)),min(cols-1,int(cx/im.width*cols)));part=(int(areas[label]),box,label);parts.append(part)
+  if cell not in dominant or part[0]>dominant[cell][0]:dominant[cell]=part
+ if len(dominant)!=rows*cols:raise ValueError(f'Expected {rows*cols} complete objects in {path}, found {len(dominant)}')
+ boxes={cell:list(part[1]) for cell,part in dominant.items()};main_labels={p[2] for p in dominant.values()};owners={part[2]:cell for cell,part in dominant.items()}
+ def distance(a,b):return max(a[0]-b[2],b[0]-a[2],0)**2+max(a[1]-b[3],b[1]-a[3],0)**2
+ for area,box,label in parts:
+  if label in main_labels:continue
+  cell=min(dominant,key=lambda c:(distance(box,dominant[c][1]),abs((box[0]+box[2])-(dominant[c][1][0]+dominant[c][1][2]))+abs((box[1]+box[3])-(dominant[c][1][1]+dominant[c][1][3]))))
+  owners[label]=cell
+  b=boxes[cell];b[0]=min(b[0],box[0]);b[1]=min(b[1],box[1]);b[2]=max(b[2],box[2]);b[3]=max(b[3],box[3])
+ # Keep only pixels belonging to this sprite. Rectangular crops alone can catch
+ # a neighboring sprite's protruding cap, even when the two shapes never touch.
+ lookup=np.zeros(count+1,dtype=np.int16)
+ for label,(row,col) in owners.items():lookup[label]=row*cols+col+1
+ ownership=lookup[labels];distance_to_core,nearest=ndimage.distance_transform_edt(labels==0,return_indices=True)
+ fringe=(labels==0)&(distance_to_core<=2);ownership[fringe]=lookup[labels[tuple(nearest[:,fringe])]]
+ rgba=np.asarray(im)
+ out=[]
+ for row in range(rows):
+  frames=[]
+  for col in range(cols):
+   box=boxes[row,col];layout[f'elevated-{path.stem}:{row}:{col}']=box;x0,y0,x1,y1=box;pixels=rgba[y0:y1,x0:x1].copy();pixels[:,:,3][ownership[y0:y1,x0:x1]!=(row*cols+col+1)]=0;frames.append(Image.fromarray(pixels))
+  out.append(frames)
+ return out
 def matrix(path,rows,cols):
+ if 'elevated-masters' in path.parts:return components_matrix(path,rows,cols)
  im=Image.open(path).convert('RGBA')
- if path.stem=='d':
+ if path.stem=='d' and 'elevated-masters' not in path.parts:
   # Side-on tool boards extend lower than front boards; measure each column separately.
   xs=[0,440,730,1030,1448];ys_by_col=[[0,270,515,764,1086],[0,270,510,780,1086],[0,270,510,780,1086],[0,270,515,766,1086]];out=[[] for _ in range(4)]
   for col in range(4):
@@ -41,21 +74,25 @@ def save(piece,key,size,scale=None):
  canvas=Image.new('RGBA',size);canvas.alpha_composite(piece,((size[0]-piece.width)//2,size[1]-4-piece.height));canvas.save(dest/f'{key}.png')
 rows={'a':['forge','workbench','counter','meeting'],'b':['bookshelf','bed','table','armor'],'c':['chest','chair','barrel','well'],'d':['bench','planter','tools','stairsup']}
 for sheet,names in rows.items():
- frames=matrix(root/f'assets/world/furniture/masters/{sheet}.png',4,4)
+ frames=matrix(root/f'assets/world/furniture/elevated-masters/{sheet}.png',4,4)
  for name,views in zip(names,frames):
   factor=min(88/max(p.width for p in views),88/max(p.height for p in views))
   for direction,piece in zip(['down','left','right','up'],views):save(piece,f'furn-{name}-{direction}',(96,96),factor)
 views=matrix(root/'assets/world/furniture/masters/stairsdown.png',1,4)[0]
 factor=min(88/max(p.width for p in views),88/max(p.height for p in views))
 for direction,piece in zip(['down','left','right','up'],views):save(piece,f'furn-stairsdown-{direction}',(96,96),factor)
-roofs=matrix(root/'assets/world/architecture/masters/roofs.png',2,3)
+roofs=matrix(root/'assets/world/architecture/elevated-masters/roofs.png',2,3)
 for name,piece in zip(['depot','smithy','workshop','bank','hall'],[p for row in roofs for p in row]):
  # Roof planes cover the exact authored footprint; preserve their transparent eaves.
  canvas=Image.new('RGBA',(320,256));canvas.alpha_composite(piece.resize((316,252),Image.Resampling.LANCZOS),(2,2));canvas.save(dest/f'house-roof-{name}.png')
-frames=matrix(root/'assets/world/architecture/masters/walls.png',2,4)
+frames=matrix(root/'assets/world/architecture/elevated-masters/walls.png',2,4)
 for row,names in enumerate([['n','e','s','w'],['nw','ne','sw','se']]):
  for name,piece in zip(names,frames[row]):
-  canvas=Image.new('RGBA',(32,64));width=8 if name in ['e','w'] else 32;x=24 if name=='e' else 0
+  size=(64,64) if name in ['n','s'] else (32,64)
+  canvas=Image.new('RGBA',size);width=12 if name in ['e','w'] else size[0];x=20 if name=='e' else 0
   canvas.alpha_composite(piece.resize((width,64),Image.Resampling.LANCZOS),(x,0));canvas.save(dest/f'house-wall-{name}.png')
+  if name in ['n','s']:
+   # One-cell ends use half of the same two-cell panel, without changing its pitch.
+   half=canvas.crop((0,0,32,64));half.save(dest/f'house-wall-{name}-half.png')
 (root/'assets/world/architecture/layout.json').write_text(json.dumps(layout,indent=2)+'\n')
-print('Extracted 68 directional furniture/prop sprites, five roofs and eight full-height wall pieces')
+print('Extracted 68 directional furniture/prop sprites, five roofs and ten elevated wall pieces')
