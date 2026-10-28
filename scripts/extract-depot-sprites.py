@@ -25,3 +25,8 @@ for row,names in enumerate([['nw','ne','sw','se'],['n','e','s','w']]):
   out.alpha_composite(part.resize(size,Image.Resampling.LANCZOS),(x,y))
   out.save(root/'assets/world/objects'/f'depot-wall-{name}.png')
 print('Extracted four directional L corners and four edge-aligned wall strips')
+
+# Village rooms share the proven four-corner kit; keep Depot texture IDs stable.
+import shutil
+for direction in ['n','e','s','w','nw','ne','sw','se']:
+ shutil.copyfile(root/'assets/world/objects'/f'depot-wall-{direction}.png',root/'assets/world/objects'/f'village-wall-{direction}.png')

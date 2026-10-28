@@ -1,3 +1,4 @@
+export * from './village-buildings';
 export * from './cosmetics';
 export * from './depot';
 import {gridBlocked} from './grid-world';
@@ -17,10 +18,10 @@ export {elderwoodGround,elderwoodBlocked,elderwoodFootprintBlocked,elderwoodPosi
 export const WORLD = { tile:64, width:32, height:24, speed:4, sprint:1.5, capacity:32, spawn:{x:16.5,y:14.5} };
 export const landmarks=[
  {name:'Depot',x:5,y:2,w:9,h:7,color:0x8b9b79,description:'Walk inside and click a box to use your personal storage.'},
- {name:'Willow & Anvil',x:22,y:3,w:6,h:5,color:0x8b9b79,description:'The village blacksmith. Interiors are not open yet.'},
- {name:'The Makers’ Workshop',x:3,y:12,w:6,h:4,color:0x8b9b79,description:'A village landmark. Interiors are not open yet.'},
- {name:'The Copperleaf Bank',x:23,y:12,w:6,h:4,color:0x8b9b79,description:'A village landmark. Interiors are not open yet.'},
- {name:'Adventurers’ Hall',x:20,y:18,w:6,h:4,color:0x8b9b79,description:'A village landmark. Interiors are not open yet.'},
+ {name:'Willow & Anvil',x:22,y:3,w:6,h:5,color:0x8b9b79,description:'Walk inside the village smithy.'},
+ {name:'The Makers’ Workshop',x:3,y:12,w:6,h:4,color:0x8b9b79,description:'Walk inside this village building.'},
+ {name:'The Copperleaf Bank',x:23,y:12,w:6,h:4,color:0x8b9b79,description:'Walk inside this village building.'},
+ {name:'Adventurers’ Hall',x:20,y:18,w:6,h:4,color:0x8b9b79,description:'Walk inside this village building.'},
 ];
 export const regionSize=(region:RegionId)=>isLowerFloor(region)?{width:48,height:36}:region==='woods'?{width:68,height:48}:region==='caverns'?{width:64,height:48}:WORLD;
 export function blocked(x:number,y:number,region:RegionId='elderwood'):boolean{return gridBlocked(region,x,y);}

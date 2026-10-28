@@ -1,3 +1,4 @@
+import {villageBuildings} from './village-buildings';
 import {woodsGridEncounters} from './woods-grid-spawns';
 import {depotBoxes} from './depot';
 import overrides from './grid-overrides.json';
@@ -24,18 +25,24 @@ export function gridMap(region:string):GridMap{
   // Short routes lead to each service; the central square remains unobstructed.
   path([[17,9],[24,9],[25,8]],2);path([[10,10],[9,10],[9,9]],2);
   path([[8,17],[12,17],[12,14],[14,14]]);path([[19,16],[22,16],[25,17]]);
-  // A roofless Depot is part of the same village grid, with a three-cell entrance.
-  rect(5,2,9,7,4);
-  for(let y=2;y<=8;y++)for(let x=5;x<=13;x++)prop('depot-floor',x,y,1,1);
-  for(let x=6;x<=12;x++){prop('depot-wall-n',x,2,1,1);if(x<8||x>10)prop('depot-wall-s',x,8,1,1);}
-  for(let y=3;y<=7;y++){prop('depot-wall-w',5,y,1,1);prop('depot-wall-e',13,y,1,1);}
-  for(const [key,x,y]of [['nw',5,2],['ne',13,2],['sw',5,8],['se',13,8]] as const)prop(`depot-wall-${key}`,x,y,1,1);
-  // Walls occupy boundaries, leaving the floor cell beside each wall usable.
-  for(let y=2;y<=8;y++){edges.add(`v:5,${y}`);edges.add(`v:14,${y}`);}
-  for(let x=5;x<=13;x++){edges.add(`h:${x},2`);if(x<8||x>10)edges.add(`h:${x},9`);}
+  // Every village building is assembled from the same edge-aligned tile kit.
+  for(const building of villageBuildings){
+   const {x,y,width:w,height:h,door,doorWidth}=building,prefix=building.id==='depot'?'depot':'village';
+   const doorway=(column:number)=>column>=x+door&&column<x+door+doorWidth;
+   rect(x,y,w,h,4);
+   for(let row=y;row<y+h;row++)for(let column=x;column<x+w;column++)prop('depot-floor',column,row,1,1);
+   for(let column=x+1;column<x+w-1;column++){prop(`${prefix}-wall-n`,column,y,1,1);if(!doorway(column))prop(`${prefix}-wall-s`,column,y+h-1,1,1);}
+   for(let row=y+1;row<y+h-1;row++){prop(`${prefix}-wall-w`,x,row,1,1);prop(`${prefix}-wall-e`,x+w-1,row,1,1);}
+   for(const [corner,cx,cy]of [['nw',x,y],['ne',x+w-1,y],['sw',x,y+h-1],['se',x+w-1,y+h-1]] as const)prop(`${prefix}-wall-${corner}`,cx,cy,1,1);
+   for(let row=y;row<y+h;row++){edges.add(`v:${x},${row}`);edges.add(`v:${x+w},${row}`);}
+   for(let column=x;column<x+w;column++){edges.add(`h:${column},${y}`);if(!doorway(column))edges.add(`h:${column},${y+h}`);}
+   if(building.id!=='depot')prop(`village-sign-${building.id}`,x+1,y-1,w-2,.8);
+  }
   for(const box of depotBoxes)prop('depot-box',box.x-.5,box.y-.5,1,1,1,1);
   prop('depot-sign',8,1,3,1.25);
-  prop('elderwood-blacksmith',22,3,6,5,6,4);prop('elderwood-workshop',3,12,6,4,6,3);prop('elderwood-bank',23,12,6,4,6,3);prop('elderwood-hall',20,18,6,4,6,3);
+  prop('village-forge',23,4,2,2,2,1);prop('elderwood-barrel',26,4,1,1,1,1);
+  prop('village-workbench',4,12,2,2,2,1);prop('elderwood-barrel',7,13,1,1,1,1);
+  prop('village-counter',24,12,3,2,3,1);prop('village-table',21,18,3,2,3,1);
   rect(13,11,7,6,2);prop('elderwood-portal',15,10.5,3,3);
   for(const [x,y]of [[2,2],[2,5],[28,1],[28,7]])prop('elderwood-oak',x,y,2,3,1,1);
   for(const [x,y]of [[2,7],[29,11],[1,15],[29,18]])prop('elderwood-oak',x,y,2,3,1,1);
