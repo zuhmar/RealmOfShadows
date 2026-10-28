@@ -46,3 +46,16 @@ Validation covers unchanged collision, open door gaps, uniform sprite scale and
 floor anchors, frame dimensions, preview/editor loading, roof hide/restore,
 real entry/exit and Depot/upper-floor interactions on desktop/mobile in guest
 and multiplayer, plus authoritative multiplayer door checks.
+
+## Integrated openings and fitted eaves
+
+Window variants now contain their own frames, sills and glass; legacy window
+markers are filtered from the rendered shell. Door leaves and frames are built
+at the exact native width of each two-/three-cell opening, sharing the wall cap
+and jamb materials. Runtime switching retains the same bounds and lower hit area.
+The game, editor and preview exporter all select the matching door-width variant.
+
+Roofs use a shared 90%-height eave anchor rather than their transparent canvas
+bottom. Their solid lower edge overlaps the uppermost wall cap across the whole
+facade, while the projected gable can extend below the eave. Roof cutaways and
+the Depot/Hall upper-floor shell cutaways retain their existing behavior.

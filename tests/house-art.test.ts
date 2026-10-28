@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync,readFileSync} from 'node:fs';
-import {buildingVisuals,gridMap,insideBuilding,villageBuildings,townView} from '@realm/game-data';
+import {buildingVisuals,gridMap,insideBuilding,villageBuildings,townView,townDoorTexture} from '@realm/game-data';
 test('full house shells add roofs and upright walls without replacing collision footprints',()=>{
  const grid=gridMap('elderwood'),before=[...grid.blocked],edges=[...grid.edges],objects=buildingVisuals('elderwood',grid.objects);
  assert.equal(objects.filter(o=>o.roofFor).length,5);assert.ok(!objects.some(o=>/^(depot|village)-wall-/.test(o.key)));
@@ -46,4 +46,18 @@ test('wall caps meet flush and upper-story shells support the Depot and Hall roo
  const upstairs=buildingVisuals('elderwood-upper',gridMap('elderwood-upper').objects);
  assert.equal(upstairs.some(v=>v.upperFor),false,'upstairs shows its own walls instead of a duplicate ground-floor shell');
  assert.equal(upstairs.filter(v=>v.roofFor).length,2);
+});
+
+test('windows belong to wall panels and fitted doors retain the exact grid opening',()=>{
+ for(const region of ['elderwood','elderwood-upper']){
+  const objects=buildingVisuals(region,gridMap(region).objects);
+  assert.equal(objects.some(o=>o.key==='town-window'),false);
+  for(const b of region==='elderwood'?villageBuildings:villageBuildings.filter(b=>b.id==='depot'||b.id==='hall')){
+   for(const side of ['n','s'])assert.ok(objects.some(o=>o.wallFor===b.id&&o.wallSide===side&&o.key.endsWith('-window')),b.id+' integrated windows');
+  }
+ }
+ for(const width of [2,3])for(const open of [true,false]){
+  const png=readFileSync(new URL(`../assets/world/objects/${townDoorTexture(width,open)}.png`,import.meta.url));
+  assert.equal(png.readUInt32BE(16),width*64);assert.equal(png.readUInt32BE(20),townView.wallHeight*64);
+ }
 });

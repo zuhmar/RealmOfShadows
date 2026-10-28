@@ -89,4 +89,4 @@ for name,piece in zip(['depot','smithy','workshop','bank','hall'],[p for row in 
 import subprocess
 subprocess.run(['node',str(root/'scripts/build-town-walls.cjs')],check=True)
 (root/'assets/world/architecture/layout.json').write_text(json.dumps(layout,indent=2)+'\n')
-print('Extracted 68 directional furniture/prop sprites, five roofs and ten elevated wall pieces')
+print('Extracted 68 directional furniture/prop sprites, five roofs and the fitted wall/window/door kit')

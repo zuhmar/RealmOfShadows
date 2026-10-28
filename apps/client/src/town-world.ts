@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
-import {townView,villageDoors} from '@realm/game-data';
+import {townDoorVisual,townDoorTexture,villageDoors} from '@realm/game-data';
 export function drawTownDoors(scene:Phaser.Scene,region:string,states:ReadonlyMap<string,boolean>,click:(id:string)=>void){
  for(const door of villageDoors(region)){
-  const image=scene.add.image((door.x-door.width/2)*64,(door.y+.5-townView.wallHeight)*64,states.get(door.id)===false?'town-door-closed':'town-door-open').setOrigin(0).setDisplaySize(door.width*64,townView.wallHeight*64).setDepth((door.y+.5)*64+2).setInteractive({useHandCursor:true,hitArea:new Phaser.Geom.Rectangle(0,40,96,56),hitAreaCallback:Phaser.Geom.Rectangle.Contains}).setData('townDoor',door.id);
+  const visual=townDoorVisual(door,states.get(door.id)!==false),scale=64/48;
+  const image=scene.add.image(visual.x*scale,visual.y*scale,visual.key).setOrigin(0).setDisplaySize(visual.w*scale,visual.h*scale).setDepth(visual.footY*scale).setInteractive({useHandCursor:true,hitArea:new Phaser.Geom.Rectangle(0,30,door.width*64,50),hitAreaCallback:Phaser.Geom.Rectangle.Contains}).setData('townDoor',door.id).setData('townDoorWidth',door.width);
   image.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===scene.game.canvas&&!p.rightButtonDown())click(door.id)});
  }
 }
-export function updateTownDoors(objects:Phaser.GameObjects.GameObject[],states:ReadonlyMap<string,boolean>){for(const object of objects){const id=object.getData('townDoor');if(id){const image=object as Phaser.GameObjects.Image,key=states.get(id)===false?'town-door-closed':'town-door-open';if(image.texture.key!==key)image.setTexture(key);}}}
+export function updateTownDoors(objects:Phaser.GameObjects.GameObject[],states:ReadonlyMap<string,boolean>){for(const object of objects){const id=object.getData('townDoor');if(id){const image=object as Phaser.GameObjects.Image,key=townDoorTexture(object.getData('townDoorWidth'),states.get(id)!==false);if(image.texture.key!==key)image.setTexture(key);}}}
