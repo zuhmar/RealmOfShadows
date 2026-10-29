@@ -79,7 +79,8 @@
     "art:prop-catalog": "tsx scripts/catalog-map-props.ts && npm run art:square-props",
     "art:square-props": "python3 scripts/square-map-props.py",
     "test:elevation:integration": "tsx tests/elevation.integration.ts",
-    "test:elevation:browser": "tsx tests/browser-elevation.cjs"
+    "test:elevation:browser": "tsx tests/browser-elevation.cjs",
+    "test:woods-cliffs:browser": "node tests/browser-woods-cliffs.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

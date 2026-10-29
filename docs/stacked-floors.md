@@ -47,3 +47,19 @@ an actual second player visible upstairs from below.
 
 Deploy Render and Vercel together. No database migration or new environment
 variables are needed; progress uses the existing save format.
+
+## Woods cliff scenery
+
+`woods-cliffs.ts` defines five solid scenic outcrops at (28,2), (2,25),
+(20,28), (44,15), and (39,39). Their square footprints use blocked terrain in
+both client and server. They reuse the lookout's continuous stone/moss painter
+without stairs or upper-floor actors. The existing one-cell map boundary uses
+joined rock strata and inward-facing moss instead of root-wall terrain. The
+boundary collision and map dimensions are unchanged. Preview/editor terrain and
+the upper-floor ground backdrop include the same scenery; game outcrops also
+have depth-sorted overlays so forest actors pass behind them correctly.
+
+The route regression covers all surface monster spawns, resource nodes and
+stairs after placing cliffs. `npm run test:woods-cliffs:browser` checks desktop
+and mobile rendering at northern, western and southern outcrops. Deploy both
+Render and Vercel for the new solid outcrop footprints.

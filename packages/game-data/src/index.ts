@@ -79,3 +79,5 @@ export * from './fishing';
 export * from './town-services';
 
 export * from './map-furniture';
+
+export {woodsCliffs} from './woods-cliffs';

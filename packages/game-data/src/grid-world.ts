@@ -1,3 +1,4 @@
+import {woodsCliffs} from './woods-cliffs';
 import {woodsLedge} from './elevation';
 import {craftingStations} from './town-services';
 import {villageBuildings,buildingsFor,isVillageUpper} from './village-buildings';
@@ -116,6 +117,7 @@ export function gridMap(region:string):GridMap{
   prop('woods-portal',33,22.5,3,3);prop('caverns-stairs-down',33,11,3,2);
   path([[35,10],[40,10],[45,8]]);
   rect(woodsLedge.x,woodsLedge.y,woodsLedge.width,woodsLedge.height+woodsLedge.faceHeight,5);
+  for(const cliff of woodsCliffs)rect(cliff.x,cliff.y,cliff.size,cliff.size,5);
   const originalTrail=new Set<string>();for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if([1,2,4].includes(cells[y][x]))originalTrail.add(`${x},${y}`);
   const protectedSpawns=new Set(gridSpawns('woods').map(p=>`${Math.floor(p.x)},${Math.floor(p.y)}`));
   const seed=dressingSeed;
