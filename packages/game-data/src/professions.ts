@@ -18,7 +18,7 @@ export const professionMaterials={...resourceVarietyMaterials,
 } as const;
 export type ProfessionMaterial=keyof typeof professionMaterials;
 export interface ResourceNode{water?:true;id:string;region:RegionId;x:number;y:number;skill:'mining'|'fishing'|'herbalism'|'woodcutting';item:ProfessionMaterial;level:number;name:string;xp:number}
-// Every ore, tree and plant variety appears on every playable map. Island
+// Every ore, tree and plant variety appears on gathering maps. Elderwood is fishing-only. Island
 // themes describe resource origins, not geography restrictions on gathering.
 const resourceKinds:Omit<ResourceNode,'id'|'region'|'x'|'y'>[]=[
  ...metalTiers.map((tier,i)=>({skill:'mining' as const,item:`${tier}Ore` as ProfessionMaterial,level:i*10+1,name:`${tier[0].toUpperCase()+tier.slice(1)} vein`,xp:25+i*5})),
@@ -29,7 +29,7 @@ export function localResourceKinds(region:string){
  const island=region==='woods-depths'?'woods':region==='caverns-depths'?'caverns':region,set=islandResourceSets[island as keyof typeof islandResourceSets]??islandResourceSets.elderwood;
  return [resourceKinds.filter(k=>k.skill==='mining'&&k.level<=set.level).at(-1)!,resourceKinds.find(k=>k.item===set.tree.item)!,resourceKinds.find(k=>k.item===set.plant.item)!];
 }
-export const resourceNodes:ResourceNode[]=resourceRegions.flatMap(region=>{
+export const resourceNodes:ResourceNode[]=resourceRegions.filter(region=>region!=='elderwood').flatMap(region=>{
  const local=localResourceKinds(region),kinds=[...resourceKinds,...Array.from({length:5},()=>local).flat()];
  return resourcePositions(region,kinds.length).map((p,i)=>{
  const kind=kinds[i],index=i<6?i+1:i<14?i-5:i-13,id=i>=22?`${region}-local-${kind.skill}-${Math.floor((i-22)/3)+1}`:i<6?`${region}-ore-${index}`:i<14?`${region}-wood${index===1?'':`-${index}`}`:`${region}-herb${index===1?'':`-${index}`}`;

@@ -11,17 +11,18 @@ All characters can train all eight skills independently, from level 1 to 100:
 
 ## Resources on every map
 
-Every current map, including Elderwood and both lower floors, contains all six
-ore tiers, all eight tree varieties and all eight plants. Each map has 37 land
+Every current gathering map, including both lower floors, contains all six
+ore tiers, all eight tree varieties and all eight plants. Elderwood is fishing-only:
+no mining, woodcutting or herbalism nodes spawn there. Each gathering map has 37 land
 resource nodes: six copies of its local ore, tree and plant type, and one copy of
 every other variety. Local-level resources therefore outnumber the rarer higher
 tiers without removing them. Lower floors use their parent island’s local types. Island names describe a variety's origin; they do not restrict where that
-variety can spawn. A level-1 character with Mining 51 can mine a Shadow vein in
+variety can spawn. A level-1 character with Mining 51 can mine a Shadow vein outside
 Elderwood. Only the appropriate profession level, proximity, sight, alive state,
 combat state, gathering cooldown and bag space are required.
 
-Positions are deterministic and spread across reachable land. The denser village
-keeps at least two tiles between centers; other maps keep at least three. They avoid water, cliffs, map-prop artwork, Depot interiors, arrivals,
+Positions are deterministic and spread across reachable land, keeping at least
+three tiles between centers. They avoid water, cliffs, map-prop artwork, Depot interiors, arrivals,
 portal/stair entrances and NPC/workbench interaction space. They do not alter
 terrain or grid collision. Click a resource to approach and gather. Tree sprites
 become stumps when chopped; ore and plant nodes fade. Nearby/hovered labels show
