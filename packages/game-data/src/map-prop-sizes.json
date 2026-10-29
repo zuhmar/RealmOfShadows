@@ -107,6 +107,14 @@
     32,
     32
   ],
+  "elderwood-fence-h": [
+    240,
+    50
+  ],
+  "elderwood-fence-v": [
+    44,
+    200
+  ],
   "elderwood-lamp": [
     48,
     156
@@ -123,6 +131,10 @@
     96,
     96
   ],
+  "furn-barrel-down": [
+    96,
+    96
+  ],
   "furn-barrel-up": [
     96,
     96
@@ -132,6 +144,10 @@
     96
   ],
   "furn-bench-down": [
+    96,
+    96
+  ],
+  "furn-bench-up": [
     96,
     96
   ],
@@ -148,6 +164,14 @@
     96
   ],
   "furn-chest-down": [
+    96,
+    96
+  ],
+  "furn-chest-left": [
+    96,
+    96
+  ],
+  "furn-chest-up": [
     96,
     96
   ],

@@ -17,6 +17,7 @@ export function gridMap(region:string):GridMap{
  const cells=Array.from({length:height},()=>Array<number>(width).fill(cave||lower||isVillageUpper(region)?5:0)),objects:IslandObject[]=[],blocked=new Set<string>(),edges=new Set<string>();
  const rect=(x:number,y:number,w:number,h:number,material:number)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(j>=0&&i>=0&&j<height&&i<width)cells[j][i]=material;};
  const path=(points:readonly (readonly [number,number])[],material=1)=>{for(let i=1;i<points.length;i++){let [x,y]=points[i-1];const [tx,ty]=points[i];rect(x-1,y-1,3,3,material);while(x!==tx||y!==ty){x+=Math.sign(tx-x);y+=Math.sign(ty-y);rect(x-1,y-1,3,3,material);}}};
+ const dressingSeed=(x:number,y:number)=>{let n=(Math.imul(x,73856093)^Math.imul(y,19349663))>>>0;n=Math.imul(n^(n>>>16),0x7feb352d);return(n^(n>>>15))>>>0;};
  const prop=(key:string,x:number,y:number,w:number,h:number,solidW=0,solidH=0,solidOffsetX=0)=>{
   if(village){
    const names:Record<string,string>={'depot-box':'chest-down','village-forge':'forge-down','village-workbench':'workbench-down','village-counter':'counter-down','village-table':'meeting-down','town-bookshelf':x===27?'bookshelf-left':'bookshelf-down','town-bed':'bed-down','town-table':'table-left','town-armor':'armor-left','town-tools':'tools-down','town-chair':'chair-right','town-well':'well-down','elderwood-bench':'bench-down','elderwood-planter':'planter-down','elderwood-barrel':x===26?'barrel-up':'barrel-down','town-stairs-up':'stairsup-down','town-stairs-down':'stairsdown-down'};
@@ -26,13 +27,21 @@ export function gridMap(region:string):GridMap{
   if(solidW&&solidH){object.footprint={x:x+solidOffsetX,y:y+h-solidH,width:solidW,height:solidH};if(village)object.footY=(object.footprint.y+solidH-.5)*48;}
   objects.push(object);for(let dy=0;dy<solidH;dy++)for(let dx=0;dx<solidW;dx++)blocked.add(`${x+solidOffsetX+dx},${y+h-solidH+dy}`);};
  if(village){
-  if(!isVillageUpper(region)){rect(1,1,30,22,0);rect(1,19,30,4,3);rect(14,2,5,17,2);rect(3,9,26,3,1);rect(3,15,26,3,1);rect(14,19,5,4,4);rect(19,17,10,6,0);path([[27,16],[27,22],[23,22]]);
-  // A sheltered southern pond, stepped banks and a continuous timber crossing.
+  if(!isVillageUpper(region)){
+  rect(1,1,30,22,0);
+  // A main street with service lanes, forecourts and deliberate garden gaps.
+  rect(15,1,3,18,2);rect(8,9,20,2,1);rect(13,8,6,3,2);
+  rect(18,8,8,2,2);rect(24,8,2,2,2);rect(8,8,3,3,2);
+  rect(18,16,9,2,1);rect(25,16,2,3,2);rect(27,16,1,7,1);
+  rect(17,22,11,1,1);rect(22,21,3,2,2);
+  // Pond banks and the central timber crossing keep their existing water cells.
+  rect(1,19,30,4,3);rect(19,17,10,6,0);rect(19,22,9,1,1);rect(27,17,1,6,1);
   rect(1,19,12,4,0);rect(2,20,11,3,3);rect(4,19,6,1,3);rect(1,21,1,2,3);rect(12,21,2,2,3);
   rect(14,19,5,4,3);rect(15,19,3,4,4);
-  // Short routes lead to each service; the central square remains unobstructed.
-  path([[17,9],[24,9],[25,8]],2);path([[10,10],[9,10],[9,9]],2);
-  path([[8,17],[12,17],[12,14],[14,14]]);path([[19,16],[22,16],[25,17]]);
+  rect(18,18,7,1,1);rect(18,19,1,4,1);rect(17,22,7,1,1);
+  rect(15,19,3,4,4); // Keep the timber crossing continuous to the south bank.
+  rect(19,3,2,3,1); // Walled flower beds, reached through the southern gate.
+  rect(28,9,3,3,1); // Smithy's delivery yard, off the front-door route.
   }
   // Every village building is assembled from the same edge-aligned tile kit.
   for(const building of buildingsFor(region)){
@@ -61,6 +70,16 @@ export function gridMap(region:string):GridMap{
   prop('elderwood-bench',19,14,2,1,2,1);prop('elderwood-planter',19,13,1,1,1,1);
   prop('woods-flowers',12,18,1,.6);prop('woods-flowers',20,10,1,.6);
   for(const x of [13,19])for(const y of [8,17])prop('elderwood-lamp',x,y,1,2,1,1);
+  // A fenced public garden, workshop supplies and a pond-side flower walk.
+  prop('elderwood-fence-h',18,2,4,1,4,1);
+  for(const x of [18,21])for(const y of [3,5])prop('elderwood-fence-v',x,y,1,2,1,2);
+  for(const x of [18,21])prop('elderwood-fence-h',x,7,1,1,1,1);
+  for(const [x,y]of [[19,3],[20,4],[19,5]])prop('woods-flowers',x,y,1,1);
+  prop('furn-bench-up',20,6,1,1,1,1);
+  prop('furn-chest-left',28,10,1,1,1,1);prop('furn-chest-up',29,10,1,1,1,1);prop('furn-barrel-down',30,10,1,1,1,1);
+  prop('caverns-old-crate',28,11,1,1,1,1);
+  for(const [x,y]of [[2,18],[4,18],[10,18],[11,19],[20,18],[26,18]])prop('woods-flowers',x,y,1,1);
+  prop('furn-planter-down',12,2,1,1,1,1);prop('furn-barrel-down',23,3,1,1,1,1);
   }else{
    prop('town-bookshelf',6,2,2,2,2,1);prop('town-bed',6,5,2,2,2,2);prop('town-table',9,3,2,2,2,1);
    prop('town-bookshelf',20,18,2,2,2,1);prop('town-bookshelf',22,18,2,2,2,1);
@@ -79,24 +98,37 @@ export function gridMap(region:string):GridMap{
   prop(isVillageUpper(region)?'town-stairs-down':'town-stairs-up',23.5,18.5,2,2);
  }else if(region==='woods'){
   for(const [x,y]of [[7,5],[51,5],[7,32],[51,32]])rect(x,y,11,9,0);
-  path([[10,8],[22,8],[27,10],[34,8],[43,8],[48,10],[57,8],[57,36],[34,36],[10,36],[10,8]]);path([[34,8],[34,40]]);path([[10,23],[22,23],[27,25],[34,24],[42,23],[57,23]]);
+  path([[10,8],[22,8],[27,10],[34,8],[43,8],[48,10],[57,8],[55,14],[57,18],[57,22],[59,28],[57,36],[48,38],[40,36],[34,36],[26,36],[20,38],[10,36],[8,32],[10,28],[10,25],[10,20],[12,14],[10,8]]);path([[34,8],[34,13],[32,18],[34,24],[34,30],[36,33],[34,40]]);path([[10,23],[22,23],[27,25],[34,24],[42,23],[57,23]]);
+  path([[26,36],[23,35]]);
   // Keep every approach encounter on the trail as its bends follow the forest.
   for(const area of Object.values(woodsGridEncounters))for(const [x,y]of area.approach)rect(x,y,1,1,1);
   // Quiet fishing pools off the main trail; banks never cut the encounter routes.
   rect(21,14,5,3,3);rect(22,13,3,1,3);rect(22,17,3,1,3);
   rect(43,27,4,3,3);rect(44,26,2,1,3);rect(44,30,2,1,3);
   path([[24,23],[24,20],[26,18]]);path([[40,23],[40,28],[41,31],[44,32]]);
-  rect(30,21,9,10,2);rect(1,20,8,3,3);rect(1,21,8,1,4);rect(60,20,7,3,3);rect(60,21,7,1,4);
+  rect(30,21,9,10,2);rect(1,20,8,3,3);rect(1,21,8,1,4);rect(60,20,7,3,3);rect(60,21,7,1,4);rect(58,21,2,1,1);
   // Enclosed boss grove with one clearly marked south entrance.
   rect(49,30,14,1,5);rect(49,30,1,12,5);rect(62,30,1,12,5);rect(49,41,6,1,5);rect(58,41,5,1,5);path([[56,41],[56,36]]);path([[34,36],[34,43],[56,43],[56,41]]);
   prop('woods-portal',33,22.5,3,3);prop('caverns-stairs-down',33,11,3,2);
-  for(let gy=2;gy<44;gy+=3)for(let gx=2;gx<64;gx+=3){
-   // Stable one-cell offsets break up planted rows without moving encounter clearings.
-   const hash=(Math.imul(gx,73856093)^Math.imul(gy,19349663))>>>0,x=gx+(hash%2),y=gy+((hash>>>3)%2);
+  const originalTrail=new Set<string>();for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if([1,2,4].includes(cells[y][x]))originalTrail.add(`${x},${y}`);
+  const protectedSpawns=new Set(gridSpawns('woods').map(p=>`${Math.floor(p.x)},${Math.floor(p.y)}`));
+  const seed=dressingSeed;
+  // Read an immutable copy so shoulder weathering never erodes a trail's center.
+  const unweathered=cells.map(row=>[...row]);
+  for(let y=2;y<height-2;y++)for(let x=2;x<width-2;x++)if(unweathered[y][x]===1&&!protectedSpawns.has(`${x},${y}`)&&seed(Math.floor(x/4),Math.floor(y/4))%4===0&&[[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dy])=>unweathered[y+dy][x+dx]===0).length>=1&&[[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dy])=>unweathered[y+dy][x+dx]===1).length>=2)cells[y][x]=0;
+  const treeSites:{x:number;y:number;seed:number}[]=[];
+  for(let y=2;y<44;y++)for(let x=2;x<64;x++){
    const inClearing=(x>=5&&x<=19&&(y<=15||y>=29))||(x>=49&&(y<=15||y>=27))||(x>=29&&x<=40&&y>=19&&y<=32);
-   const trunkY=y+2,nearRoad=[-1,0,1].some(dx=>[-1,0,1].some(dy=>[1,2,4].includes(cells[trunkY+dy]?.[x+dx])));
-   if(inClearing||nearRoad||cells[trunkY][x]!==0)continue;prop((x+y)%2?'woods-oak':'woods-pine',x,y,2,3,1,1);
+   const trunkY=y+2,nearRoad=[-1,0,1].some(dx=>[-1,0,1].some(dy=>originalTrail.has(`${x+dx},${trunkY+dy}`)));
+   if(inClearing||nearRoad||cells[trunkY][x]!==0)continue;treeSites.push({x,y,seed:seed(x,y)});
   }
+  const planted:{x:number;y:number}[]=[];
+  for(const site of treeSites.sort((a,b)=>a.seed-b.seed)){
+   if(planted.length>=140)break;if(planted.some(p=>Math.hypot(p.x-site.x,p.y-site.y)<2.4))continue;
+   planted.push(site);prop(site.seed%3?'woods-oak':'woods-pine',site.x,site.y,2,3,1,1);
+  }
+  // Understory follows trail margins without blocking combat or gathering approaches.
+  for(let y=3;y<44;y++)for(let x=3;x<64;x++)if(cells[y][x]===0&&seed(x,y)%29===0&&!blocked.has(`${x},${y}`)&&!gridSpawns('woods').some(p=>Math.hypot(p.x-x-.5,p.y-y-.5)<2)&&[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>originalTrail.has(`${x+dx},${y+dy}`)))prop(seed(x,y)%2?'woods-fern':'woods-mushrooms',x,y,1,1);
   prop('woods-den',7,3,3,2);
   for(const [key,x,y]of [['woods-log',20,15],['woods-stump',26,16],['woods-flowers',24,19],['woods-mushrooms',42,29],['woods-boulder',46,31],['woods-ruin',37,17],['woods-fern',28,18]] as const)prop(key,x,y,key==='woods-flowers'||key==='woods-mushrooms'||key==='woods-fern'?1:2, key==='woods-ruin'?2:1);
   for(const [x,y]of [[7,33],[15,34],[7,38]])prop('woods-web',x,y,2,2);
@@ -116,6 +148,12 @@ export function gridMap(region:string):GridMap{
   }
   const route:readonly (readonly[number,number])[]=lower?[[24,31],[24,24],[9,24],[9,8],[37,8],[37,23],[24,23]]:[[32,40],[32,31],[12,31],[12,11],[32,11],[32,31],[50,31],[50,10]];
   path(route,cave?2:1);if(lower)path([[24,31],[24,8]],cave?2:1);if(!lower)path([[32,11],[32,22],[50,22],[50,31]],2);
+  // Irregular chamber shoulders spare marked paths and monster spawn rings.
+  const spawnSites=gridSpawns(region as RegionId);
+  for(const [x,y,w,h]of rooms)for(let xx=x;xx<x+w;xx++)for(const yy of [y,y+h-1]){
+   const notch=dressingSeed(Math.floor(xx/3),yy)%3===0;
+   if(notch&&cells[yy][xx]===0&&spawnSites.every(p=>Math.hypot(p.x-xx-.5,p.y-yy-.5)>2))cells[yy][xx]=5;
+  }
   if(cave){
    if(lower){rect(18,3,8,3,0);path([[24,8],[24,5]],2);rect(19,3,3,2,3);}
    else{rect(22,5,7,6,0);path([[20,11],[25,11],[27,9]],2);rect(23,6,3,3,3);}
