@@ -16,6 +16,8 @@ export function modularFurniture(object:IslandObject):FurniturePiece[]|undefined
    return i===1?[base,{...mapObject(`counter-tools-${skill}-${station.npc.facing}`,(x+.0625)*48,(y-.28)*48,42,42),footY:(y+1)*48+.1,sourceKey:object.key}]:[base];
   });
  }
+ // Preserve the purpose-drawn side/back views rather than replacing them with front modules.
+ if(/^furn-.*-(left|right|up)$/.test(object.key))return;
  const family=/^furn-counter-/.test(object.key)?'counter':/^furn-(meeting|table)-/.test(object.key)?'table':/^furn-bench-/.test(object.key)?'bench':/^furn-bookshelf-/.test(object.key)?'shelf':undefined;
  if(!family)return;
  const width=Math.max(1,Math.round(object.w/48)),x=object.x/48,y=(object.y+object.h)/48-1;

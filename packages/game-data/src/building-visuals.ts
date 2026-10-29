@@ -1,3 +1,4 @@
+import nativeSizes from './map-prop-sizes.json';
 import {modularFurniture} from './map-furniture';
 import {buildingsFor,type villageBuildings,isBuildingFloor} from './village-buildings';
 import {mapObject,type IslandObject} from './island-layout';
@@ -17,9 +18,12 @@ export function buildingVisuals(region:string,objects:readonly IslandObject[],ro
   if(buildings.length&&(/^(depot|village)-wall-/.test(object.key)||object.key==='town-window'))continue;
   const pieces=modularFurniture(object);if(pieces){result.push(...pieces);continue;}
   const copy:BuildingVisual={...object};
-  if(copy.key.startsWith('furn-')){
-   // All directional canvases use equal X/Y scale; footprints never shear artwork.
-   const size=Math.min(object.w,object.h);copy.x=object.x+(object.w-size)/2;copy.y=object.y+object.h-size;copy.w=size;copy.h=size;
+  const native=(nativeSizes as Record<string,readonly number[]>)[object.key];
+  if(native&&!isBuildingFloor(object.key)){
+   // Keep authored PNG proportions; floor footprints and elevated canvases are independent.
+   const scale=Math.min(object.w/native[0],object.h/native[1]),w=native[0]*scale,h=native[1]*scale;
+   const center=object.footprint?(object.footprint.x+object.footprint.width/2)*48:object.x+object.w/2;
+   copy.x=center-w/2;copy.y=object.y+object.h-h;copy.w=w;copy.h=h;
   }
   if(object.key==='furn-tools-down')copy.y-=48;
   const sign=buildings.find(b=>object.key===(b.id==='depot'?'depot-sign':b.id==='workshop'?'crafting-hall-sign':`village-sign-${b.id}`));

@@ -1,5 +1,5 @@
 export type MapPolygon=readonly (readonly [number,number])[];
-export interface IslandObject{key:string;x:number;y:number;w:number;h:number;footY:number;collision:MapPolygon;name?:string;description?:string}
+export interface IslandObject{key:string;x:number;y:number;w:number;h:number;footY:number;collision:MapPolygon;/** Solid floor footprint in world grid cells, independent of elevated artwork. */footprint?:{x:number;y:number;width:number;height:number};name?:string;description?:string}
 export interface IslandGeometry{rivers:readonly MapPolygon[];cliffs:readonly MapPolygon[];bridges:readonly MapPolygon[]}
 export function mapObject(key:string,x:number,y:number,w:number,h:number,collision:MapPolygon=[],name?:string):IslandObject{
  return {key,x,y,w,h,footY:y+h*.96,collision:collision.map(([px,py])=>[x+px*w,y+py*h]),name};

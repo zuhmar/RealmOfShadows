@@ -15,3 +15,33 @@ Placement and collision data are unchanged by visual expansion. No save migratio
 Every new item sprite set must include front (`down`), left, right and back
 (`up`) views, with matching scale, palette and baseline. Profession tool sets
 provide all four; hall props select the view matching their NPC's facing.
+
+## Elderwood placement checks
+
+Physical props carry an explicit `footprint` rectangle in grid-cell coordinates,
+separate from their image canvas. Collision reserves each cell in this rectangle;
+Elderwood depth sorting uses its base row. Tree canopies retain uniform scale
+with a single centered trunk cell. The outdoor bench, planter and lamp bases
+snap to cells; the upper-room bed and table reserve their full physical width.
+Side/back furniture views keep their purpose-drawn directional images instead of
+being replaced with front-facing modules. Crafting counter L shapes remain
+explicit cell lists and do not use a rectangular collision shortcut.
+
+The map editor's **Collision preview (doors open)** overlays red blocked cells
+and gold wall edges. It combines the currently edited terrain with `propBlocked`,
+so painting grass over water clears terrain collision but cannot erase a solid
+prop. Doorways are shown open; runtime room door state still applies in game.
+This is a preview only and is never included in exported terrain files.
+
+Room checks verify every legal floor cell connects to its entrance, solid bases
+reject movement, and the crafting NPC enclosures remain unchanged. Deploy the
+client and server together when physical placements change. Existing saved
+positions use the server's normal free-landing recovery.
+
+Placed props also use `map-prop-sizes.json`, a catalog of native PNG dimensions
+shared by game, editor and preview export. `npm run art:prop-catalog` regenerates
+it after adding or replacing a placed texture. The renderer fits each image
+uniformly inside its authored canvas, anchors its bottom, and centers solid
+props over their physical footprint. It does not stretch tall lamps or narrow
+trees into square images. Floors, wall panels, roof parts and mounted signs
+retain their dedicated architectural placement rules.

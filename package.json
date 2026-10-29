@@ -75,7 +75,8 @@
     "test:professions:browser": "node tests/browser-professions.cjs",
     "test:professions:integration": "tsx tests/professions.integration.ts",
     "test:resource-varieties:browser": "node tests/browser-resource-varieties.cjs",
-    "art:map-furniture": "node scripts/build-map-furniture.cjs && node scripts/build-connected-counters.cjs && python3 scripts/extract-counter-tools.py"
+    "art:map-furniture": "node scripts/build-map-furniture.cjs && node scripts/build-connected-counters.cjs && python3 scripts/extract-counter-tools.py",
+    "art:prop-catalog": "tsx scripts/catalog-map-props.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

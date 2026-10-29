@@ -5,7 +5,7 @@ import {depotBoxes} from './depot';
 import overrides from './grid-overrides.json';
 import type {RegionId} from './index';
 import {mapObject,type IslandObject} from './island-layout';
-export interface GridMap{width:number;height:number;cells:number[][];objects:IslandObject[];blocked:Set<string>;edges:Set<string>}
+export interface GridMap{width:number;height:number;cells:number[][];objects:IslandObject[];blocked:Set<string>;propBlocked:Set<string>;edges:Set<string>}
 export const gridDirections=[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]] as const;
 const cache=new Map<string,GridMap>();
 export const gridCell=(p:{x:number;y:number})=>({x:Math.floor(p.x)+.5,y:Math.floor(p.y)+.5});
@@ -17,12 +17,14 @@ export function gridMap(region:string):GridMap{
  const cells=Array.from({length:height},()=>Array<number>(width).fill(cave||lower||isVillageUpper(region)?5:0)),objects:IslandObject[]=[],blocked=new Set<string>(),edges=new Set<string>();
  const rect=(x:number,y:number,w:number,h:number,material:number)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(j>=0&&i>=0&&j<height&&i<width)cells[j][i]=material;};
  const path=(points:readonly (readonly [number,number])[],material=1)=>{for(let i=1;i<points.length;i++){let [x,y]=points[i-1];const [tx,ty]=points[i];rect(x-1,y-1,3,3,material);while(x!==tx||y!==ty){x+=Math.sign(tx-x);y+=Math.sign(ty-y);rect(x-1,y-1,3,3,material);}}};
- const prop=(key:string,x:number,y:number,w:number,h:number,solidW=0,solidH=0)=>{
+ const prop=(key:string,x:number,y:number,w:number,h:number,solidW=0,solidH=0,solidOffsetX=0)=>{
   if(village){
    const names:Record<string,string>={'depot-box':'chest-down','village-forge':'forge-down','village-workbench':'workbench-down','village-counter':'counter-down','village-table':'meeting-down','town-bookshelf':x===27?'bookshelf-left':'bookshelf-down','town-bed':'bed-down','town-table':'table-left','town-armor':'armor-left','town-tools':'tools-down','town-chair':'chair-right','town-well':'well-down','elderwood-bench':'bench-down','elderwood-planter':'planter-down','elderwood-barrel':x===26?'barrel-up':'barrel-down','town-stairs-up':'stairsup-down','town-stairs-down':'stairsdown-down'};
    if(names[key]){if(key==='elderwood-bench'){y+=h-2;h=2;}if(key==='elderwood-planter'){y+=h-1;h=1;}key=`furn-${names[key]}`;}
   }
-  objects.push(mapObject(key,x*48,y*48,w*48,h*48));for(let dy=0;dy<solidH;dy++)for(let dx=0;dx<solidW;dx++)blocked.add(`${x+dx},${y+h-solidH+dy}`);};
+  const object=mapObject(key,x*48,y*48,w*48,h*48);
+  if(solidW&&solidH){object.footprint={x:x+solidOffsetX,y:y+h-solidH,width:solidW,height:solidH};if(village)object.footY=(object.footprint.y+solidH-.5)*48;}
+  objects.push(object);for(let dy=0;dy<solidH;dy++)for(let dx=0;dx<solidW;dx++)blocked.add(`${x+solidOffsetX+dx},${y+h-solidH+dy}`);};
  if(village){
   if(!isVillageUpper(region)){rect(1,1,30,22,0);rect(1,19,30,4,3);rect(14,2,5,17,2);rect(3,9,26,3,1);rect(3,15,26,3,1);rect(14,19,5,4,4);rect(19,17,10,6,0);path([[27,16],[27,22],[23,22]]);
   // A sheltered southern pond, stepped banks and a continuous timber crossing.
@@ -54,13 +56,13 @@ export function gridMap(region:string):GridMap{
   rect(2,18,12,1,2);rect(13,14,1,5,2);
   prop('village-counter',24,12,2,2,2,1);prop('village-table',21,18,2,2,2,1);
   rect(13,11,7,6,2);prop('elderwood-portal',15,10.5,3,3);
-  for(const [x,y]of [[2,2],[2,5],[28,1],[28,7]])prop('elderwood-oak',x,y,2,3,1,1);
-  for(const [x,y]of [[2,7],[29,11],[1,9],[29,18]])prop('elderwood-oak',x,y,2,3,1,1);
-  prop('elderwood-bench',18.5,14,1.6,.65);prop('elderwood-planter',18.5,13,1,.8);
+  for(const [x,y]of [[2,2],[2,5],[28,1],[28,7]])prop('elderwood-oak',x,y,3,3,1,1,1);
+  for(const [x,y]of [[2,7],[29,11],[1,9],[29,18]])prop('elderwood-oak',x,y,3,3,1,1,1);
+  prop('elderwood-bench',19,14,2,1,2,1);prop('elderwood-planter',19,13,1,1,1,1);
   prop('woods-flowers',12,18,1,.6);prop('woods-flowers',20,10,1,.6);
-  for(const x of [13,19])for(const y of [8,17])prop('elderwood-lamp',x,y, .6,1.5);
+  for(const x of [13,19])for(const y of [8,17])prop('elderwood-lamp',x,y,1,2,1,1);
   }else{
-   prop('town-bookshelf',6,2,2,2,2,1);prop('town-bed',6,5,2,2,1,1);prop('town-table',9,3,2,2,1,1);
+   prop('town-bookshelf',6,2,2,2,2,1);prop('town-bed',6,5,2,2,2,2);prop('town-table',9,3,2,2,2,1);
    prop('town-bookshelf',20,18,2,2,2,1);prop('town-bookshelf',22,18,2,2,2,1);
   }
   // Directional windows, room furnishings and wooden staircases share the same grid.
@@ -71,7 +73,7 @@ export function gridMap(region:string):GridMap{
   if(!isVillageUpper(region)){
    prop('town-armor',26,5,1,2,1,1);
    prop('town-bookshelf',27,12,1,2,1,1);prop('town-chair',20,20,1,1,1,1);
-   prop('town-well',20,8,1.5,2,1,1);prop('elderwood-bench',6,6,2,1,2,1);
+   prop('town-well',20,8,2,2,2,1);prop('elderwood-bench',6,6,2,1,2,1);
   }
   prop(isVillageUpper(region)?'town-stairs-down':'town-stairs-up',10.5,4.5,2,2);
   prop(isVillageUpper(region)?'town-stairs-down':'town-stairs-up',23.5,18.5,2,2);
@@ -129,8 +131,9 @@ export function gridMap(region:string):GridMap{
  const override=(overrides.maps as Record<string,{cells?:number[][]}>)[region];
  if(override?.cells){if(override.cells.length!==height||override.cells.some(row=>row.length!==width||row.some(n=>!Number.isInteger(n)||n<0||n>5)))throw Error(`Invalid grid terrain override: ${region}`);for(let y=0;y<height;y++)cells[y]=[...override.cells[y]];}
  for(let x=0;x<width;x++){cells[0][x]=5;cells[height-1][x]=5;}for(let y=0;y<height;y++){cells[y][0]=5;cells[y][width-1]=5;}
+ const propBlocked=new Set(blocked);
  for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(cells[y][x]===3||cells[y][x]===5)blocked.add(`${x},${y}`);
- const result={width,height,cells,objects,blocked,edges};cache.set(region,result);return result;
+ const result={width,height,cells,objects,blocked,propBlocked,edges};cache.set(region,result);return result;
 }
 export function gridBlocked(region:string,x:number,y:number){const map=gridMap(region);return x<0||y<0||x>=map.width||y>=map.height||map.blocked.has(`${Math.floor(x)},${Math.floor(y)}`);}
 type GridMonster='wolf'|'spider'|'boar'|'bear'|'bat'|'crawler'|'golem'|'wyrm';

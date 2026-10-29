@@ -1,0 +1,302 @@
+{
+  "caverns-bones": [
+    256,
+    192
+  ],
+  "caverns-crystal-teal": [
+    256,
+    256
+  ],
+  "caverns-crystal-violet": [
+    256,
+    256
+  ],
+  "caverns-geode": [
+    256,
+    192
+  ],
+  "caverns-lantern-blue": [
+    192,
+    256
+  ],
+  "caverns-mine-cart": [
+    256,
+    192
+  ],
+  "caverns-mushroom-luminous": [
+    256,
+    192
+  ],
+  "caverns-old-crate": [
+    256,
+    256
+  ],
+  "caverns-ore-vein": [
+    256,
+    256
+  ],
+  "caverns-rune-obelisk": [
+    256,
+    256
+  ],
+  "caverns-stairs-down": [
+    320,
+    240
+  ],
+  "caverns-stairs-up": [
+    320,
+    340
+  ],
+  "craft-bench-alchemy": [
+    128,
+    128
+  ],
+  "craft-bench-blacksmithing": [
+    128,
+    128
+  ],
+  "craft-bench-cooking": [
+    128,
+    128
+  ],
+  "craft-bench-woodworking": [
+    128,
+    128
+  ],
+  "crafting-hall-sign": [
+    256,
+    80
+  ],
+  "depot-floor": [
+    32,
+    32
+  ],
+  "depot-sign": [
+    96,
+    40
+  ],
+  "depot-wall-e": [
+    32,
+    32
+  ],
+  "depot-wall-n": [
+    32,
+    32
+  ],
+  "depot-wall-ne": [
+    32,
+    32
+  ],
+  "depot-wall-nw": [
+    32,
+    32
+  ],
+  "depot-wall-s": [
+    32,
+    32
+  ],
+  "depot-wall-se": [
+    32,
+    32
+  ],
+  "depot-wall-sw": [
+    32,
+    32
+  ],
+  "depot-wall-w": [
+    32,
+    32
+  ],
+  "elderwood-lamp": [
+    48,
+    156
+  ],
+  "elderwood-oak": [
+    144,
+    192
+  ],
+  "elderwood-portal": [
+    400,
+    358
+  ],
+  "furn-armor-left": [
+    96,
+    96
+  ],
+  "furn-barrel-up": [
+    96,
+    96
+  ],
+  "furn-bed-down": [
+    96,
+    96
+  ],
+  "furn-bench-down": [
+    96,
+    96
+  ],
+  "furn-bookshelf-down": [
+    96,
+    96
+  ],
+  "furn-bookshelf-left": [
+    96,
+    96
+  ],
+  "furn-chair-right": [
+    96,
+    96
+  ],
+  "furn-chest-down": [
+    96,
+    96
+  ],
+  "furn-counter-down": [
+    96,
+    96
+  ],
+  "furn-forge-down": [
+    96,
+    96
+  ],
+  "furn-meeting-down": [
+    96,
+    96
+  ],
+  "furn-planter-down": [
+    96,
+    96
+  ],
+  "furn-stairsdown-down": [
+    96,
+    96
+  ],
+  "furn-stairsup-down": [
+    96,
+    96
+  ],
+  "furn-table-left": [
+    96,
+    96
+  ],
+  "furn-tools-down": [
+    96,
+    96
+  ],
+  "furn-well-down": [
+    96,
+    96
+  ],
+  "town-floor-stone": [
+    32,
+    32
+  ],
+  "town-window": [
+    64,
+    64
+  ],
+  "village-sign-bank": [
+    128,
+    64
+  ],
+  "village-sign-hall": [
+    128,
+    64
+  ],
+  "village-sign-smithy": [
+    128,
+    64
+  ],
+  "village-wall-e": [
+    32,
+    32
+  ],
+  "village-wall-n": [
+    32,
+    32
+  ],
+  "village-wall-ne": [
+    32,
+    32
+  ],
+  "village-wall-nw": [
+    32,
+    32
+  ],
+  "village-wall-s": [
+    32,
+    32
+  ],
+  "village-wall-se": [
+    32,
+    32
+  ],
+  "village-wall-sw": [
+    32,
+    32
+  ],
+  "village-wall-w": [
+    32,
+    32
+  ],
+  "woods-ancient": [
+    210,
+    280
+  ],
+  "woods-bones": [
+    120,
+    84
+  ],
+  "woods-boulder": [
+    160,
+    148
+  ],
+  "woods-den": [
+    260,
+    210
+  ],
+  "woods-fern": [
+    76,
+    80
+  ],
+  "woods-flowers": [
+    84,
+    64
+  ],
+  "woods-lamp": [
+    48,
+    156
+  ],
+  "woods-log": [
+    220,
+    110
+  ],
+  "woods-mushrooms": [
+    80,
+    88
+  ],
+  "woods-oak": [
+    210,
+    280
+  ],
+  "woods-pine": [
+    192,
+    280
+  ],
+  "woods-portal": [
+    400,
+    358
+  ],
+  "woods-ruin": [
+    120,
+    220
+  ],
+  "woods-stump": [
+    104,
+    100
+  ],
+  "woods-web": [
+    200,
+    190
+  ]
+}
