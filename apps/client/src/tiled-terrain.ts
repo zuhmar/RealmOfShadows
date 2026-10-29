@@ -1,3 +1,4 @@
+import {paintLedge} from './stacked-floors';
 import type Phaser from 'phaser';
 import {paintConnectedTerrain,usesConnectedTerrain} from './connected-terrain';
 import {gridMap,islandForRegion,type RegionId} from '@realm/game-data';
@@ -6,7 +7,8 @@ export const terrainTileAssets=Object.entries(files).map(([path,url])=>({key:`te
 export const terrainTileAsset=terrainTileAssets.find(a=>a.key==='terrain-elderwood-32')!;
 export const terrainKey=(region:string)=>`terrain-${islandForRegion(region)}-32`;
 export function paintRegion(ctx:CanvasRenderingContext2D,region:RegionId,atlas:CanvasImageSource,cells=gridMap(region).cells){
- if(region!=='elderwood-upper'){paintConnectedTerrain(ctx,cells,atlas);return;}
+ if(region==='woods-upper'){paintConnectedTerrain(ctx,gridMap('woods').cells,atlas);ctx.fillStyle='#10222b55';ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);ctx.save();ctx.translate(37*32,3*32);paintLedge(ctx,atlas);ctx.restore();return;}
+ if(region!=='elderwood-upper'){paintConnectedTerrain(ctx,cells,atlas);if(region==='woods'){ctx.save();ctx.translate(37*32,3*32);paintLedge(ctx,atlas);ctx.restore();}return;}
  paintConnectedTerrain(ctx,gridMap('elderwood').cells,atlas);ctx.fillStyle='#10222bd9';ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);
  // Show the town below the upper rooms, with walkable floor cells highlighted.
  for(let y=0;y<cells.length;y++)for(let x=0;x<cells[y].length;x++)if(cells[y][x]!==5)ctx.drawImage(atlas,cells[y][x]*36+2,2,32,32,x*32,y*32,32,32);

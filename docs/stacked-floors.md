@@ -1,0 +1,45 @@
+# Outdoor stacked floors: Lookout Ledge
+
+Whispering Woods now has a raised lookout northeast of the Root Hollow stairs.
+The platform occupies x37–42, y3–6 at the same coordinates as the forest below.
+Its two-cell rock face blocks ground movement through x37–42, y3–8. The northern
+trail bends around the front to the open stone staircase at (40.5, 9.5).
+
+Click the steps to climb. The upper landing is (40.5, 6.5), with a return stair
+near (40.5, 5.5) that returns to (40.5, 10.5) below. Server-side range and floor
+validation apply to both directions. Client travel waits for authoritative
+position to reach stair range, avoiding premature requests during prediction.
+Existing occupied-cell landing checks prevent two players landing on one cell.
+
+`woods-upper` is a logical floor of the Woods, not a portal destination. It
+shares the 68×48 coordinate system and Woods tileset. Only the ledge's cells are
+walkable upstairs; blocked outer cells prevent walking or falling off the edge.
+There are three additional Forest Wolves upstairs; the 28 original surface
+encounters remain. Wolves do not follow players between floors. Loot and quest
+progress resolve to Whispering Woods through `islandForRegion`.
+
+The game draws the ground backdrop, rock face, top and open treads together.
+Both floors' nearby creatures and networked player avatars are visible, with
+upper actors sorting above the cliff. Clicking a creature on another floor
+explains that stairs are needed. Targeting, weapon attacks, learned spells,
+monster AI, occupancy and loot pickup still use the actor's actual floor.
+Visibility never grants cross-floor combat. The lookout has no portal sanctuary.
+
+`elevation.ts` owns the initial outdoor floor's footprint and visibility/depth
+rules. `floors.ts` defines stair pairs; `grid-world.ts` defines collision and
+spawns. The shared `paintLedge` canvas painter is used by the game, map editor
+and exported previews. The platform plus face is a square 192×192 native canvas,
+rendered at two screen units per pixel. Existing character and wolf art is reused.
+
+This is the first visible outdoor upper floor. Root Hollow, Crystal Depth 2 and
+the village upper rooms retain their existing layout and transition behavior.
+Further outdoor floors can extend the same visibility and stair definitions.
+
+Checks cover same-coordinate floor separation, stairs, fall prevention, upper
+monster navigation, learned-spell/weapon rejection across floors, combat after
+climbing, and server rejection of remote stair requests. Desktop/mobile browser
+checks exercise guest and multiplayer climbing, combat and descent, including
+an actual second player visible upstairs from below.
+
+Deploy Render and Vercel together. No database migration or new environment
+variables are needed; progress uses the existing save format.

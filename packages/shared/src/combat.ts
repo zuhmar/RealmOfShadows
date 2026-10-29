@@ -16,14 +16,14 @@ const attack=(kind:MonsterKind)=>{
  if(kind==='spider'||kind==='wyrm')return {kind:kind==='spider'?'venom':'shard',range:kind==='spider'?3.2:4.5,windup:kind==='spider'?.45:1.1,radius:kind==='spider'?.6:1.2};
  return {kind:'bite',range:monsters[kind].range,windup:0,radius:.5};
 };
-export function sight(a:Point & {region?:RegionId},b:Point & {region?:RegionId},region:RegionId=a.region??b.region??'woods'):boolean{if(gridCrossesWall(region,a,b))return false;const n=Math.ceil(distance(a,b)*8);for(let i=0;i<=n;i++){if(!legal({x:a.x+(b.x-a.x)*i/Math.max(1,n),y:a.y+(b.y-a.y)*i/Math.max(1,n)},region))return false;}return true;}
+export function sight(a:Point & {region?:RegionId},b:Point & {region?:RegionId},region:RegionId=a.region??b.region??'woods'):boolean{if(a.region&&b.region&&a.region!==b.region)return false;if(gridCrossesWall(region,a,b))return false;const n=Math.ceil(distance(a,b)*8);for(let i=0;i<=n;i++){if(!legal({x:a.x+(b.x-a.x)*i/Math.max(1,n),y:a.y+(b.y-a.y)*i/Math.max(1,n)},region))return false;}return true;}
 export class CombatSimulation{
  enemyShots:{region:RegionId;radius:number;x:number;y:number;toX:number;toY:number;remaining:number;damage:number}[]=[];
  private actors=new Map<string,Fighter>();
  spellCooldowns=new Map<string,Partial<Record<SpellId,number>>>();
  kills:Kill[]=[];time=0;serial=0;wolves=new Map<string,Wolf>();projectiles=new Map<string,Projectile>();events:CombatEvent[]=[];
  constructor(){for(const s of allMonsterSpawns)this.wolves.set(s.id,{...s,hp:monsters[s.kind].hp,mode:'idle',facing:'down',target:'',attackAt:0,respawnAt:0,spawnX:s.x,spawnY:s.y,windupUntil:0,aimX:s.x,aimY:s.y});}
- safe(p:Point & {region?:RegionId}){return distance(p,portalFor(p.region??'woods'))<C.portalSafeRadius;}
+ safe(p:Point & {region?:RegionId}){if(p.region==='woods-upper')return false;return distance(p,portalFor(p.region??'woods'))<C.portalSafeRadius;}
  clear(p:Fighter){p.target='';p.auto=false;}
  damage(w:Wolf,amount:number,attacker?:string){const stats=monsters[monsterKind(w.kind)];if(w.hp<=0||w.mode==='return')return;w.hp=Math.max(0,w.hp-amount);if(w.hp>0&&attacker){w.target=attacker;if(w.mode==='idle')w.mode='chase';}this.events.push({kind:'hit',region:monsterRegion(w),x:w.x,y:w.y,damage:amount});if(!w.hp){if(attacker)this.kills.push({id:++this.serial,owner:attacker,region:monsterRegion(w),kind:w.kind,x:w.x,y:w.y});w.mode='dead';w.target='';w.windupUntil=0;w.respawnAt=this.time+stats.respawn;this.events.push({kind:'death',region:monsterRegion(w),x:w.x,y:w.y});}}
  action(id:string,p:Fighter,kind:unknown,target:unknown):boolean{

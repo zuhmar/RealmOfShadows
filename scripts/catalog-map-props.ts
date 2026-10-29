@@ -1,6 +1,6 @@
 import {readFileSync,writeFileSync} from 'node:fs';
 import {gridMap} from '../packages/game-data/src/grid-world';
-const keys=new Set(['elderwood','elderwood-upper','woods','caverns','swamp','woods-depths','caverns-depths'].flatMap(region=>gridMap(region).objects.map(o=>o.key)));
+const keys=new Set(['elderwood','elderwood-upper','woods','woods-upper','caverns','swamp','woods-depths','caverns-depths'].flatMap(region=>gridMap(region).objects.map(o=>o.key)));
 const sizes:Record<string,[number,number]>={};
 for(const key of [...keys].sort()){
  const png=readFileSync(new URL(`../assets/world/objects/${key}.png`,import.meta.url));

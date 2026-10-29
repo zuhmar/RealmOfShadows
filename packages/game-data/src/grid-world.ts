@@ -1,3 +1,4 @@
+import {woodsLedge} from './elevation';
 import {craftingStations} from './town-services';
 import {villageBuildings,buildingsFor,isVillageUpper} from './village-buildings';
 import {woodsGridEncounters} from './woods-grid-spawns';
@@ -13,7 +14,7 @@ export const gridKey=(p:{x:number;y:number})=>`${Math.floor(p.x)},${Math.floor(p
 export function gridMap(region:string):GridMap{
  const old=cache.get(region);if(old)return old;
  const lower=region.endsWith('-depths'),village=region==='elderwood'||isVillageUpper(region),cave=region.startsWith('caverns');
- const width=lower?48:region==='woods'?68:region==='caverns'?64:32,height=lower?36:region==='woods'||region==='caverns'?48:24;
+ const width=lower?48:(region==='woods'||region==='woods-upper')?68:region==='caverns'?64:32,height=lower?36:region==='woods'||region==='woods-upper'||region==='caverns'?48:24;
  const cells=Array.from({length:height},()=>Array<number>(width).fill(cave||lower||isVillageUpper(region)?5:0)),objects:IslandObject[]=[],blocked=new Set<string>(),edges=new Set<string>();
  const rect=(x:number,y:number,w:number,h:number,material:number)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(j>=0&&i>=0&&j<height&&i<width)cells[j][i]=material;};
  const path=(points:readonly (readonly [number,number])[],material=1)=>{for(let i=1;i<points.length;i++){let [x,y]=points[i-1];const [tx,ty]=points[i];rect(x-1,y-1,3,3,material);while(x!==tx||y!==ty){x+=Math.sign(tx-x);y+=Math.sign(ty-y);rect(x-1,y-1,3,3,material);}}};
@@ -26,7 +27,10 @@ export function gridMap(region:string):GridMap{
   const object=mapObject(key,x*48,y*48,w*48,h*48);
   if(solidW&&solidH){object.footprint={x:x+solidOffsetX,y:y+h-solidH,width:solidW,height:solidH};if(village)object.footY=(object.footprint.y+solidH-.5)*48;}
   objects.push(object);for(let dy=0;dy<solidH;dy++)for(let dx=0;dx<solidW;dx++)blocked.add(`${x+solidOffsetX+dx},${y+h-solidH+dy}`);};
- if(village){
+ if(region==='woods-upper'){
+  rect(0,0,width,height,5);rect(woodsLedge.x,woodsLedge.y,woodsLedge.width,woodsLedge.height,0);rect(40,4,1,3,2);
+  prop('woods-flowers',37,3,1,1);prop('woods-stump',42,3,1,1);
+ }else if(village){
   if(!isVillageUpper(region)){
   rect(1,1,30,22,0);
   // A main street with service lanes, forecourts and deliberate garden gaps.
@@ -110,6 +114,8 @@ export function gridMap(region:string):GridMap{
   // Enclosed boss grove with one clearly marked south entrance.
   rect(49,30,14,1,5);rect(49,30,1,12,5);rect(62,30,1,12,5);rect(49,41,6,1,5);rect(58,41,5,1,5);path([[56,41],[56,36]]);path([[34,36],[34,43],[56,43],[56,41]]);
   prop('woods-portal',33,22.5,3,3);prop('caverns-stairs-down',33,11,3,2);
+  path([[35,10],[40,10],[45,8]]);
+  rect(woodsLedge.x,woodsLedge.y,woodsLedge.width,woodsLedge.height+woodsLedge.faceHeight,5);
   const originalTrail=new Set<string>();for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if([1,2,4].includes(cells[y][x]))originalTrail.add(`${x},${y}`);
   const protectedSpawns=new Set(gridSpawns('woods').map(p=>`${Math.floor(p.x)},${Math.floor(p.y)}`));
   const seed=dressingSeed;
@@ -176,6 +182,7 @@ export function gridMap(region:string):GridMap{
 export function gridBlocked(region:string,x:number,y:number){const map=gridMap(region);return x<0||y<0||x>=map.width||y>=map.height||map.blocked.has(`${Math.floor(x)},${Math.floor(y)}`);}
 type GridMonster='wolf'|'spider'|'boar'|'bear'|'bat'|'crawler'|'golem'|'wyrm';
 export function gridSpawns(region:RegionId):{id:string;kind:GridMonster;region:RegionId;x:number;y:number}[]{
+ if(region==='woods-upper')return [[38.5,4.5],[41.5,4.5],[38.5,6.5]].map(([x,y],i)=>({id:`ledge-wolf-${i+1}`,kind:'wolf' as const,region,x,y}));
  if(region==='woods')return (Object.entries(woodsGridEncounters) as [keyof typeof woodsGridEncounters,typeof woodsGridEncounters[keyof typeof woodsGridEncounters]][]).flatMap(([kind,area])=>[...area.habitat,...area.approach].map(([x,y],i)=>({id:`${kind}-${i+1}`,kind,region,x:x+.5,y:y+.5})));
  const woods=region.startsWith('woods'),lower=region.endsWith('-depths');
  const groups:[GridMonster,number,number,number][]=woods?(lower?[['wolf',5,23,6],['spider',7,5,6],['boar',33,20,6]]:[['wolf',8,6,9],['spider',8,33,9],['boar',52,6,9],['bear',55,35,1]]):(lower?[['bat',5,23,6],['crawler',7,5,6],['golem',33,20,5]]:[['bat',7,7,9],['crawler',7,28,9],['golem',45,27,9],['wyrm',48,8,1]]);

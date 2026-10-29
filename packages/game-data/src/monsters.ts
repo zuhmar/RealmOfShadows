@@ -17,7 +17,7 @@ export const monsters={
 export type MonsterKind=keyof typeof monsters;
 export const monsterKind=(value:unknown):MonsterKind=>typeof value==='string'&&Object.hasOwn(monsters,value)?value as MonsterKind:'wolf';
 export const monsterSpawns=gridSpawns('woods');
-export const allMonsterSpawns=[...monsterSpawns,...gridSpawns('caverns'),...gridSpawns('caverns-depths'),...gridSpawns('woods-depths')];
-export const combatRegion=(region:string)=>region==='woods-depths'||region==='woods'||region==='caverns'||region==='caverns-depths';
-export const monsterRegion=(monster:{region?:string})=>monster.region==='woods-depths'?'woods-depths' as const:monster.region==='caverns-depths'?'caverns-depths' as const:monster.region==='caverns'?'caverns' as const:'woods' as const;
+export const allMonsterSpawns=[...monsterSpawns,...gridSpawns('woods-upper'),...gridSpawns('caverns'),...gridSpawns('caverns-depths'),...gridSpawns('woods-depths')];
+export const combatRegion=(region:string)=>region==='woods-depths'||region==='woods-upper'||region==='woods'||region==='caverns'||region==='caverns-depths';
+export const monsterRegion=(monster:{region?:string})=>monster.region==='woods-upper'?'woods-upper' as const:monster.region==='woods-depths'?'woods-depths' as const:monster.region==='caverns-depths'?'caverns-depths' as const:monster.region==='caverns'?'caverns' as const:'woods' as const;
 export const monsterAggressive=(kind:MonsterKind)=>monsters[kind].boss||monsters[kind].level>=monsterAggressiveLevel;

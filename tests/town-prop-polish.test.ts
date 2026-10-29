@@ -32,7 +32,7 @@ test('side-facing furniture retains directional art and trees use a centered tru
 });
 
 test('square prop frames keep original artwork scale and ground alignment across all current maps',()=>{
- for(const region of ['elderwood','elderwood-upper','woods','caverns','swamp','woods-depths','caverns-depths']){
+ for(const region of ['elderwood','elderwood-upper','woods','woods-upper','caverns','swamp','woods-depths','caverns-depths']){
  const map=gridMap(region),visuals=buildingVisuals(region,map.objects,false);
  for(const object of map.objects){if(/sign|wall|floor|window|craft-bench|furn-tools/.test(object.key))continue;
  const visual=visuals.find(v=>v.key===object.key&&v.footY===object.footY);if(!visual)continue;
