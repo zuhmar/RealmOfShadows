@@ -6,9 +6,10 @@ test('three connected counter cells wrap each corner NPC without changing author
  for(const station of craftingStations){if(!('bench'in station))continue;
  const map=gridMap('elderwood'),before=[...map.blocked],visuals=buildingVisuals('elderwood',map.objects,false),pieces=visuals.filter(o=>o.sourceKey===station.bench.key);
  const bases=pieces.filter(p=>p.key.startsWith('counter-connected-'));assert.equal(bases.length,3);assert.equal(pieces.filter(p=>p.key.startsWith('counter-tools-')).length,1);assert.ok(pieces.some(p=>p.key===`counter-tools-${station.skills[0]}-${station.npc.facing}`));
+ const occupiedCells:ReadonlySet<string>=new Set<string>(station.bench.cells.map(([cellX,cellY])=>`${cellX},${cellY}`));
  for(const [x,y]of station.bench.cells){const p=bases.find(p=>p.x===x*48&&p.y===(y-.25)*48)!;assert.ok(p);assert.equal(p.w,48);assert.equal(p.h,60);assert.ok(map.blocked.has(`${x},${y}`));
- const mask=Number(p.key.split('-').at(-1));const cells=new Set(station.bench.cells.map(([x,y])=>`${x},${y}`));
- for(const [dx,dy,bit]of [[0,-1,1],[1,0,2],[0,1,4],[-1,0,8]])assert.equal(!!(mask&bit),cells.has(`${x+dx},${y+dy}`));
+ const mask=Number(p.key.split('-').at(-1));
+ for(const [dx,dy,bit]of [[0,-1,1],[1,0,2],[0,1,4],[-1,0,8]])assert.equal(!!(mask&bit),occupiedCells.has(`${x+dx},${y+dy}`));
  }
  assert.deepEqual([...map.blocked],before);
  }
