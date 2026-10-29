@@ -18,7 +18,11 @@ There are three additional Forest Wolves upstairs; the 28 original surface
 encounters remain. Wolves do not follow players between floors. Loot and quest
 progress resolve to Whispering Woods through `islandForRegion`.
 
-The game draws the ground backdrop, rock face, top and open treads together.
+The game draws the ground backdrop, continuous north/east/south/west cliff faces,
+rock strata, irregular moss-edged turf cap and recessed stone stairs together.
+The silhouette and shading wrap around the corners instead of using a rectangular
+brick facade. This visual perimeter stays within the existing blocked footprint;
+walkable cells, stair landings and server collision remain unchanged.
 Both floors' nearby creatures and networked player avatars are visible, with
 upper actors sorting above the cliff. Clicking a creature on another floor
 explains that stairs are needed. Targeting, weapon attacks, learned spells,
