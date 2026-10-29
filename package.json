@@ -80,7 +80,9 @@
     "art:square-props": "python3 scripts/square-map-props.py",
     "test:elevation:integration": "tsx tests/elevation.integration.ts",
     "test:elevation:browser": "tsx tests/browser-elevation.cjs",
-    "test:woods-cliffs:browser": "node tests/browser-woods-cliffs.cjs"
+    "test:woods-cliffs:browser": "node tests/browser-woods-cliffs.cjs",
+    "test:woods-highlands:browser": "node tests/browser-woods-highlands.cjs",
+    "test:woods-highlands:integration": "tsx tests/woods-highlands.integration.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

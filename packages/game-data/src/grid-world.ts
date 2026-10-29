@@ -1,4 +1,4 @@
-import {woodsCliffs} from './woods-cliffs';
+import {woodsCliffs,woodsSize,woodsRidges,ridgeCells,woodsExpansionSpawns} from './woods-cliffs';
 import {woodsLedge} from './elevation';
 import {craftingStations} from './town-services';
 import {villageBuildings,buildingsFor,isVillageUpper} from './village-buildings';
@@ -15,7 +15,7 @@ export const gridKey=(p:{x:number;y:number})=>`${Math.floor(p.x)},${Math.floor(p
 export function gridMap(region:string):GridMap{
  const old=cache.get(region);if(old)return old;
  const lower=region.endsWith('-depths'),village=region==='elderwood'||isVillageUpper(region),cave=region.startsWith('caverns');
- const width=lower?48:(region==='woods'||region==='woods-upper')?68:region==='caverns'?64:32,height=lower?36:region==='woods'||region==='woods-upper'||region==='caverns'?48:24;
+ const width=lower?48:(region==='woods'||region==='woods-upper')?woodsSize.width:region==='caverns'?64:32,height=lower?36:region==='woods'||region==='woods-upper'?woodsSize.height:region==='caverns'?48:24;
  const cells=Array.from({length:height},()=>Array<number>(width).fill(cave||lower||isVillageUpper(region)?5:0)),objects:IslandObject[]=[],blocked=new Set<string>(),edges=new Set<string>();
  const rect=(x:number,y:number,w:number,h:number,material:number)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(j>=0&&i>=0&&j<height&&i<width)cells[j][i]=material;};
  const path=(points:readonly (readonly [number,number])[],material=1)=>{for(let i=1;i<points.length;i++){let [x,y]=points[i-1];const [tx,ty]=points[i];rect(x-1,y-1,3,3,material);while(x!==tx||y!==ty){x+=Math.sign(tx-x);y+=Math.sign(ty-y);rect(x-1,y-1,3,3,material);}}};
@@ -30,6 +30,7 @@ export function gridMap(region:string):GridMap{
   objects.push(object);for(let dy=0;dy<solidH;dy++)for(let dx=0;dx<solidW;dx++)blocked.add(`${x+solidOffsetX+dx},${y+h-solidH+dy}`);};
  if(region==='woods-upper'){
   rect(0,0,width,height,5);rect(woodsLedge.x,woodsLedge.y,woodsLedge.width,woodsLedge.height,0);rect(40,4,1,3,2);
+  for(const r of woodsRidges){for(const key of ridgeCells(r)){const [x,y]=key.split(',').map(Number);rect(x,y,1,1,0);}const p=r.parts[0];prop('woods-fern',p.x+1,p.y+1,1,1);prop('woods-stump',p.x+p.w-2,p.y+2,1,1);prop('woods-flowers',p.x+4,p.y+1,1,1);prop(r.monsters==='spider'?'woods-web':'woods-boulder',p.x+1,p.y+4,1,1);const q=r.parts[1];prop('woods-fern',q.x+q.w-2,q.y+1,1,1);prop(r.monsters==='spider'?'woods-web':'woods-flowers',q.x+2,q.y+q.h-2,1,1);}
   prop('woods-flowers',37,3,1,1);prop('woods-stump',42,3,1,1);
  }else if(village){
   if(!isVillageUpper(region)){
@@ -117,6 +118,12 @@ export function gridMap(region:string):GridMap{
   prop('woods-portal',33,22.5,3,3);prop('caverns-stairs-down',33,11,3,2);
   path([[35,10],[40,10],[45,8]]);
   rect(woodsLedge.x,woodsLedge.y,woodsLedge.width,woodsLedge.height+woodsLedge.faceHeight,5);
+  // Broad exploration loops connect the old forest to eastern and southern highlands.
+  path([[57,23],[66,24],[77,24],[88,24],[88,33],[77,34],[70,38],[70,44],[86,46],[89,55],[87,64],[56,64],[49,61],[49,49],[34,49],[34,43]]);
+  path([[10,36],[13,45],[13,51],[13,59],[13,65],[25,65],[39,66],[49,61]]);
+  path([[63,46],[70,44]]);path([[75,44],[86,46]]);
+  for(const r of woodsRidges){path([[Math.floor(r.stair.x),Math.floor(r.stair.y+4)],[Math.floor(r.stair.x),Math.floor(r.stair.y+7)],[r.id==='east'?70:r.id==='south'?13:70,r.id==='east'?24:r.id==='south'?65:64]]);for(const key of ridgeCells(r)){const[x,y]=key.split(',').map(Number);rect(x,y,1,3,5);}}
+  for(const s of woodsExpansionSpawns)rect(Math.floor(s.x),Math.floor(s.y),1,1,1);
   for(const cliff of woodsCliffs)rect(cliff.x,cliff.y,cliff.size,cliff.size,5);
   const originalTrail=new Set<string>();for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if([1,2,4].includes(cells[y][x]))originalTrail.add(`${x},${y}`);
   const protectedSpawns=new Set(gridSpawns('woods').map(p=>`${Math.floor(p.x)},${Math.floor(p.y)}`));
@@ -125,18 +132,18 @@ export function gridMap(region:string):GridMap{
   const unweathered=cells.map(row=>[...row]);
   for(let y=2;y<height-2;y++)for(let x=2;x<width-2;x++)if(unweathered[y][x]===1&&!protectedSpawns.has(`${x},${y}`)&&seed(Math.floor(x/4),Math.floor(y/4))%4===0&&[[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dy])=>unweathered[y+dy][x+dx]===0).length>=1&&[[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dy])=>unweathered[y+dy][x+dx]===1).length>=2)cells[y][x]=0;
   const treeSites:{x:number;y:number;seed:number}[]=[];
-  for(let y=2;y<44;y++)for(let x=2;x<64;x++){
-   const inClearing=(x>=5&&x<=19&&(y<=15||y>=29))||(x>=49&&(y<=15||y>=27))||(x>=29&&x<=40&&y>=19&&y<=32);
+  for(let y=2;y<height-4;y++)for(let x=2;x<width-4;x++){
+   const inClearing=(x>=5&&x<=19&&(y<=15||y>=29))||(x>=49&&x<=63&&(y<=15||(y>=27&&y<=42)))||(x>=29&&x<=40&&y>=19&&y<=32);
    const trunkY=y+2,nearRoad=[-1,0,1].some(dx=>[-1,0,1].some(dy=>originalTrail.has(`${x+dx},${trunkY+dy}`)));
-   if(inClearing||nearRoad||cells[trunkY][x]!==0)continue;treeSites.push({x,y,seed:seed(x,y)});
+   if(inClearing||nearRoad||cells[trunkY][x]!==0||gridSpawns('woods').some(p=>Math.hypot(p.x-x-.5,p.y-trunkY-.5)<2.5))continue;treeSites.push({x,y,seed:seed(x,y)});
   }
   const planted:{x:number;y:number}[]=[];
   for(const site of treeSites.sort((a,b)=>a.seed-b.seed)){
-   if(planted.length>=140)break;if(planted.some(p=>Math.hypot(p.x-site.x,p.y-site.y)<2.4))continue;
+   if(planted.length>=300)break;if(planted.some(p=>Math.hypot(p.x-site.x,p.y-site.y)<2.4))continue;
    planted.push(site);prop(site.seed%3?'woods-oak':'woods-pine',site.x,site.y,2,3,1,1);
   }
   // Understory follows trail margins without blocking combat or gathering approaches.
-  for(let y=3;y<44;y++)for(let x=3;x<64;x++)if(cells[y][x]===0&&seed(x,y)%29===0&&!blocked.has(`${x},${y}`)&&!gridSpawns('woods').some(p=>Math.hypot(p.x-x-.5,p.y-y-.5)<2)&&[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>originalTrail.has(`${x+dx},${y+dy}`)))prop(seed(x,y)%2?'woods-fern':'woods-mushrooms',x,y,1,1);
+  for(let y=3;y<height-4;y++)for(let x=3;x<width-4;x++)if(cells[y][x]===0&&seed(x,y)%29===0&&!blocked.has(`${x},${y}`)&&!gridSpawns('woods').some(p=>Math.hypot(p.x-x-.5,p.y-y-.5)<2)&&[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>originalTrail.has(`${x+dx},${y+dy}`)))prop(seed(x,y)%2?'woods-fern':'woods-mushrooms',x,y,1,1);
   prop('woods-den',7,3,3,2);
   for(const [key,x,y]of [['woods-log',20,15],['woods-stump',26,16],['woods-flowers',24,19],['woods-mushrooms',42,29],['woods-boulder',46,31],['woods-ruin',37,17],['woods-fern',28,18]] as const)prop(key,x,y,key==='woods-flowers'||key==='woods-mushrooms'||key==='woods-fern'?1:2, key==='woods-ruin'?2:1);
   for(const [x,y]of [[7,33],[15,34],[7,38]])prop('woods-web',x,y,2,2);
@@ -184,8 +191,8 @@ export function gridMap(region:string):GridMap{
 export function gridBlocked(region:string,x:number,y:number){const map=gridMap(region);return x<0||y<0||x>=map.width||y>=map.height||map.blocked.has(`${Math.floor(x)},${Math.floor(y)}`);}
 type GridMonster='wolf'|'spider'|'boar'|'bear'|'bat'|'crawler'|'golem'|'wyrm';
 export function gridSpawns(region:RegionId):{id:string;kind:GridMonster;region:RegionId;x:number;y:number}[]{
- if(region==='woods-upper')return [[38.5,4.5],[41.5,4.5],[38.5,6.5]].map(([x,y],i)=>({id:`ledge-wolf-${i+1}`,kind:'wolf' as const,region,x,y}));
- if(region==='woods')return (Object.entries(woodsGridEncounters) as [keyof typeof woodsGridEncounters,typeof woodsGridEncounters[keyof typeof woodsGridEncounters]][]).flatMap(([kind,area])=>[...area.habitat,...area.approach].map(([x,y],i)=>({id:`${kind}-${i+1}`,kind,region,x:x+.5,y:y+.5})));
+ if(region==='woods-upper')return [...[[38.5,4.5],[41.5,4.5],[38.5,6.5]].map(([x,y],i)=>({id:`ledge-wolf-${i+1}`,kind:'wolf' as const,region,x,y})),...woodsRidges.flatMap(r=>r.monsters?[[r.parts[0].x+2.5,r.parts[0].y+2.5],[r.parts[0].x+7.5,r.parts[0].y+3.5],[r.parts[1].x+3.5,r.parts[1].y+3.5]].map(([x,y],i)=>({id:`ridge-${r.id}-${i+1}`,kind:r.monsters,region,x,y})):[])];
+ if(region==='woods')return [...woodsExpansionSpawns.map(s=>({...s,region})),...(Object.entries(woodsGridEncounters) as [keyof typeof woodsGridEncounters,typeof woodsGridEncounters[keyof typeof woodsGridEncounters]][]).flatMap(([kind,area])=>[...area.habitat,...area.approach].map(([x,y],i)=>({id:`${kind}-${i+1}`,kind,region,x:x+.5,y:y+.5})))];
  const woods=region.startsWith('woods'),lower=region.endsWith('-depths');
  const groups:[GridMonster,number,number,number][]=woods?(lower?[['wolf',5,23,6],['spider',7,5,6],['boar',33,20,6]]:[['wolf',8,6,9],['spider',8,33,9],['boar',52,6,9],['bear',55,35,1]]):(lower?[['bat',5,23,6],['crawler',7,5,6],['golem',33,20,5]]:[['bat',7,7,9],['crawler',7,28,9],['golem',45,27,9],['wyrm',48,8,1]]);
  const result=groups.flatMap(([kind,x,y,count])=>Array.from({length:count},(_,i)=>({id:`${lower?woods?'roots-':'depths-':''}${kind}-${i+1}`,kind,region,x:x+(i%3)*3+.5,y:y+Math.floor(i/3)*3+.5})));

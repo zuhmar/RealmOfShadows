@@ -1,3 +1,4 @@
+import {woodsSize} from './woods-cliffs';
 import {isRaisedFloor} from './elevation';
 export * from './elevation';
 export * from './building-visuals';
@@ -26,7 +27,7 @@ export const landmarks=[
  {name:'The Copperleaf Bank',x:23,y:12,w:6,h:4,color:0x8b9b79,description:'Walk inside this village building.'},
  {name:'Adventurers’ Hall',x:20,y:18,w:6,h:4,color:0x8b9b79,description:'Walk inside this village building.'},
 ];
-export const regionSize=(region:RegionId)=>isLowerFloor(region)?{width:48,height:36}:(region==='woods'||isRaisedFloor(region))?{width:68,height:48}:region==='caverns'?{width:64,height:48}:WORLD;
+export const regionSize=(region:RegionId)=>isLowerFloor(region)?{width:48,height:36}:(region==='woods'||isRaisedFloor(region))?woodsSize:region==='caverns'?{width:64,height:48}:WORLD;
 export function blocked(x:number,y:number,region:RegionId='elderwood'):boolean{return gridBlocked(region,x,y);}
 export type Facing='down'|'left'|'right'|'up';
 export interface SpriteManifest {key:string;url:string;frameWidth:number;frameHeight:number;anchor:{x:number;y:number};scale:number;animations:Partial<Record<'idle'|'walk',Record<Facing,{frames:number[];fps:number}>>>}
@@ -35,7 +36,7 @@ export const characterSprite:SpriteManifest|null=null;
 
 export const regions = {
  'elderwood-upper':{name:'Elderwood · Upper Rooms',description:'Depot loft and Adventurers’ Hall library.',ground:[0x426a50,0x456e52],road:[0xb4aa84,0xbab18d],accent:0x76d6d3,obstacles:[]},
- 'woods-upper':{name:'Whispering Woods · Lookout Ledge',description:'A raised wolf lookout above the northern trail.',ground:[0x294b38,0x31573e],road:[0x7d8060,0x878867],accent:0x9be5ad,obstacles:[]},
+ 'woods-upper':{name:'Whispering Woods · Highlands',description:'A raised wolf lookout above the northern trail.',ground:[0x294b38,0x31573e],road:[0x7d8060,0x878867],accent:0x9be5ad,obstacles:[]},
  elderwood:{name:'Elderwood',description:'The shared village and your safe haven.',ground:[0x426a50,0x456e52],road:[0xb4aa84,0xbab18d],accent:0x76d6d3,obstacles:[]},
  woods:{name:'Whispering Woods',description:'Levels 1–10 · Wolves, thorn spiders, wild boars and the Forest Bear.',ground:[0x294b38,0x31573e],road:[0x7d8060,0x878867],accent:0x9be5ad,obstacles:[]},
  caverns:{name:'Crystal Caverns',description:'Levels 11–20 · Cave bats, shard crawlers, crystal golems and the Crystal Wyrm.',ground:[0x34364f,0x3b4059],road:[0x66667b,0x717187],accent:0xc6a0ff,obstacles:[]},
@@ -80,4 +81,6 @@ export * from './town-services';
 
 export * from './map-furniture';
 
-export {woodsCliffs} from './woods-cliffs';
+export {woodsCliffs,woodsSize,woodsRidges,ridgeCells,woodsExpansionSpawns} from './woods-cliffs';
+
+export type {WoodsRidge} from './woods-cliffs';

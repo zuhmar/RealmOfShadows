@@ -253,7 +253,7 @@ class Elderwood extends Phaser.Scene {
  for(const obj of this.worldObjects)obj.destroy();
  const existing=new Set(this.children.list),config=regions[this.region];
  this.cameras.main.setBackgroundColor(isVillageUpper(this.region)?'#10222b':'#233c38');this.terrainCleanup=drawTiledTerrain(this,this.region);
- const grid=gridMap(this.region),mapConfig={width:grid.width*48,height:grid.height*48,worldWidth:grid.width,worldHeight:grid.height,offsetY:0},mapObjects=[...(isRaisedFloor(this.region)?buildingVisuals('woods',gridMap('woods').objects).map(o=>({...o,elevation:0})):[]),...buildingVisuals(this.region,grid.objects).map(o=>({...o,elevation:floorDepth(this.region)}))];
+ const grid=gridMap(this.region),mapConfig={width:grid.width*48,height:grid.height*48,worldWidth:grid.width,worldHeight:grid.height,offsetY:0},mapObjects=[...(this.region==='woods'?buildingVisuals('woods-upper',gridMap('woods-upper').objects).map(o=>({...o,elevation:floorDepth('woods-upper')})):[]),...(isRaisedFloor(this.region)?buildingVisuals('woods',gridMap('woods').objects).map(o=>({...o,elevation:0})):[]),...buildingVisuals(this.region,grid.objects).map(o=>({...o,elevation:floorDepth(this.region)}))];
  const illustratedMap=true;
  if(illustratedMap){
  for(const object of mapObjects){const sx=mapConfig.worldWidth*64/mapConfig.width,sy=mapConfig.worldHeight*64/mapConfig.height;
@@ -286,7 +286,7 @@ class Elderwood extends Phaser.Scene {
  if(this.region==='elderwood')for(const box of depotBoxes){const zone=this.add.zone(box.x*64,box.y*64,64,64).setInteractive({useHandCursor:true}).setDepth((box.y+.5)*64+2).setData('depot',box.id);zone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target===this.game.canvas&&!pointer.rightButtonDown())this.approachDepot(box.id);});}
  drawRaisedFloor(this,this.region,id=>this.approachStairs(id));
  for(const stair of stairsFor(this.region)){
- if(stair.id.startsWith('woods-ledge-'))continue;
+ if(stair.id.startsWith('woods-ledge-')||stair.id.startsWith('woods-ridge-'))continue;
  const x=stair.x*64,y=stair.y*64;if(stair.id.startsWith('depot-')||stair.id.startsWith('hall-')){const zone=this.add.zone(x,y-35,105,115).setInteractive({useHandCursor:true}).setDepth(y+2).setData('stair',stair.id);zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===this.game.canvas&&!p.rightButtonDown())this.approachStairs(stair.id)});continue;}this.add.text(x,y-(stair.direction==='up'?245:180),stair.label,{fontFamily:'Georgia',fontSize:'14px',color:'#d8d0ff',backgroundColor:'#29233d'}).setOrigin(.5).setDepth(y+1);
  const zone=this.add.zone(x,y-(stair.direction==='up'?95:40),215,stair.direction==='up'?230:175).setInteractive({useHandCursor:true}).setDepth(y+2);zone.setData('stair',stair.id);zone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target===this.game.canvas&&!pointer.rightButtonDown())this.approachStairs(stair.id);});
  }

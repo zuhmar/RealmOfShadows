@@ -1,6 +1,11 @@
+import {woodsRidges} from './woods-cliffs';
 import type {RegionId} from './index';
 export interface StairConnection{id:string;from:RegionId;to:RegionId;x:number;y:number;radius:number;arrival:{x:number;y:number};direction:'up'|'down';label:string}
 export const floorConnections:readonly StairConnection[]=[
+ ...woodsRidges.flatMap(r=>[
+  {id:`woods-ridge-${r.id}-up`,from:'woods' as const,to:'woods-upper' as const,x:r.stair.x,y:r.stair.y+3,radius:1.2,arrival:r.stair,direction:'up' as const,label:`Up to ${r.name}`},
+  {id:`woods-ridge-${r.id}-down`,from:'woods-upper' as const,to:'woods' as const,...r.stair,radius:1.2,arrival:{x:r.stair.x,y:r.stair.y+4},direction:'down' as const,label:'Down to the forest trail'},
+ ]),
  {id:'woods-ledge-up',from:'woods',to:'woods-upper',x:40.5,y:9.5,radius:1.2,arrival:{x:40.5,y:6.5},direction:'up',label:'Up to Lookout Ledge'},
  {id:'woods-ledge-down',from:'woods-upper',to:'woods',x:40.5,y:5.5,radius:1.2,arrival:{x:40.5,y:10.5},direction:'down',label:'Down to the forest trail'},
  {id:'depot-loft-up',from:'elderwood',to:'elderwood-upper',x:11.5,y:6.5,radius:1.6,arrival:{x:11.5,y:7.5},direction:'up',label:'Depot loft'},

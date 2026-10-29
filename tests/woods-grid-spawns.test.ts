@@ -5,7 +5,7 @@ import {legal,pathfind} from '@realm/shared';
 import {woodsGridEncounters} from '../packages/game-data/src/woods-grid-spawns';
 
 test('Woods encounters cover separate habitats and approach paths with room between monsters',()=>{
- const spawns=gridSpawns('woods'),map=gridMap('woods'),portal=portalFor('woods');
+ const spawns=gridSpawns('woods').filter(s=>/^(wolf|spider|boar|bear)-/.test(s.id)),map=gridMap('woods'),portal=portalFor('woods');
  assert.equal(spawns.length,28);assert.equal(new Set(spawns.map(gridKey)).size,28);
  for(const [kind,area]of Object.entries(woodsGridEncounters)){
   const group=spawns.filter(s=>s.kind===kind);assert.equal(group.length,kind==='bear'?1:9);

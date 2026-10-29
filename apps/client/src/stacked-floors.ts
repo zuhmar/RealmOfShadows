@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import {woodsLedge,woodsCliffs,gridMap,stairsFor} from '@realm/game-data';
+import {woodsLedge,woodsCliffs,woodsRidges,ridgeCells,type WoodsRidge,gridMap,stairsFor} from '@realm/game-data';
 /** Shared by terrain previews and the depth-sorted outdoor floor overlay. */
 export function paintLedge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,scenic=false){
  const l=woodsLedge,cells=gridMap('woods-upper').cells,W=l.width*32,H=l.height*32,B=(l.height+l.faceHeight)*32;
@@ -56,6 +56,32 @@ export function paintLedge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,
  ctx.restore();
 
 }
+/** Joined tile footprints share one turf cap: no dividing walls where ridges meet. */
+export function paintRidge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,ridge:WoodsRidge){
+ const cells=ridgeCells(ridge),has=(x:number,y:number)=>cells.has(`${x},${y}`);
+ // Each uninterrupted face is one fractured rock mass, with no seams at tile joins.
+ const fronts=[...cells].map(k=>k.split(',').map(Number)).filter(([x,y])=>!has(x,y+1)).sort((a,b)=>a[1]-b[1]||a[0]-b[0]);
+ for(let i=0;i<fronts.length;){const [start,y]=fronts[i];let end=start;i++;while(i<fronts.length&&fronts[i][1]===y&&fronts[i][0]===end+1){end++;i++;}
+  const px=start*32,py=(y+1)*32,width=(end-start+1)*32;
+  ctx.save();ctx.beginPath();ctx.rect(px,py,width,64);ctx.clip();ctx.fillStyle='#354d40';ctx.fillRect(px,py,width,64);
+  for(let band=0;band<3;band++)for(let x=px-34+(band%2)*19;x<px+width;x+=47){
+   const top=py+band*22,j=Math.abs(Math.floor(x)+y*7+band*5)%9;
+   ctx.beginPath();ctx.moveTo(x,top+3);ctx.lineTo(x+25,top-2);ctx.lineTo(x+51,top+4);ctx.lineTo(x+45,top+20+j);ctx.lineTo(x+12,top+27);ctx.lineTo(x-2,top+18);ctx.closePath();ctx.fillStyle=['#657568','#758273','#53685e','#7e8875','#5b7067'][Math.abs(Math.floor(x/47)+band+y)%5];ctx.fill();
+   ctx.strokeStyle='#344b3f';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+13,top+9);ctx.lineTo(x+18,top+15);ctx.lineTo(x+14,top+21);ctx.stroke();
+  }
+  ctx.restore();
+ }
+ for(const key of cells){const[x,y]=key.split(',').map(Number),px=x*32,py=y*32;
+  ctx.drawImage(atlas,2,2,32,32,px,py,32,32);
+  // Exposed rim only; shared edges between adjoining parts remain open grass.
+  for(const [dx,dy]of [[0,-1],[-1,0],[1,0],[0,1]])if(!has(x+dx,y+dy)){
+   ctx.fillStyle='#687969';if(dy)ctx.fillRect(px,py+(dy===1?26:0),32,6);else ctx.fillRect(px+(dx===1?26:0),py,6,32);
+   ctx.strokeStyle='#3e5835';ctx.lineWidth=2;ctx.beginPath();if(dy){ctx.moveTo(px,py+(dy===1?25:7));ctx.lineTo(px+16,py+(dy===1?23:9));ctx.lineTo(px+32,py+(dy===1?25:7));}else{ctx.moveTo(px+(dx===1?25:7),py);ctx.lineTo(px+(dx===1?23:9),py+16);ctx.lineTo(px+(dx===1?25:7),py+32);}ctx.stroke();
+  }
+ }
+ const cx=ridge.stair.x*32,top=(ridge.stair.y+.5)*32;
+ for(let i=0;i<8;i++){const w=28+i*2;ctx.fillStyle='#354d40';ctx.fillRect(cx-w/2-2,top+i*8,w+4,9);ctx.fillStyle=i%2?'#95a084':'#87977f';ctx.fillRect(cx-w/2,top+i*8,w,5);ctx.fillStyle='#bbc0a1';ctx.fillRect(cx-w/2+1,top+i*8,w-2,1);}
+}
 /** Boundary cliffs share the ledge's stone palette, with joined corners and no root-wall tiles. */
 export function paintWoodsCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource){
  const map=gridMap('woods'),W=map.width,H=map.height;
@@ -73,11 +99,22 @@ export function paintWoodsCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImageS
   if(y===0){ctx.moveTo(0,30);ctx.lineTo(32,30);}if(y===H-1){ctx.moveTo(0,2);ctx.lineTo(32,2);}
   if(x===0){ctx.moveTo(30,0);ctx.lineTo(30,32);}if(x===W-1){ctx.moveTo(2,0);ctx.lineTo(2,32);}ctx.stroke();ctx.restore();
  }
+ for(const r of woodsRidges)paintRidge(ctx,atlas,r);
  for(const c of woodsCliffs){ctx.save();ctx.translate(c.x*32,c.y*32);ctx.scale(c.size/6,c.size/6);paintLedge(ctx,atlas,true);ctx.restore();}
 }
 export function drawRaisedFloor(scene:Phaser.Scene,region:string,click:(id:string)=>void){
  if(region!=='woods'&&region!=='woods-upper')return;
  const l=woodsLedge,key='woods-visible-ledge';
+ for(const r of woodsRidges){
+  const minX=Math.min(...r.parts.map(p=>p.x)),minY=Math.min(...r.parts.map(p=>p.y)),maxX=Math.max(...r.parts.map(p=>p.x+p.w)),maxY=Math.max(...r.parts.map(p=>p.y+p.h))+2,key=`woods-ridge-${r.id}`;
+  if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,(maxX-minX)*32,(maxY-minY)*32)!;const ctx=t.getContext();ctx.translate(-minX*32,-minY*32);paintRidge(ctx,scene.textures.get('terrain-woods-32').getSourceImage() as HTMLImageElement,r);t.refresh();}
+  scene.add.image(minX*64,minY*64,key).setOrigin(0).setScale(2).setDepth(maxY*64-1).setData('raisedRidge',r.id);
+  const stair=stairsFor(region).find(s=>s.id===`woods-ridge-${r.id}-${region==='woods'?'up':'down'}`)!;
+  const zone=scene.add.zone(r.stair.x*64,(r.stair.y+(region==='woods'?1.5:0))*64,96,128).setInteractive({useHandCursor:true}).setDepth(maxY*64+1).setData('stair',stair.id);
+  zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===scene.game.canvas&&!p.rightButtonDown())click(stair.id)});
+  scene.add.text(r.stair.x*64,(r.stair.y+.5)*64,stair.label,{fontSize:'12px',color:'#f0e2bc',backgroundColor:'#233d37'}).setOrigin(.5).setDepth(maxY*64+2);
+ }
+
  const scenicKey='woods-scenic-cliff';
  if(!scene.textures.exists(scenicKey)){const t=scene.textures.createCanvas(scenicKey,192,192)!;paintLedge(t.getContext(),scene.textures.get('terrain-woods-32').getSourceImage() as HTMLImageElement,true);t.refresh();}
  for(const c of woodsCliffs)scene.add.image(c.x*64,c.y*64,scenicKey).setOrigin(0).setDisplaySize(c.size*64,c.size*64).setDepth((c.y+c.size)*64-1).setData('scenicCliff',true);

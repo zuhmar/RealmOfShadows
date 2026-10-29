@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {monsterSpawns,portalFor,gridMap,weapons} from '@realm/game-data';
 import {pathfind,legal,sight,attackPath} from '@realm/shared';
 test('equal normal populations have connected habitats on the new grid',()=>{
- for(const kind of ['wolf','spider','boar']){const group=monsterSpawns.filter(s=>s.kind===kind);assert.equal(group.length,9);for(const s of group)assert.ok(pathfind(portalFor('woods').arrival,s,'woods').length);}
+ for(const kind of ['wolf','spider','boar']){const group=monsterSpawns.filter(s=>s.kind===kind);assert.equal(group.length,15);for(const s of group)assert.ok(pathfind(portalFor('woods').arrival,s,'woods').length);}
 });
 test('boss grove walls block sight and entry except at its south gate',()=>{
  for(const p of [{x:49.5,y:35.5},{x:62.5,y:35.5},{x:56.5,y:30.5},{x:52.5,y:41.5}])assert.equal(legal(p,'woods'),false);

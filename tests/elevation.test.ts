@@ -10,10 +10,10 @@ test('outdoor upper floor shares coordinates but blocks cliff access and falling
  assert.equal(islandForRegion('woods-upper'),'woods');assert.equal(canTravel(portalFor('woods'),'woods','woods-upper'),false);assert.equal(canTravel(portalFor('woods-upper'),'woods-upper','elderwood'),false);
 });
 test('paired ledge stairs and all upper wolves have legal reachable landings',()=>{
- const up=stairsFor('woods').find(s=>s.id==='woods-ledge-up')!,down=stairsFor('woods-upper')[0];
+ const up=stairsFor('woods').find(s=>s.id==='woods-ledge-up')!,down=stairsFor('woods-upper').find(s=>s.id==='woods-ledge-down')!;
  assert.ok(pathfind(portalFor('woods').arrival,up,'woods').length);assert.ok(legal(up.arrival,up.to));assert.ok(legal(down.arrival,down.to));
  assert.ok(availableStair(up.arrival,'woods-upper',down.id));assert.equal(availableStair(up.arrival,'woods',down.id),undefined);
- const wolves=gridSpawns('woods-upper');assert.equal(wolves.length,3);
+ const wolves=gridSpawns('woods-upper').filter(s=>s.id.startsWith('ledge-'));assert.equal(wolves.length,3);
  for(const wolf of wolves){assert.equal(monsterRegion(wolf),'woods-upper');assert.ok(legal(wolf,'woods-upper'));assert.ok(pathfind(up.arrival,wolf,'woods-upper').length);}
  assert.equal(gridMap('woods-upper').blocked.has('40,7'),true);
 });

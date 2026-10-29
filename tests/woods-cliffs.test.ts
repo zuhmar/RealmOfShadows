@@ -4,7 +4,7 @@ import {woodsCliffs,gridMap,gridSpawns,portalFor,resourceNodes,stairsFor} from '
 import {pathfind,legal} from '@realm/shared';
 test('Woods outcrops are solid and retain routes to encounters, gathering and stairs',()=>{
  const map=gridMap('woods'),start=portalFor('woods').arrival;
- assert.equal(woodsCliffs.length,5);
+ assert.equal(woodsCliffs.length,16);
  for(const c of woodsCliffs)for(let y=c.y;y<c.y+c.size;y++)for(let x=c.x;x<c.x+c.size;x++){
   assert.equal(map.cells[y][x],5);assert.equal(legal({x:x+.5,y:y+.5},'woods'),false);
  }
