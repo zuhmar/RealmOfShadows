@@ -13,7 +13,7 @@ export function modularFurniture(object:IslandObject):FurniturePiece[]|undefined
   return cells.flatMap(([x,y],i)=>{
    const mask=(occupied.has(`${x},${y-1}`)?1:0)|(occupied.has(`${x+1},${y}`)?2:0)|(occupied.has(`${x},${y+1}`)?4:0)|(occupied.has(`${x-1},${y}`)?8:0);
    const base={...mapObject(`counter-connected-${mask}`,x*48,(y-.25)*48,48,60),footY:(y+1)*48,sourceKey:object.key};
-   return i===1?[base,{...mapObject(`counter-tools-${skill}`,(x+.0625)*48,(y-.28)*48,42,42),footY:(y+1)*48+.1,sourceKey:object.key}]:[base];
+   return i===1?[base,{...mapObject(`counter-tools-${skill}-${station.npc.facing}`,(x+.0625)*48,(y-.28)*48,42,42),footY:(y+1)*48+.1,sourceKey:object.key}]:[base];
   });
  }
  const family=/^furn-counter-/.test(object.key)?'counter':/^furn-(meeting|table)-/.test(object.key)?'table':/^furn-bench-/.test(object.key)?'bench':/^furn-bookshelf-/.test(object.key)?'shelf':undefined;

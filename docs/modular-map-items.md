@@ -11,3 +11,7 @@ Keep discrete objects (trees, rocks, chests, barrels, lamps, stairs and similar 
 Sources: `assets/world/architecture/modular-furniture/*.svg`. Regenerate committed transparent runtime PNGs using `npm run art:map-furniture` (Playwright and Chromium required). Wood comes from the existing architectural material swatch. Previous painted furniture and crafting masters are preserved. The old bench extraction command does not replace the modular runtime pieces.
 
 Placement and collision data are unchanged by visual expansion. No save migration, recipe, price or profession changes are involved.
+
+Every new item sprite set must include front (`down`), left, right and back
+(`up`) views, with matching scale, palette and baseline. Profession tool sets
+provide all four; hall props select the view matching their NPC's facing.

@@ -27,3 +27,20 @@ these tool sprites. Characters remain approved reference-based skins.
 parts with `npm run art:crafting-hall` (Pillow plus Playwright/Chromium required).
 Original generation output is also retained in `/workspace/generated_images` in
 the development environment; the committed master is the portable source.
+
+## Four-angle profession props
+
+`tools-directions-master.png` is the current generated master. Rows are
+blacksmithing, woodworking, cooking and alchemy. Columns are front/down, left,
+right and back/up. Each view is drawn separately, not produced by flipping or
+rotating a front sprite. The previous `tools-master.png` remains preserved.
+
+`extract-counter-tools.py` packs all 16 views into 64×64 RGBA canvases, using
+measured transparent row gutters (including the tall retorts), one scale per
+profession across all four angles, a shared baseline at pixel 62,
+and at least two pixels of padding. Front aliases remain compatible with old
+placements. Runtime uses `counter-tools-{profession}-{down|left|right|up}`;
+Crafting Hall selects the view from the NPC's customer-facing direction.
+
+All new map item artwork should supply these four cardinal views. Do not create
+a directional view by rotating a finished 2D sprite.
