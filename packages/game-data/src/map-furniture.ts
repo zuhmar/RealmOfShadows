@@ -1,9 +1,9 @@
 import {craftingStations} from './town-services';
 import {mapObject,type IslandObject} from './island-layout';
-/** Furniture uses 64px per floor cell, plus a 16px elevated top gutter. */
+/** Square 80px frames pad the 64px cell core with 8px horizontal gutters. */
 export interface FurniturePiece extends IslandObject {sourceKey?:string;serviceFor?:string}
 export type CounterEnd='single'|'start'|'middle'|'end'|'corner-nw'|'corner-ne'|'corner-sw'|'corner-se';
-export const furniturePiece=(family:string,end:CounterEnd,x:number,y:number,sourceKey?:string):FurniturePiece=>({...mapObject(`map-furniture-${family}-${end}`,x*48,(y-.25)*48,48,60),footY:(y+1)*48,sourceKey});
+export const furniturePiece=(family:string,end:CounterEnd,x:number,y:number,sourceKey?:string):FurniturePiece=>({...mapObject(`map-furniture-${family}-${end}`,(x-.125)*48,(y-.25)*48,60,60),footY:(y+1)*48,sourceKey});
 /** Expand logical furniture into reusable cells. Collision remains the authored footprint. */
 export function modularFurniture(object:IslandObject):FurniturePiece[]|undefined{
  const skill=object.key.match(/^craft-bench-(blacksmithing|woodworking|cooking|alchemy)$/)?.[1];
@@ -12,7 +12,7 @@ export function modularFurniture(object:IslandObject):FurniturePiece[]|undefined
   const cells=station.bench.cells,occupied=new Set(cells.map(([x,y])=>`${x},${y}`));
   return cells.flatMap(([x,y],i)=>{
    const mask=(occupied.has(`${x},${y-1}`)?1:0)|(occupied.has(`${x+1},${y}`)?2:0)|(occupied.has(`${x},${y+1}`)?4:0)|(occupied.has(`${x-1},${y}`)?8:0);
-   const base={...mapObject(`counter-connected-${mask}`,x*48,(y-.25)*48,48,60),footY:(y+1)*48,sourceKey:object.key};
+   const base={...mapObject(`counter-connected-${mask}`,(x-.125)*48,(y-.25)*48,60,60),footY:(y+1)*48,sourceKey:object.key};
    return i===1?[base,{...mapObject(`counter-tools-${skill}-${station.npc.facing}`,(x+.0625)*48,(y-.28)*48,42,42),footY:(y+1)*48+.1,sourceKey:object.key}]:[base];
   });
  }

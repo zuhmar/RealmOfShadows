@@ -45,3 +45,24 @@ uniformly inside its authored canvas, anchors its bottom, and centers solid
 props over their physical footprint. It does not stretch tall lamps or narrow
 trees into square images. Floors, wall panels, roof parts and mounted signs
 retain their dedicated architectural placement rules.
+
+## Square runtime prop canvases
+
+All placed prop sprites now use square PNG canvases and equal world width/height.
+`npm run art:square-props` packs non-square originals into
+`assets/world/square-props/` and gathering trees into
+`assets/professions/square-runtime/`. This is padding only: original pixels,
+artwork proportions, facing, and masters are preserved. Existing square images
+are used directly. Game and editor prefer padded versions under the same keys.
+
+The renderer uses the original size catalog to keep artwork at its established
+scale and baseline within the square frame. Counter modules use 80×80 frames:
+64px core width plus 8px transparent gutters on each side. Their 60×60 world
+canvases start 6 units left of the core, so adjacent counter tops still meet
+exactly on the grid. Gathering trees, stumps and the outdoor workbench also
+render square. Collision footprints are unchanged.
+
+Building wall panels, door frames, floors, roofs and mounted building signs
+remain architectural tiles with fitted geometry. They are not padded prop
+canvases. Repack props after regenerating source artwork; furniture and catalog
+commands do this automatically.

@@ -20,8 +20,8 @@ export function buildingVisuals(region:string,objects:readonly IslandObject[],ro
   const copy:BuildingVisual={...object};
   const native=(nativeSizes as Record<string,readonly number[]>)[object.key];
   if(native&&!isBuildingFloor(object.key)){
-   // Keep authored PNG proportions; floor footprints and elevated canvases are independent.
-   const scale=Math.min(object.w/native[0],object.h/native[1]),w=native[0]*scale,h=native[1]*scale;
+   // Runtime props have square padded canvases; keep the original artwork scale and baseline.
+   const scale=Math.min(object.w/native[0],object.h/native[1]),w=Math.max(native[0],native[1])*scale,h=w;
    const center=object.footprint?(object.footprint.x+object.footprint.width/2)*48:object.x+object.w/2;
    copy.x=center-w/2;copy.y=object.y+object.h-h;copy.w=w;copy.h=h;
   }
