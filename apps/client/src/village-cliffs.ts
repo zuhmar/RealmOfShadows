@@ -54,20 +54,22 @@ export function paintCliffStairs(ctx:CanvasRenderingContext2D,s:typeof elderwood
  const tx=s.top.x*32,ty=s.top.y*32,gx=s.x*32,gy=s.y*32,dx=gx-tx,dy=gy-ty,length=Math.hypot(dx,dy),nx=-dy/length,ny=dx/length,rise=30,count=10;
  const point=(t:number,side:number,z:number):Vertex=>[tx+dx*t+nx*side,ty+rise+(dy-rise)*t+ny*side-z];
  ctx.save();
- const shadow=[point(0,-23,rise),point(0,23,rise),point(1,26,0),point(1,-26,0)].map(([x,y])=>[x+5,y+7] as Vertex);shape(ctx,shadow,'#102a2355');
+ // Stair runs use consecutive tile parts; their cross-axis footprint is exactly one cell.
+ ctx.beginPath();if(dx===0)ctx.rect(Math.floor(s.x)*32,Math.min(ty,gy)-64,32,Math.abs(dy)+128);else ctx.rect(Math.min(tx,gx)-32,Math.floor(s.y)*32,Math.abs(dx)+64,32);ctx.clip();
+ const shadow=[point(0,-15,rise),point(0,15,rise),point(1,15,0),point(1,-15,0)].map(([x,y])=>[x+5,y+7] as Vertex);shape(ctx,shadow,'#102a2355');
  // A recessed cut and tapered retaining walls connect the upper turf to the lower landing.
- shape(ctx,[point(0,-23,rise),point(0,23,rise),point(1,26,0),point(1,-26,0)],'#293f37');
+ shape(ctx,[point(0,-15,rise),point(0,15,rise),point(1,15,0),point(1,-15,0)],'#293f37');
  type Face={points:Vertex[];fill:string;edge?:string;depth:number;foundation?:boolean};const faces:Face[]=[];
  const add=(points:Vertex[],fill:string,edge?:string,foundation=false)=>faces.push({points,fill,edge,foundation,depth:Math.max(...points.map(p=>p[1]))});
  for(let i=0;i<count;i++){
-  const t=i/count,next=(i+1)/count,z=rise*(1-t),zNext=rise*(1-next),w=15+t*3;
+  const t=i/count,next=(i+1)/count,z=rise*(1-t),zNext=rise*(1-next),w=11+t;
   const a=point(t,-w,z),b=point(t,w,z),c=point(next,w,z),d=point(next,-w,z),lowC=point(next,w,zNext),lowD=point(next,-w,zNext);
   add([a,b,c,d],i%2?'#9ca58a':'#8e9b83','#697864');
   add([d,c,lowC,lowD],dx<0||dy<0?'#7c8876':'#526453','#344c40');
  }
  // Stone cheek walls have visible side faces and narrow lit caps, rather than painted stripes.
  for(const side of [-1,1]){
-  const inner=side*20,outer=side*25;
+  const inner=side*13,outer=side*15;
   const a=point(0,outer,rise+5),b=point(1,outer,5),c=point(1,outer,-1),d=point(0,outer,0);
   add([a,b,c,d],side*nx<0?'#87947a':'#4b6255','#344f40',true);
   add([a,b,point(1,outer,-1),point(0,outer,rise-1)],side*nx<0?'#87947a':'#4b6255','#344f40');
@@ -81,7 +83,7 @@ export function drawVillageCliffStairs(scene:Phaser.Scene,region:string,click:(i
  if(region!=='elderwood'&&region!=='elderwood-upper')return;
  for(const s of elderwoodRimStairs){const up=region==='elderwood',stair=stairsFor(region).find(r=>r.id===`elderwood-rim-${s.id}-${up?'up':'down'}`)!;
  const x=up?(s.x+s.top.x)/2:s.top.x,y=up?(s.y+s.top.y)/2:s.top.y;
- const zone=scene.add.zone(x*64,y*64,110,110).setInteractive({useHandCursor:true}).setDepth(10000).setData('stair',stair.id);
+ const zone=scene.add.zone(x*64,y*64,64,64).setInteractive({useHandCursor:true}).setDepth(10000).setData('stair',stair.id);
  zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===scene.game.canvas&&!p.rightButtonDown())click(stair.id)});
  scene.add.text(x*64,y*64-45,up?'↑ Cliff walk':'↓ Village',{fontSize:'11px',color:'#eee4c3',backgroundColor:'#243f32'}).setOrigin(.5).setDepth(10001);
  }

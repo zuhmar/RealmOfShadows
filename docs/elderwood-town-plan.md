@@ -85,3 +85,6 @@ This artwork update requires only a client/Vercel redeploy.
 
 ### Forest style alignment
 Elderwood cliff faces now share the illustrated fractured-strata painter with Whispering Woods ridges (`forest-rock.ts`). Village stone uses a slightly warmer palette; directional stairs retain their projected treads and cheeks with forest-style colors. The generated rock master remains archived, but the photographic-looking texture is no longer loaded by the game or editor. Layout, collision and stair destinations are unchanged. Deploy Vercel for this visual update.
+
+### Grid footprint rule
+Single-part map items must fit within one 32px grid cell. Larger objects require multiple tile parts. Cliff stair runs use consecutive cells along their length, with treads, retaining cheeks and shadows confined to one cell across. This applies to Elderwood's four directional stairs and Whispering Woods' ledge/ridge stairs. Elderwood stair click zones are also one cell. The browser cliff check renders each directional stair in isolation and asserts zero opaque pixels outside its cross-axis cell.

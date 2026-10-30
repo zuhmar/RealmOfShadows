@@ -45,10 +45,10 @@ export function paintLedge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,
  }
  if(!scenic){
  // A flared stone staircase is cut into the south face; retaining cheeks meet the cliff.
- polygon([[92,H-9],[101,H-7],[94,B-1],[80,B-2]],'#495d50','#30463e');
- polygon([[124,H-8],[133,H-7],[146,B-2],[133,B-1]],'#536858','#30463e');
+ polygon([[97,H-9],[102,H-7],[102,B-1],[97,B-2]],'#495d50','#30463e');
+ polygon([[122,H-8],[127,H-7],[127,B-2],[122,B-1]],'#536858','#30463e');
  for(let i=0;i<8;i++){
-  const width=29+i*2.3,x=3.5*32-width/2,y=H-6+i*8.5;
+  const width=20+i*.5,x=3.5*32-width/2,y=H-6+i*8.5;
   polygon([[x,y],[x+width,y],[x+width+1,y+8],[x-1,y+8]],'#455a50','#2d443b');
   polygon([[x,y],[x+width,y],[x+width+.5,y+5],[x-.5,y+5]],i%2?'#95a084':'#87977f');
   ctx.strokeStyle='#b8bda0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+1,y+.5);ctx.lineTo(x+width-1,y+.5);ctx.stroke();
@@ -77,7 +77,7 @@ export function paintRidge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,
   }
  }
  const cx=ridge.stair.x*32,top=(ridge.stair.y+.5)*32;
- for(let i=0;i<8;i++){const w=28+i*2;ctx.fillStyle='#354d40';ctx.fillRect(cx-w/2-2,top+i*8,w+4,9);ctx.fillStyle=i%2?'#95a084':'#87977f';ctx.fillRect(cx-w/2,top+i*8,w,5);ctx.fillStyle='#bbc0a1';ctx.fillRect(cx-w/2+1,top+i*8,w-2,1);}
+ for(let i=0;i<8;i++){const w=24;ctx.fillStyle='#354d40';ctx.fillRect(cx-w/2-2,top+i*8,w+4,9);ctx.fillStyle=i%2?'#95a084':'#87977f';ctx.fillRect(cx-w/2,top+i*8,w,5);ctx.fillStyle='#bbc0a1';ctx.fillRect(cx-w/2+1,top+i*8,w-2,1);}
 }
 /** Boundary cliffs share the ledge's stone palette, with joined corners and no root-wall tiles. */
 export function paintWoodsCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,upperCells=gridMap('woods-upper').cells){
