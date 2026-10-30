@@ -11,6 +11,8 @@ export function paintCliffTile(ctx:CanvasRenderingContext2D,x:number,y:number,pa
  for(let band=0;band<3;band++){const top=band*13-5,shift=(band+variant)%2*13;
  for(let px=-32+shift;px<32;px+=32){c.beginPath();c.moveTo(px,top+2);c.lineTo(px+16,top);c.lineTo(px+33,top+4);c.lineTo(px+29,top+15);c.lineTo(px+8,top+17);c.lineTo(px-2,top+11);c.closePath();c.fillStyle=rock[(band+variant+3)%4];c.fill();}
  }
+ // Layered stone shelves: a lit lip, vertical shadow and occasional recessed fissure.
+ for(let row=0;row<3;row++){const yy=row*11+2;c.fillStyle='#bac2a532';c.fillRect(0,yy,32,1);c.fillStyle='#20362e66';c.fillRect(0,yy+8,32,2);const xx=(row*13+variant*7)%28;c.fillRect(xx,yy+2,2,6);}
  c.strokeStyle='#344b3f';c.lineWidth=1;c.beginPath();c.moveTo(13+variant*2,8);c.lineTo(18,15);c.lineTo(14,23);c.stroke();
  if(part==='face-top'){c.fillStyle='#344c32';c.fillRect(0,0,32,3);c.fillStyle=village?'#789154':'#647e42';c.beginPath();c.moveTo(0,0);c.lineTo(32,0);c.lineTo(32,4);c.lineTo(24,3);c.lineTo(20,8);c.lineTo(17,4);c.lineTo(8,5);c.lineTo(4,8);c.lineTo(0,4);c.fill();}
  if(part==='face-bottom'){c.fillStyle='#213c3544';c.fillRect(0,27,32,5);}
@@ -34,7 +36,12 @@ export function paintCliffTile(ctx:CanvasRenderingContext2D,x:number,y:number,pa
   c.strokeStyle=west?'#adb697':'#344b3f';c.lineWidth=1;c.beginPath();c.moveTo(west?0:32,north?24:8);c.lineTo(west?24:8,north?0:32);c.stroke();
  }
  if(part.startsWith('stairs-')){const direction=part.slice(7),horizontal=direction==='east'||direction==='west';c.fillStyle='#344b3f';c.fillRect(0,0,32,32);
- for(let i=0;i<4;i++){const p=i*8;c.fillStyle=i%2?'#95a084':'#87977f';if(horizontal)c.fillRect(p,3,6,26);else c.fillRect(3,p,26,5);c.fillStyle='#b8bda0';if(horizontal)c.fillRect(p+(direction==='west'?5:0),3,1,26);else c.fillRect(3,p+(direction==='north'?4:0),26,1);}
+ for(let i=0;i<4;i++){const p=i*8,reverse=direction==='north'||direction==='west';
+ c.fillStyle='#4c5c4a';if(horizontal)c.fillRect(p,3,8,26);else c.fillRect(3,p,26,8);
+ c.fillStyle='#97a186';if(horizontal)c.fillRect(p+(reverse?3:0),3,5,26);else c.fillRect(3,p+(reverse?3:0),26,5);
+ c.fillStyle='#c3c9a8';if(horizontal)c.fillRect(p+(reverse?7:0),3,1,26);else c.fillRect(3,p+(reverse?7:0),26,1);
+ c.fillStyle='#263b30';if(horizontal)c.fillRect(p+(reverse?0:6),3,2,26);else c.fillRect(3,p+(reverse?0:6),26,2);
+ }
  c.fillStyle='#a0ad87';if(horizontal)c.fillRect(0,0,32,3);else c.fillRect(0,0,3,32);c.fillStyle='#4a6154';if(horizontal)c.fillRect(0,29,32,3);else c.fillRect(29,0,3,32);}
  cache.set(key,tile);}
  ctx.drawImage(tile,x,y);

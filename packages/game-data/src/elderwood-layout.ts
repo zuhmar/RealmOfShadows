@@ -10,4 +10,12 @@ const oldStairs=[
  {id:'east',x:42.5,y:20.5,top:{x:45.5,y:20.5},return:{x:41.5,y:20.5}},
 ] as const;
 export const elderwoodRimStairs=oldStairs.map(s=>({...townPoint(s),top:townPoint(s.top),return:townPoint(s.return)}));
-export const onElderwoodRim=(x:number,y:number)=>x>=1&&y>=1&&x<elderwoodSize.width-1&&y<elderwoodSize.height-1&&(x<elderwoodTown.x+3||x>=elderwoodTown.x+45||y<elderwoodTown.y+3||y>=elderwoodTown.y+37);
+/** Stepped headlands and shallow inlets; housing and the original town remain inland. */
+export function onElderwoodLand(x:number,y:number){
+ const north=[5,3,2,4,2,3,5,2,4,3,5,4,5][Math.min(12,Math.max(0,Math.floor(x/8)))];
+ const south=[5,4,2,3,4,2,3,5,3,2,4,3,5][Math.min(12,Math.max(0,Math.floor(x/8)))];
+ const west=[5,4,3,2,4,3,2,4,2,3,4,5][Math.min(11,Math.max(0,Math.floor(y/8)))];
+ const east=[5,3,4,2,3,4,2,3,4,2,3,5][Math.min(11,Math.max(0,Math.floor(y/8)))];
+ return x>=west&&x<elderwoodSize.width-east&&y>=north&&y<elderwoodSize.height-south;
+}
+export const onElderwoodRim=(x:number,y:number)=>onElderwoodLand(x,y)&&(x<elderwoodTown.x+3||x>=elderwoodTown.x+45||y<elderwoodTown.y+3||y>=elderwoodTown.y+37);

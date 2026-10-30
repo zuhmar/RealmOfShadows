@@ -93,4 +93,4 @@ export type {GridDocument,GridEdits,EditorProp,EditorSpawn} from './grid-editing
 
 export {authoredGridSpawns} from './grid-world';
 
-export {townPoint,elderwoodTown,elderwoodSize,elderwoodPortal,elderwoodRimStairs,onElderwoodRim} from './elderwood-layout';
+export {townPoint,elderwoodTown,elderwoodSize,elderwoodPortal,elderwoodRimStairs,onElderwoodRim,onElderwoodLand} from './elderwood-layout';

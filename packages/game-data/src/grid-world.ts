@@ -1,6 +1,6 @@
 import {dressNeighborhood} from './neighborhood-dressing';
 import {housingRegions,houseFloorIndex,playerHouses,houseCells} from './housing';
-import {elderwoodTown,elderwoodSize,onElderwoodRim} from './elderwood-layout';
+import {elderwoodTown,elderwoodSize,onElderwoodRim,onElderwoodLand} from './elderwood-layout';
 import {validateGridEdits,applyPropEdits,type GridEdits} from './grid-editing';
 import {woodsCliffs,woodsSize,woodsRidges,ridgeCells,woodsExpansionSpawns} from './woods-cliffs';
 import {woodsLedge} from './elevation';
@@ -205,8 +205,8 @@ export function gridMap(region:string,authored=false):GridMap{
    }
   }}
  }
- if(region==='elderwood-upper'){for(const x of [10,28,46,64,82]){prop('elderwood-oak',x,1,3,3,1,1,1);prop('elderwood-oak',x,92,3,3,1,1,1);}for(const y of [15,27,39,51,63,75,87]){prop('elderwood-oak',2,y,3,3,1,1,1);prop('elderwood-oak',99,y,3,3,1,1,1);}for(const[x,y]of [[19,20],[84,20],[19,89],[84,89]])prop('elderwood-lamp',x,y,1,2,1,1);}
- if(region==='elderwood-upper')dressNeighborhood(cells,objects,blocked);
+ if(region==='elderwood-upper'){const edgeTree=(x:number,y:number)=>{if(onElderwoodLand(x+1,y+2))prop('elderwood-oak',x,y,3,3,1,1,1);};for(const x of [10,19,28,37,46,55,64,73,82,91]){edgeTree(x,4);edgeTree(x,90);}for(const y of [15,27,39,51,63,75,87]){edgeTree(5,y);edgeTree(97,y);}for(const[x,y]of [[19,20],[84,20],[19,89],[84,89]])prop('elderwood-lamp',x,y,1,2,1,1);}
+ if(region==='elderwood-upper'){dressNeighborhood(cells,objects,blocked);for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(!onElderwoodLand(x,y))cells[y][x]=5;}
  const override=authored?{}:storedEdit(region);
  if(override.cells)for(let y=0;y<height;y++)cells[y]=[...override.cells[y]];
  if(override.props||override.removedProps)applyPropEdits(objects,blocked,override);
