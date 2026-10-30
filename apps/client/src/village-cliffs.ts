@@ -8,8 +8,8 @@ export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImag
  if(x===0||y===0||x===W-1||y===H-1){paintCliffTile(ctx,x*32,y*32,'face-bottom',true,(x+y)%3);continue;}
  if(onElderwoodRim(x,y)){ctx.drawImage(atlas,2,2,32,32,x*32,y*32,32,32);continue;}
  if(x<5||x>=W-5||y<5||y>=H-5){const north=y<5,south=y>=H-5,west=x<5,east=x>=W-5;
- const part=north&&west?'nw':north&&east?'ne':south&&west?'sw':south&&east?'se':(north?y===3:south?y===H-5:west?x===3:x===W-5)?'face-top':'face-bottom';
- paintCliffTile(ctx,x*32,y*32,part,true,(x+y)%3);}
+ const part=north&&west?'nw':north&&east?'ne':south&&west?'sw':south&&east?'se':(north?y===3:south?y===H-4:west?x===3:x===W-4)?'face-top':'face-bottom';
+ paintCliffTile(ctx,x*32,y*32,part,true,(x+y)%3,north?'south':south?'north':west?'east':'west');}
  }
  for(const s of elderwoodRimStairs)paintCliffStairs(ctx,s);
 }

@@ -6,4 +6,4 @@
     <rect x="88" y="27" width="28" height="27" fill="#527989" stroke="#bd8b4c" stroke-width="2"/>
     <path d="M90 29L108 29L90 47Z" fill="#b5d5d5" opacity=".5"/>
     <path d="M102 27V54M88 40H116" stroke="#694828" stroke-width="3"/>
-    <path d="M83 56H121V60H83Z" fill="url(#woodTexture)" stroke="#634629" stroke-width="2"/><path d="M0 0H128V12H0Z" fill="url(#woodTexture)"/><path d="M0 1H128M0 11H128" stroke="#614224" stroke-width="2"/><path d="M0 4H128" stroke="#e0b478" stroke-width="2"/></svg>
+    <path d="M83 56H121V60H83Z" fill="url(#woodTexture)" stroke="#634629" stroke-width="2"/><path d="M0 0H128V12H0Z" fill="url(#woodTexture)"/><path d="M0 1H128M0 11H128" stroke="#614224" stroke-width="2"/><path d="M0 4H128" stroke="#e0b478" stroke-width="2"/><path d="M0 12H128V16H0Z" fill="#332b2440"/><path d="M0 1H128" stroke="#f3d5a0" stroke-width="2"/><path d="M0 77H128V80H0Z" fill="#272e2b55"/></svg>

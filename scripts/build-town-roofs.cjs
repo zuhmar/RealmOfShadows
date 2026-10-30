@@ -20,7 +20,13 @@ function tile(palette,slope,edge){
  if(sides.includes('s'))beams+=`<path d="M${left} 80H${right}V88H${left}Z"/>`;
  if(sides.includes('w'))beams+=`<path d="M0 ${top}H8V${bottom}H0Z"/>`;
  if(sides.includes('e'))beams+=`<path d="M80 ${top}H88V${bottom}H80Z"/>`;
- return `<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88"><defs>${material}${shingles('back',palette,true)}${shingles('front',palette,false)}</defs>${plane}<g fill="url(#wood)" stroke="#654528" stroke-width="1">${beams}</g></svg>`;
+ // Eave fascia has a lit top and a darker vertical face, continuous across tile joins.
+ let fascia='';
+ if(sides.includes('s'))fascia+=`<path d="M${left} 80H${right}V82H${left}Z" fill="#e0b87f" opacity=".7"/><path d="M${left} 84H${right}V88H${left}Z" fill="#332b28" opacity=".65"/>`;
+ if(sides.includes('n'))fascia+=`<path d="M${left} 1H${right}" stroke="#e0b87f" stroke-width="2" opacity=".7"/>`;
+ if(sides.includes('w'))fascia+=`<path d="M1 ${top}V${bottom}" stroke="#e0b87f" stroke-width="2" opacity=".65"/>`;
+ if(sides.includes('e'))fascia+=`<path d="M84 ${top}H88V${bottom}H84Z" fill="#332b28" opacity=".55"/>`;
+ return `<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88"><defs>${material}${shingles('back',palette,true)}${shingles('front',palette,false)}</defs>${plane}<g fill="url(#wood)" stroke="#654528" stroke-width="1">${beams}</g>${fascia}</svg>`;
 }
 function ridge(palette,end){
  const left=end==='w'?0:12,right=end==='e'?88:76;

@@ -39,7 +39,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
   });
   for(const roof of checks.roofs){assert.ok(roof.minOverlap>=0,roof.id+' has an eave gap');assert.ok(roof.maxOverlap<roof.wallHeight,roof.id+' roof must not swallow the facade');}
   for(const door of checks.doors){assert.equal(door.nativeWidth,door.width*64);assert.equal(door.nativeHeight,80);assert.equal(door.edgeAlpha,255,'door jambs meet the adjacent wall along their whole height');assert.equal(door.centerAlpha,door.open?0:255,'open door remains a clear passage');}
-  await page.evaluate(()=>s.applyTravel('elderwood',{x:24.5,y:8.5,stamina:100}));await page.waitForTimeout(400);
+  await page.evaluate(async()=>{const{villageBuildings}=await import('/@fs/workspace/RealmOfShadows/packages/game-data/src/index.ts');window.testSmithy=villageBuildings.find(b=>b.id==='smithy');s.applyTravel('elderwood',{x:testSmithy.x+testSmithy.door+testSmithy.doorWidth/2,y:testSmithy.y+testSmithy.height+.5,stamina:100})});await page.waitForTimeout(400);
   for(const closed of [true,false]){
    const point=await page.evaluate(()=>{const o=s.worldObjects.find(o=>o.getData('townDoor')==='elderwood/smithy'),r=s.game.canvas.getBoundingClientRect(),c=s.cameras.main;return {x:r.x+(o.x+o.displayWidth/2-c.worldView.x)*c.zoom*r.width/s.game.canvas.width,y:r.y+(o.y+o.displayHeight*.65-c.worldView.y)*c.zoom*r.height/s.game.canvas.height}});
    if(mobile)await page.touchscreen.tap(point.x,point.y);else await page.mouse.click(point.x,point.y);
@@ -47,7 +47,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
    await page.waitForFunction(closed=>s.worldObjects.find(o=>o.getData('townDoor')==='elderwood/smithy').texture.key===`house-door-2-${closed?'closed':'open'}`,closed);
   }
   for(const inside of [true,false]){
-   await page.evaluate(inside=>s.applyTravel('elderwood',{x:24.5,y:inside?6.5:8.5,stamina:100}),inside);await page.waitForTimeout(150);
+   await page.evaluate(inside=>s.applyTravel('elderwood',{x:testSmithy.x+testSmithy.door+testSmithy.doorWidth/2,y:testSmithy.y+testSmithy.height+(inside?-1.5:.5),stamina:100}),inside);await page.waitForTimeout(150);
    assert.equal(await page.evaluate(inside=>{const parts=s.worldObjects.filter(o=>o.getData('roofFor')==='smithy');return parts.length>30&&parts.every(o=>o.visible===!inside)},inside),true,'the entire tile/ridge/chimney assembly cuts away together');
   }
   await page.screenshot({path:`/tmp/house-joins-${mobile?'mobile':'desktop'}.png`});

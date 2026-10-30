@@ -1,9 +1,10 @@
 /** Fixed native 32×32 cliff parts. Larger cliffs repeat parts, never resize artwork. */
 export const CLIFF_TILE_SIZE=32;
 export type CliffPart='face-top'|'face-bottom'|'north'|'south'|'east'|'west'|'nw'|'ne'|'sw'|'se'|'stairs-north'|'stairs-south'|'stairs-east'|'stairs-west';
+export type CliffFacing='north'|'south'|'east'|'west';
 const cache=new Map<string,HTMLCanvasElement>();
-export function paintCliffTile(ctx:CanvasRenderingContext2D,x:number,y:number,part:CliffPart,village=false,variant=0){
- const key=`${part}:${village}:${variant%3}`;let tile=cache.get(key);
+export function paintCliffTile(ctx:CanvasRenderingContext2D,x:number,y:number,part:CliffPart,village=false,variant=0,facing:CliffFacing='south'){
+ const key=`${part}:${village}:${variant%3}:${facing}`;let tile=cache.get(key);
  if(!tile){tile=document.createElement('canvas');tile.width=tile.height=32;const c=tile.getContext('2d')!;
  const rock=village?['#707d6b','#808a76','#5e7061','#89907a']:['#657568','#758273','#53685e','#7e8875'];
  c.fillStyle='#354d40';c.fillRect(0,0,32,32);
@@ -13,12 +14,28 @@ export function paintCliffTile(ctx:CanvasRenderingContext2D,x:number,y:number,pa
  c.strokeStyle='#344b3f';c.lineWidth=1;c.beginPath();c.moveTo(13+variant*2,8);c.lineTo(18,15);c.lineTo(14,23);c.stroke();
  if(part==='face-top'){c.fillStyle='#344c32';c.fillRect(0,0,32,3);c.fillStyle=village?'#789154':'#647e42';c.beginPath();c.moveTo(0,0);c.lineTo(32,0);c.lineTo(32,4);c.lineTo(24,3);c.lineTo(20,8);c.lineTo(17,4);c.lineTo(8,5);c.lineTo(4,8);c.lineTo(0,4);c.fill();}
  if(part==='face-bottom'){c.fillStyle='#213c3544';c.fillRect(0,27,32,5);}
- const edge=(side:string)=>{c.fillStyle='#344c32';if(side==='north')c.fillRect(0,5,32,2);if(side==='south')c.fillRect(0,25,32,2);if(side==='west')c.fillRect(5,0,2,32);if(side==='east')c.fillRect(25,0,2,32);};
+ // Keep strata upright for every face. Direction changes lighting, never rotates the material.
+ if(!part.startsWith('stairs-')){
+  const light=facing==='west'?'#dce4b91f':facing==='east'?'#142d314d':facing==='north'?'#dce4b90f':'#152e2930';c.fillStyle=light;c.fillRect(0,0,32,32);
+  const depth=c.createLinearGradient(0,0,0,32);depth.addColorStop(0,'#1b302800');depth.addColorStop(1,'#172d2b40');c.fillStyle=depth;c.fillRect(0,0,32,32);
+ }
+ const edge=(side:string)=>{
+  const horizontal=side==='north'||side==='south',near=side==='north'||side==='west',position=near?0:24;
+  c.fillStyle=near?'#a0ad87':'#344b3f';if(horizontal)c.fillRect(0,position,32,8);else c.fillRect(position,0,8,32);
+  c.fillStyle=near?'#b3b99a':'#728469';if(horizontal)c.fillRect(0,position,32,2);else c.fillRect(position,0,2,32);
+  c.fillStyle='#283e35';if(horizontal)c.fillRect(0,position+6,32,2);else c.fillRect(position+6,0,2,32);
+ };
  if(['north','south','east','west'].includes(part))edge(part);
- const corners:Record<string,string[]>={nw:['north','west'],ne:['north','east'],sw:['south','west'],se:['south','east']};for(const side of corners[part]??[])edge(side);
+ const corners:Record<string,string[]>={nw:['north','west'],ne:['north','east'],sw:['south','west'],se:['south','east']};
+ if(corners[part]){
+  // Beveled shoulders join the planes; no cross-shaped seams through corner cells.
+  const west=part.endsWith('w'),north=part.startsWith('n');
+  c.beginPath();c.moveTo(west?0:32,north?0:32);c.lineTo(west?0:32,north?24:8);c.lineTo(west?24:8,north?0:32);c.closePath();c.fillStyle=west?'#a0ad873d':'#172e3159';c.fill();
+  c.strokeStyle=west?'#adb697':'#344b3f';c.lineWidth=1;c.beginPath();c.moveTo(west?0:32,north?24:8);c.lineTo(west?24:8,north?0:32);c.stroke();
+ }
  if(part.startsWith('stairs-')){const direction=part.slice(7),horizontal=direction==='east'||direction==='west';c.fillStyle='#344b3f';c.fillRect(0,0,32,32);
  for(let i=0;i<4;i++){const p=i*8;c.fillStyle=i%2?'#95a084':'#87977f';if(horizontal)c.fillRect(p,3,6,26);else c.fillRect(3,p,26,5);c.fillStyle='#b8bda0';if(horizontal)c.fillRect(p+(direction==='west'?5:0),3,1,26);else c.fillRect(3,p+(direction==='north'?4:0),26,1);}
- c.fillStyle='#6e8068';if(horizontal){c.fillRect(0,0,32,3);c.fillRect(0,29,32,3);}else{c.fillRect(0,0,3,32);c.fillRect(29,0,3,32);}}
+ c.fillStyle='#a0ad87';if(horizontal)c.fillRect(0,0,32,3);else c.fillRect(0,0,3,32);c.fillStyle='#4a6154';if(horizontal)c.fillRect(0,29,32,3);else c.fillRect(29,0,3,32);}
  cache.set(key,tile);}
  ctx.drawImage(tile,x,y);
 }

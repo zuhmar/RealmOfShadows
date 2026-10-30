@@ -25,6 +25,9 @@ function svg(side,windows=false){
   }
   art+=`<path d="M0 0H${width}V12H0Z" fill="url(#woodTexture)"/><path d="M0 1H${width}M0 11H${width}" stroke="#614224" stroke-width="2"/><path d="M0 4H${width}" stroke="#e0b478" stroke-width="2"/>`;
  }
+ // One fixed elevated view: bright cap, occluded join, darker east-facing timber.
+ if(vertical){const x=side==='e'?52:0;art+=`<rect x="${x}" y="0" width="12" height="64" fill="${side==='e'?'#172d3440':'#f4ddb919'}"/><path d="M${x+1} 0V64" stroke="#efd1a0" stroke-width="1" opacity=".55"/>`;}
+ else art+=`<path d="M0 12H${width}V16H0Z" fill="#332b2440"/><path d="M0 1H${width}" stroke="#f3d5a0" stroke-width="2"/><path d="M0 77H${width}V80H0Z" fill="#272e2b55"/>`;
  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${vertical?64:80}" viewBox="0 0 ${width} ${vertical?64:80}">${defs}${art}</svg>`;
 }
 
