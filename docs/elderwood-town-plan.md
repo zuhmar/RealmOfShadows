@@ -82,3 +82,6 @@ Terrain exports use the same painter. `tests/browser-village-cliffs.cjs` checks
 material loading and exports close-ups of all directional stairs and a corner.
 The portal/cliff browser test verifies actual desktop/mobile climbing as well.
 This artwork update requires only a client/Vercel redeploy.
+
+### Forest style alignment
+Elderwood cliff faces now share the illustrated fractured-strata painter with Whispering Woods ridges (`forest-rock.ts`). Village stone uses a slightly warmer palette; directional stairs retain their projected treads and cheeks with forest-style colors. The generated rock master remains archived, but the photographic-looking texture is no longer loaded by the game or editor. Layout, collision and stair destinations are unchanged. Deploy Vercel for this visual update.

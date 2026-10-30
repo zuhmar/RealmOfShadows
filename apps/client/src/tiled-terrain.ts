@@ -1,4 +1,4 @@
-import {paintVillageCliffs,setVillageCliffRock,villageCliffAsset} from './village-cliffs';
+import {paintVillageCliffs} from './village-cliffs';
 import {paintLedge,paintWoodsCliffs,paintRidge} from './stacked-floors';
 import type Phaser from 'phaser';
 import {paintConnectedTerrain,usesConnectedTerrain} from './connected-terrain';
@@ -16,7 +16,6 @@ export function paintRegion(ctx:CanvasRenderingContext2D,region:RegionId,atlas:C
  for(let y=0;y<cells.length;y++)for(let x=0;x<cells[y].length;x++)if(cells[y][x]!==5)ctx.drawImage(atlas,cells[y][x]*36+2,2,32,32,x*32,y*32,32,32);
 }
 export function drawTiledTerrain(scene:Phaser.Scene,region:RegionId){
- if(scene.textures.exists(villageCliffAsset.key))setVillageCliffRock(scene.textures.get(villageCliffAsset.key).getSourceImage() as HTMLImageElement);
  if(usesConnectedTerrain(region)){
   const grid=gridMap(region),key=`${region}-connected-ground`;
   if(scene.textures.exists(key))scene.textures.remove(key);

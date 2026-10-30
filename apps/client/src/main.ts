@@ -1,4 +1,4 @@
-import {drawVillageCliffStairs,villageCliffAsset} from './village-cliffs';
+import {drawVillageCliffStairs} from './village-cliffs';
 import {drawVillagePortal} from './village-portal';
 import {drawRaisedFloor} from './stacked-floors';
 import {visibleFloor,floorDepth,isRaisedFloor} from '@realm/game-data';
@@ -40,7 +40,7 @@ class Elderwood extends Phaser.Scene {
  local:Motion={...WORLD.spawn,stamina:100}; keys!:Record<string,Phaser.Input.Keyboard.Key>;
  doors=new Map<string,boolean>();pendingDoor?:string;
  peers=new Map<string,Phaser.GameObjects.Container>();route:Point[]=[];seq=0;acc=0;online=false;preview=false;touch={x:0,y:0};pendingResource?:string;pendingWorkbench:string|false=false;resourceRouteAt=0;pendingIdentifications=new Set<string>();pendingLoot?:string;lootRouteAt=0;pendingDepot?:string;activeDepot='';pendingStair?:string;pendingInteraction:'portal'|'trader'|undefined;sprinting=false;pending:Input[]=[];facing:Facing='down';walking=false;animationStyle=new Map<string,{scale:number;origin:number}>();
- preload(){this.load.image(villageCliffAsset.key,villageCliffAsset.url);for(const a of professionAssets)this.load.image(a.key,a.url);for(const asset of skinAssets)this.load.image(asset.key,asset.url);for(const sheet of generatedSourceSheets)this.load.image(sheet.key,sheet.url);for(const asset of mapObjectTileAssets)this.load.image(asset.key,asset.url);for(const asset of terrainTileAssets)this.load.image(asset.key,asset.url);this.load.image(generatedMonsters.key,generatedMonsters.url);this.load.image(maraAsset.key,maraAsset.url);for(const asset of animatedMonsters)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
+ preload(){for(const a of professionAssets)this.load.image(a.key,a.url);for(const asset of skinAssets)this.load.image(asset.key,asset.url);for(const sheet of generatedSourceSheets)this.load.image(sheet.key,sheet.url);for(const asset of mapObjectTileAssets)this.load.image(asset.key,asset.url);for(const asset of terrainTileAssets)this.load.image(asset.key,asset.url);this.load.image(generatedMonsters.key,generatedMonsters.url);this.load.image(maraAsset.key,maraAsset.url);for(const asset of animatedMonsters)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
  create(){
  installGeneratedArt(this);
  if(this.textures.exists(generatedMonsters.key)){const texture=this.textures.get(generatedMonsters.key);for(const [kind,f]of Object.entries(generatedMonsters.frames))texture.add(kind,0,f.x,f.y,f.w,f.h);}
