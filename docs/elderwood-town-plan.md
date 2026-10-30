@@ -58,3 +58,27 @@ runs on desktop/mobile and guest/multiplayer; integration checks use real server
 movement and private storage. Deploy **Render and Vercel together** for the new
 bounds, spawn, buildings and collision. No database migration or new environment
 variables are required.
+
+## Cliff depth artwork
+
+The perimeter uses continuous oriented faces with mitered corner shoulders,
+continuous turf overhangs, occlusion under the lip and contact shadows at the
+village floor. Northwest world lighting remains consistent on all four faces.
+The generated painted rock master is preserved under
+`assets/world/architecture/cliffs/rock-master.png`; the game and editor load a
+512×512, quality-90 WebP copy (`rock-runtime.webp`, about 90 KiB). It supplies
+rock detail inside clipped faces instead of repeating masonry blocks.
+
+Stairs project separate top faces and vertical risers from a 30-native-pixel
+rise. Their directional views use the original world axes and lighting, not a
+rotated flat sprite. Tapered cheek walls have stone caps; their foundations are
+clipped to the cliff face so they cannot form unsupported legs on the grass.
+Stair surfaces have restrained stone detail and shaded nosings. The art stays
+aligned with the existing landings and blocked footprint; gameplay data has
+not changed.
+
+Game preloading and editor image loading both wait for the rock material.
+Terrain exports use the same painter. `tests/browser-village-cliffs.cjs` checks
+material loading and exports close-ups of all directional stairs and a corner.
+The portal/cliff browser test verifies actual desktop/mobile climbing as well.
+This artwork update requires only a client/Vercel redeploy.
