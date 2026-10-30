@@ -6,8 +6,8 @@ test('four dedicated crafters stand behind distinct solid benches in one reachab
  const map=gridMap('elderwood'),npcs=craftingStations.filter(s=>'npc'in s),hall=villageBuildings.find(b=>b.id==='workshop')!;
  assert.equal(hall.name,'Crafting Hall');assert.equal(npcs.length,4);assert.equal(new Set(npcs.flatMap(s=>s.skills)).size,4);
  assert.equal(new Set(npcs.map(s=>s.bench.key)).size,4);
- assert.deepEqual(npcs.map(s=>[s.npc.x,s.npc.y]),[[2.5,12.5],[12.5,12.5],[2.5,17.5],[12.5,17.5]]);
- for(const x of [6,7,8])for(let y=13;y<18;y++)assert.equal(map.blocked.has(`${x},${y}`),false,'clear central aisle');
+ assert.deepEqual(npcs.map(s=>[s.npc.x,s.npc.y]),[[32.5,7.5],[42.5,7.5],[32.5,12.5],[42.5,12.5]]);
+ for(const x of [36,37,38])for(let y=8;y<13;y++)assert.equal(map.blocked.has(`${x},${y}`),false,'clear central aisle');
  for(const station of craftingStations){
   assert.equal(map.blocked.has(`${Math.floor(station.x)},${Math.floor(station.y)}`),false,station.id+' service point');
   assert.ok(pathfind(portalFor('elderwood').arrival,station,'elderwood').length,station.id+' entrance route');
@@ -18,7 +18,7 @@ test('four dedicated crafters stand behind distinct solid benches in one reachab
    assert.ok(map.blocked.has(`${Math.floor(station.npc.x)},${Math.floor(station.npc.y)}`));
    assert.equal(station.bench.cells.length,3);
    const nx=Math.floor(station.npc.x),ny=Math.floor(station.npc.y);
-   const dx=nx<7?1:-1,dy=ny<15?1:-1;
+   const dx=nx<hall.x+hall.width/2?1:-1,dy=ny<hall.y+hall.height/2?1:-1;
    assert.deepEqual(new Set(station.bench.cells.map(([x,y])=>`${x},${y}`)),new Set([`${nx+dx},${ny}`,`${nx+dx},${ny+dy}`,`${nx},${ny+dy}`]));
    for(const [x,y]of station.bench.cells)assert.ok(map.blocked.has(`${x},${y}`),'three solid cells enclose corner NPC');
    assert.equal(map.objects.filter(o=>o.key===station.bench.key).length,1);

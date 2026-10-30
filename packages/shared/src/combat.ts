@@ -1,4 +1,4 @@
-import {gridCrossesWall,gridCell,gridKey,gridDirections,newAttributes,attributeDamage,maxHealth,maxMana,shieldBlock,type Attributes,combat as C,monsters,monsterAggressive,monsterKind,allMonsterSpawns,combatRegion,monsterRegion,type MonsterKind,PORTAL,portalFor,weapons,weaponDamage,skillRules,spells,isSpell,canLearnSpell,skillLevel,type SpellAccess,type SpellId,type WeaponId,type SkillId,type RegionId,type Facing} from '@realm/game-data';
+import {WORLD,gridCrossesWall,gridCell,gridKey,gridDirections,newAttributes,attributeDamage,maxHealth,maxMana,shieldBlock,type Attributes,combat as C,monsters,monsterAggressive,monsterKind,allMonsterSpawns,combatRegion,monsterRegion,type MonsterKind,PORTAL,portalFor,weapons,weaponDamage,skillRules,spells,isSpell,canLearnSpell,skillLevel,type SpellAccess,type SpellId,type WeaponId,type SkillId,type RegionId,type Facing} from '@realm/game-data';
 import {legal,pathfind,move,occupiedCells,freeLanding,type Point} from './index';
 export interface Fighter extends Point{stepX?:number;stepY?:number;attributes:Attributes;weaponBonus:number;shieldArmor:number;shieldingXp:number;armor:number;weapon:WeaponId;meleeXp:number;distanceXp:number;magicXp:number;region:RegionId;hp:number;mana:number;deadUntil:number;shotAt:number;spellAt:number;target:string;auto:boolean}
 // Retain the existing Wolf/wolves API and wire collection for compatibility;
@@ -7,7 +7,7 @@ export interface Wolf extends Point{stepX?:number;stepY?:number;region?:RegionId
 export interface Kill {region?:RegionId;kind?:MonsterKind;id:number;owner:string;x:number;y:number}
 export interface Projectile extends Point{id:string;owner:string;target:string;region:RegionId;expires:number;weapon:WeaponId;damage:number;speed:number;skill:SkillId}
 export interface CombatEvent{kind:'bolt'|'arrow'|'melee'|'nova'|'hit'|'death'|'respawn'|'heal'|'warning'|'venom'|'charge'|'shard'|'block';region:RegionId;x:number;y:number;toX?:number;toY?:number;damage?:number;speed?:number;radius?:number}
-export function newFighter():Fighter{return {attributes:newAttributes(),weaponBonus:0,shieldArmor:0,shieldingXp:0,armor:0,weapon:'wand',meleeXp:0,distanceXp:0,magicXp:0,x:16.5,y:14.5,region:'elderwood',hp:C.playerHp,mana:C.mana,deadUntil:0,shotAt:0,spellAt:0,target:'',auto:false};}
+export function newFighter():Fighter{return {attributes:newAttributes(),weaponBonus:0,shieldArmor:0,shieldingXp:0,armor:0,weapon:'wand',meleeXp:0,distanceXp:0,magicXp:0,x:WORLD.spawn.x,y:WORLD.spawn.y,region:'elderwood',hp:C.playerHp,mana:C.mana,deadUntil:0,shotAt:0,spellAt:0,target:'',auto:false};}
 const distance=(a:Point,b:Point)=>Math.hypot(a.x-b.x,a.y-b.y);
 const inRange=(a:Point,b:Point,range:number)=>range<=1.5?Math.max(Math.abs(a.x-b.x),Math.abs(a.y-b.y))<=range+.01:distance(a,b)<=range;
 const attack=(kind:MonsterKind)=>{

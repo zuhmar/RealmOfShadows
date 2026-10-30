@@ -1,3 +1,5 @@
+import {villageBuildings} from './village-buildings';
+import {elderwoodSize,elderwoodPortal} from './elderwood-layout';
 import {woodsSize} from './woods-cliffs';
 import {isRaisedFloor} from './elevation';
 export * from './elevation';
@@ -19,15 +21,9 @@ export * from './caverns';
 export * from './woods';
 import {elderwoodBlocked,elderwoodObjects} from './elderwood';
 export {elderwoodGround,elderwoodBlocked,elderwoodFootprintBlocked,elderwoodPositionBlocked,elderwoodTerrainGeometry,elderwoodMap,elderwoodObjects,type ElderwoodTerrain} from './elderwood';
-export const WORLD = { tile:64, width:32, height:24, speed:4, sprint:1.5, capacity:32, spawn:{x:16.5,y:14.5} };
-export const landmarks=[
- {name:'Depot',x:5,y:2,w:9,h:7,color:0x8b9b79,description:'Walk inside and click a box to use your personal storage.'},
- {name:'Willow & Anvil',x:22,y:3,w:6,h:5,color:0x8b9b79,description:'Walk inside the village smithy.'},
- {name:'The Makers’ Workshop',x:3,y:12,w:6,h:4,color:0x8b9b79,description:'Walk inside this village building.'},
- {name:'The Copperleaf Bank',x:23,y:12,w:6,h:4,color:0x8b9b79,description:'Walk inside this village building.'},
- {name:'Adventurers’ Hall',x:20,y:18,w:6,h:4,color:0x8b9b79,description:'Walk inside this village building.'},
-];
-export const regionSize=(region:RegionId)=>isLowerFloor(region)?{width:48,height:36}:(region==='woods'||isRaisedFloor(region))?woodsSize:region==='caverns'?{width:64,height:48}:WORLD;
+export const WORLD = { tile:64, width:elderwoodSize.width, height:elderwoodSize.height, speed:4, sprint:1.5, capacity:32, spawn:{...elderwoodPortal.arrival} };
+export const landmarks=villageBuildings.map(b=>({name:b.name,x:b.x,y:b.y,w:b.width,h:b.height,color:0x8b9b79,description:b.id==='depot'?'Walk inside and click a box to use your personal storage.':'Walk inside this village building.'}));
+export const regionSize=(region:RegionId)=>isLowerFloor(region)?{width:48,height:36}:(region==='woods'||isRaisedFloor(region))?woodsSize:region==='caverns'?{width:64,height:48}:(region==='elderwood'||region==='elderwood-upper')?elderwoodSize:{width:32,height:24};
 export function blocked(x:number,y:number,region:RegionId='elderwood'):boolean{return gridBlocked(region,x,y);}
 export type Facing='down'|'left'|'right'|'up';
 export interface SpriteManifest {key:string;url:string;frameWidth:number;frameHeight:number;anchor:{x:number;y:number};scale:number;animations:Partial<Record<'idle'|'walk',Record<Facing,{frames:number[];fps:number}>>>}
@@ -35,7 +31,7 @@ export interface SpriteManifest {key:string;url:string;frameWidth:number;frameHe
 export const characterSprite:SpriteManifest|null=null;
 
 export const regions = {
- 'elderwood-upper':{name:'Elderwood · Upper Rooms',description:'Depot loft and Adventurers’ Hall library.',ground:[0x426a50,0x456e52],road:[0xb4aa84,0xbab18d],accent:0x76d6d3,obstacles:[]},
+ 'elderwood-upper':{name:'Elderwood · Cliff Walk & Lofts',description:'Connected perimeter cliffs, the Depot loft and Hall library.',ground:[0x426a50,0x456e52],road:[0xb4aa84,0xbab18d],accent:0x76d6d3,obstacles:[]},
  'woods-upper':{name:'Whispering Woods · Highlands',description:'A raised wolf lookout above the northern trail.',ground:[0x294b38,0x31573e],road:[0x7d8060,0x878867],accent:0x9be5ad,obstacles:[]},
  elderwood:{name:'Elderwood',description:'The shared village and your safe haven.',ground:[0x426a50,0x456e52],road:[0xb4aa84,0xbab18d],accent:0x76d6d3,obstacles:[]},
  woods:{name:'Whispering Woods',description:'Levels 1–10 · Wolves, thorn spiders, wild boars and the Forest Bear.',ground:[0x294b38,0x31573e],road:[0x7d8060,0x878867],accent:0x9be5ad,obstacles:[]},
@@ -45,9 +41,9 @@ export const regions = {
  swamp:{name:'Murkmire Swamp',description:'Misty wetlands. Future herbs and swamp creatures.',ground:[0x354d46,0x40584d],road:[0x7c8161,0x858a68],accent:0xc5dc83,obstacles:[{x:5,y:6,w:6,h:5},{x:23,y:6,w:4,h:5},{x:6,y:18,w:5,h:3}]},
 } as const;
 export type RegionId=keyof typeof regions;
-export const PORTAL={x:16.5,y:13.5,radius:2.5,arrival:{x:16.5,y:15.5}};
+export const PORTAL=elderwoodPortal;
 export function isRegion(value:unknown):value is RegionId{return typeof value==='string'&&Object.hasOwn(regions,value);}
-export const portalFor=(region:RegionId)=>isRaisedFloor(region)?{x:40.5,y:5.5,radius:1.2,arrival:{x:40.5,y:6.5}}:region==='elderwood-upper'?{x:11.5,y:6.5,radius:2.5,arrival:{x:11.5,y:7.5}}:isLowerFloor(region)?{x:24.5,y:30.5,radius:2.5,arrival:{x:24.5,y:32.5}}:region==='woods'?{x:34.5,y:25.5,radius:2.5,arrival:{x:34.5,y:27.5}}:region==='caverns'?{x:32.5,y:40.5,radius:2.5,arrival:{x:32.5,y:42.5}}:PORTAL;
+export const portalFor=(region:RegionId)=>isRaisedFloor(region)?{x:40.5,y:5.5,radius:1.2,arrival:{x:40.5,y:6.5}}:region==='elderwood-upper'?{x:28.5,y:21.5,radius:2.5,arrival:{x:28.5,y:22.5}}:isLowerFloor(region)?{x:24.5,y:30.5,radius:2.5,arrival:{x:24.5,y:32.5}}:region==='woods'?{x:34.5,y:25.5,radius:2.5,arrival:{x:34.5,y:27.5}}:region==='caverns'?{x:32.5,y:40.5,radius:2.5,arrival:{x:32.5,y:42.5}}:region==='elderwood'?PORTAL:{x:16.5,y:13.5,radius:2.5,arrival:{x:16.5,y:15.5}};
 export function canTravel(position:{x:number;y:number},from:RegionId,to:unknown):to is RegionId{return isRegion(to)&&!isRaisedFloor(from)&&!isRaisedFloor(to)&&!isLowerFloor(from)&&!isLowerFloor(to)&&from!=='elderwood-upper'&&to!=='elderwood-upper'&&from!==to&&Math.hypot(position.x-portalFor(from).x,position.y-portalFor(from).y)<=portalFor(from).radius;}
 export {combat,wolfSpawns} from './combat';
 export {items,rewards,merchant,totalXp,levelForXp,type ItemId} from './economy';
@@ -89,3 +85,5 @@ export {editorPropKeys,editorObject,propIdentity,editableProp,validateGridEdits,
 export type {GridDocument,GridEdits,EditorProp,EditorSpawn} from './grid-editing';
 
 export {authoredGridSpawns} from './grid-world';
+
+export {elderwoodSize,elderwoodPortal,elderwoodRimStairs,onElderwoodRim} from './elderwood-layout';

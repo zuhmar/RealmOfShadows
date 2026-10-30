@@ -43,7 +43,7 @@ test('returning to the portal cancels monster windups',()=>{
 });
 
 test('expanded woods supports distant exploration and retains town bounds',()=>{
- assert.deepEqual(regionSize('woods'),{width:96,height:72});assert.equal(regionSize('elderwood').width,32);
+ assert.deepEqual(regionSize('woods'),{width:96,height:72});assert.equal(regionSize('elderwood').width,48);
  assert.equal(woodsMap.worldWidth,68);assert.equal(woodsMap.width/woodsMap.height,1.5);
  for(const clearing of woodsClearings){const target={x:clearing.x/48,y:clearing.y/48+woodsMap.offsetY};assert.ok(legal(target,'woods'),clearing.name);assert.ok(pathfind(PORTAL.arrival,target,'woods').length,clearing.name);}
  const boar=monsterSpawns.find(s=>s.kind==='boar')!,bear=monsterSpawns.find(s=>s.kind==='bear')!;

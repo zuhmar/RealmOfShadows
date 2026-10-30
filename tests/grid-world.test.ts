@@ -4,7 +4,7 @@ import {gridMap,gridKey,gridSpawns,gridDirections,portalFor,stairsFor,regions,mo
 import {move,legal,pathfind,occupiedCells,freeLanding,CombatSimulation,newFighter,inAttackRange} from '@realm/shared';
 test('new grid maps connect all entrances, encounters and stairs on passable cells',()=>{
  for(const region of (Object.keys(regions) as (keyof typeof regions)[]).filter(r=>r!=='elderwood-upper'&&r!=='woods-upper')){const map=gridMap(region),arrival=portalFor(region).arrival;assert.ok(legal(arrival,region),region+' arrival');assert.equal(map.cells.length,map.height);
-  const targets=[...stairsFor(region).map(s=>({x:s.x,y:s.y+1})),...(['woods','caverns','woods-depths','caverns-depths'].includes(region)?gridSpawns(region):[])];
+  const targets=[...stairsFor(region).map(s=>({x:s.x,y:s.y+(s.id.startsWith('elderwood-rim-')?0:1)})),...(['woods','caverns','woods-depths','caverns-depths'].includes(region)?gridSpawns(region):[])];
   for(const target of targets){assert.ok(legal(target,region),region+JSON.stringify(target));assert.ok(pathfind(arrival,target,region).length||gridKey(arrival)===gridKey(target),region+JSON.stringify(target));}
  }
  for(const region of ['woods','caverns','woods-depths','caverns-depths'] as const){const spawns=gridSpawns(region);assert.equal(new Set(spawns.map(gridKey)).size,spawns.length);}

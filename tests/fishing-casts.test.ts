@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {Economy,newFighter} from '@realm/shared';
 import {resolveFishingWater,fishingShores} from '@realm/game-data';
-const setup=(roll=0)=>{const e=new Economy(()=>roll);e.join('p');const node=resolveFishingWater('elderwood',12,20)!,p=Object.assign(newFighter(),fishingShores(node)[0]),profile=e.profiles.get('p')!,players=new Map([['p',p]]);return {e,node,p,profile,players};};
+const setup=(roll=0)=>{const e=new Economy(()=>roll);e.join('p');const node=resolveFishingWater('elderwood',8,25)!,p=Object.assign(newFighter(),fishingShores(node)[0]),profile=e.profiles.get('p')!,players=new Map([['p',p]]);return {e,node,p,profile,players};};
 test('server chooses 1–10 second casts, rejects resets and early rewards, and grants one catch per manual recast',()=>{
  for(const roll of [0,.999]){const {e,node,p,profile,players}=setup(roll),duration=roll?10:1;e.act('p',p,{kind:'gather',item:node.id,delay:0,fish:'voidAngler'},0);const cast=e.snapshot('p',0).fishing!;assert.equal(cast.endsAt,duration);cast.endsAt=0;assert.equal(e.professions.status('p')!.endsAt,duration);assert.match(e.act('p',p,{kind:'gather',item:node.id},.5),/Already fishing/);e.process([],players,duration-.001);assert.equal(profile.inventory.length,0);assert.equal(profile.professions.fishing,0);e.process([],players,duration);assert.equal(profile.inventory[0].item,'pondMinnow');assert.equal(profile.inventory[0].quantity,1);e.process([],players,duration+1);assert.equal(profile.inventory[0].quantity,1);assert.equal(e.professions.results.length,1);assert.equal(e.professions.depleted.size,0);assert.match(e.act('p',p,{kind:'gather',item:node.id},duration+1),/Fishing/);}
 });

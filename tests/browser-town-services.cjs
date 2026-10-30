@@ -5,7 +5,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  assert.equal(await page.evaluate(()=>s.worldObjects.filter(o=>o.getData('townService')).length),4);
  assert.equal(await page.evaluate(()=>s.worldObjects.filter(o=>o.getData('townService')).every(o=>!o.visible)),true,'NPCs hide under exterior roof');
  const walk=async goal=>{await page.evaluate(async goal=>{const {pathfind}=await import('/@fs/workspace/RealmOfShadows/packages/shared/src/index.ts');s.route=pathfind(s.local,goal,s.region,s.occupied());if(!s.route.length&&Math.hypot(s.local.x-goal.x,s.local.y-goal.y)>.1)throw Error('No service route '+JSON.stringify(goal))},goal);await page.waitForFunction(goal=>!s.route.length&&Math.hypot(s.local.x-goal.x,s.local.y-goal.y)<.06,goal,{timeout:30000});};
- await walk({x:6.5,y:17.5});
+ await walk({x:36.5,y:12.5});
  const stations=await page.evaluate(async()=>{const {craftingStations}=await import('/@fs/workspace/RealmOfShadows/packages/game-data/src/index.ts');return craftingStations.filter(s=>'npc'in s)});
  const cases=[['mining','smelt-copper','copperOre',3,'copperBar'],['woodcutting','cut-timber','log',2,'timber'],['fishing','cook-fish','rawFish',2,'cookedFish'],['herbalism','brew-potion','herb',3,'potion']];
  for(const [i,station]of stations.entries()){
@@ -22,7 +22,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
   }
   await page.locator('#close-inventory').click();console.log(`PASS ${mobile?'mobile':'desktop'} ${offline?'guest':'multiplayer'}: ${station.name} via ${bench?'custom bench':'NPC'}, dedicated recipe panel${offline?' and craft':''}`);
  }
- await page.screenshot({path:`/tmp/crafting-hall-${mobile?'mobile':'desktop'}-${offline?'guest':'online'}.png`});await walk({x:7.5,y:18.5});
+ await page.screenshot({path:`/tmp/crafting-hall-${mobile?'mobile':'desktop'}-${offline?'guest':'online'}.png`});await walk({x:37.5,y:13.5});
  assert.equal(await page.evaluate(()=>s.worldObjects.filter(o=>o.getData('townService')).every(o=>!o.visible)),true);
  assert.equal(await page.evaluate(()=>s.worldObjects.filter(o=>o.getData('townBench')).every(o=>!o.input.enabled)),true);
  assert.equal(await page.evaluate(()=>s.worldObjects.filter(o=>o.getData('roofFor')==='workshop').every(o=>o.visible)),true);

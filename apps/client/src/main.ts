@@ -1,3 +1,5 @@
+import {drawVillageCliffStairs} from './village-cliffs';
+import {drawVillagePortal} from './village-portal';
 import {drawRaisedFloor} from './stacked-floors';
 import {visibleFloor,floorDepth,isRaisedFloor} from '@realm/game-data';
 import {drawTownServices,updateTownServices,showTownService} from './town-services';
@@ -253,10 +255,10 @@ class Elderwood extends Phaser.Scene {
  for(const obj of this.worldObjects)obj.destroy();
  const existing=new Set(this.children.list),config=regions[this.region];
  this.cameras.main.setBackgroundColor(isVillageUpper(this.region)?'#10222b':'#233c38');this.terrainCleanup=drawTiledTerrain(this,this.region);
- const grid=gridMap(this.region),mapConfig={width:grid.width*48,height:grid.height*48,worldWidth:grid.width,worldHeight:grid.height,offsetY:0},mapObjects=[...(this.region==='woods'?buildingVisuals('woods-upper',gridMap('woods-upper').objects).map(o=>({...o,elevation:floorDepth('woods-upper')})):[]),...(isRaisedFloor(this.region)?buildingVisuals('woods',gridMap('woods').objects).map(o=>({...o,elevation:0})):[]),...buildingVisuals(this.region,grid.objects).map(o=>({...o,elevation:floorDepth(this.region)}))];
+ const grid=gridMap(this.region),mapConfig={width:grid.width*48,height:grid.height*48,worldWidth:grid.width,worldHeight:grid.height,offsetY:0},mapObjects=[...(isVillageUpper(this.region)?buildingVisuals('elderwood',gridMap('elderwood').objects).filter(o=>!villageBuildings.filter(b=>b.id==='depot'||b.id==='hall').some(b=>[o.roofFor,o.wallFor,o.signFor,o.upperFor].includes(b.id)||insideBuilding({x:(o.x+o.w/2)/48,y:(o.y+o.h*.8)/48},b))).map(o=>({...o,elevation:0})):[]),...(this.region==='woods'?buildingVisuals('woods-upper',gridMap('woods-upper').objects).map(o=>({...o,elevation:floorDepth('woods-upper')})):[]),...(isRaisedFloor(this.region)?buildingVisuals('woods',gridMap('woods').objects).map(o=>({...o,elevation:0})):[]),...buildingVisuals(this.region,grid.objects).map(o=>({...o,elevation:floorDepth(this.region)}))];
  const illustratedMap=true;
  if(illustratedMap){
- for(const object of mapObjects){const sx=mapConfig.worldWidth*64/mapConfig.width,sy=mapConfig.worldHeight*64/mapConfig.height;
+ for(const object of mapObjects){if((this.region==='elderwood'||isVillageUpper(this.region))&&object.key==='elderwood-portal')continue;const sx=mapConfig.worldWidth*64/mapConfig.width,sy=mapConfig.worldHeight*64/mapConfig.height;
  if((this.region==='caverns'||this.region==='caverns-depths')&&(object.key.includes('crystal')||object.key.includes('lantern')))this.add.ellipse((object.x+object.w/2)*sx,(object.y+object.h*.9)*sy+mapConfig.offsetY*64,object.w*sx*1.4,object.h*sy*.35,0x6ddcff,.09).setDepth(-2);
  this.add.image(object.x*sx,object.y*sy+mapConfig.offsetY*64,object.key).setOrigin(0).setDisplaySize(object.w*sx,object.h*sy).setDepth(isBuildingFloor(object.key)?-10:object.footY*sy+mapConfig.offsetY*64+object.elevation).setData('sourceKey',object.sourceKey).setData('buildingFront',object.wallFor?buildingsFor(this.region).find(b=>b.id===object.wallFor):undefined).setData('wallSide',object.wallSide).setData('upperFor',object.upperFor).setData('roofFor',object.roofFor).setData('signFor',object.signFor);}
  }else{
@@ -265,12 +267,13 @@ class Elderwood extends Phaser.Scene {
  }
  if(!illustratedMap)this.add.text(16.5*64,12.2*64,config.name.toUpperCase(),{fontFamily:'Georgia',fontSize:'18px',color:'#535d42',letterSpacing:3}).setOrigin(.5);
  for(const b of config.obstacles){const rock=this.add.graphics();rock.fillStyle(config.accent,.45);rock.fillRoundedRect(b.x*64,b.y*64,b.w*64,b.h*64,24);rock.lineStyle(3,config.accent,.6);rock.strokeRoundedRect(b.x*64,b.y*64,b.w*64,b.h*64,24);rock.setDepth((b.y+b.h)*64);}
- this.portalGlow=undefined;
+ this.portalGlow=undefined;if(isVillageUpper(this.region))drawVillagePortal(this,portalFor('elderwood').x,portalFor('elderwood').y);
  if(!isLowerFloor(this.region)&&!isVillageUpper(this.region)&&!isRaisedFloor(this.region)){
  const x=portalFor(this.region).x*64,y=portalFor(this.region).y*64;
  const illustratedPortal=this.textures.exists('elderwood-portal');
  const portal=this.add.graphics();
- if(illustratedPortal){portal.fillStyle(0xc576ff,.12);portal.fillEllipse(x,y,160,48);portal.setDepth(-1);}
+ if(illustratedPortal){portal.fillStyle(0xc576ff,.12);portal.fillEllipse(x,y,this.region==='elderwood'?56:160,this.region==='elderwood'?30:48);portal.setDepth(-1);}
+ if(this.region==='elderwood')drawVillagePortal(this,x/64,y/64);
  this.portalGlow=portal;
  const portalArt=illustratedMap?mapObjects.find(object=>object.key.endsWith('-portal')):undefined;
  const portalScale=mapConfig.worldWidth*64/mapConfig.width;
@@ -284,9 +287,9 @@ class Elderwood extends Phaser.Scene {
  }
  drawTownDoors(this,this.region,this.doors,id=>this.approachDoor(id));
  if(this.region==='elderwood')for(const box of depotBoxes){const zone=this.add.zone(box.x*64,box.y*64,64,64).setInteractive({useHandCursor:true}).setDepth((box.y+.5)*64+2).setData('depot',box.id);zone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target===this.game.canvas&&!pointer.rightButtonDown())this.approachDepot(box.id);});}
- drawRaisedFloor(this,this.region,id=>this.approachStairs(id));
+ drawRaisedFloor(this,this.region,id=>this.approachStairs(id));drawVillageCliffStairs(this,this.region,id=>this.approachStairs(id));
  for(const stair of stairsFor(this.region)){
- if(stair.id.startsWith('woods-ledge-')||stair.id.startsWith('woods-ridge-'))continue;
+ if(stair.id.startsWith('elderwood-rim-')||stair.id.startsWith('woods-ledge-')||stair.id.startsWith('woods-ridge-'))continue;
  const x=stair.x*64,y=stair.y*64;if(stair.id.startsWith('depot-')||stair.id.startsWith('hall-')){const zone=this.add.zone(x,y-35,105,115).setInteractive({useHandCursor:true}).setDepth(y+2).setData('stair',stair.id);zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===this.game.canvas&&!p.rightButtonDown())this.approachStairs(stair.id)});continue;}this.add.text(x,y-(stair.direction==='up'?245:180),stair.label,{fontFamily:'Georgia',fontSize:'14px',color:'#d8d0ff',backgroundColor:'#29233d'}).setOrigin(.5).setDepth(y+1);
  const zone=this.add.zone(x,y-(stair.direction==='up'?95:40),215,stair.direction==='up'?230:175).setInteractive({useHandCursor:true}).setDepth(y+2);zone.setData('stair',stair.id);zone.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target===this.game.canvas&&!pointer.rightButtonDown())this.approachStairs(stair.id);});
  }

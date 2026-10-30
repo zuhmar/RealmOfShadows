@@ -1,10 +1,10 @@
 /** Same-map room footprints with render-only wall shells and cutaway roofs. Walls sit on cell edges; door offsets are south-facing. */
 export const villageBuildings=[
- {id:'depot',name:'Depot',x:5,y:2,width:9,height:7,door:3,doorWidth:3},
- {id:'smithy',name:'Smithy',x:22,y:3,width:6,height:5,door:2,doorWidth:2},
- {id:'workshop',name:'Crafting Hall',x:2,y:12,width:11,height:6,door:4,doorWidth:3},
- {id:'bank',name:'Bank',x:23,y:12,width:6,height:4,door:2,doorWidth:2},
- {id:'hall',name:'Hall',x:20,y:18,width:6,height:4,door:2,doorWidth:2},
+ {id:'depot',name:'Depot',x:17,y:15,width:14,height:9,door:6,doorWidth:3},
+ {id:'smithy',name:'Smithy',x:5,y:7,width:6,height:5,door:2,doorWidth:2},
+ {id:'workshop',name:'Crafting Hall',x:32,y:7,width:11,height:6,door:4,doorWidth:3},
+ {id:'bank',name:'Bank',x:5,y:29,width:6,height:4,door:2,doorWidth:2},
+ {id:'hall',name:'Hall',x:36,y:29,width:6,height:4,door:2,doorWidth:2},
 ] as const;
 export const isVillageUpper=(region:string)=>region==='elderwood-upper';
 export const buildingsFor=(region:string)=>region==='elderwood'?villageBuildings:isVillageUpper(region)?villageBuildings.filter(b=>b.id==='depot'||b.id==='hall'):[];

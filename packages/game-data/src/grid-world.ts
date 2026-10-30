@@ -1,3 +1,4 @@
+import {elderwoodSize,onElderwoodRim} from './elderwood-layout';
 import {validateGridEdits,applyPropEdits,type GridEdits} from './grid-editing';
 import {woodsCliffs,woodsSize,woodsRidges,ridgeCells,woodsExpansionSpawns} from './woods-cliffs';
 import {woodsLedge} from './elevation';
@@ -13,14 +14,14 @@ export const gridDirections=[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,
 const cache=new Map<string,GridMap>();
 export const gridCell=(p:{x:number;y:number})=>({x:Math.floor(p.x)+.5,y:Math.floor(p.y)+.5});
 export const gridKey=(p:{x:number;y:number})=>`${Math.floor(p.x)},${Math.floor(p.y)}`;
-const dimensions=(region:string)=>({width:region.endsWith('-depths')?48:(region==='woods'||region==='woods-upper')?woodsSize.width:region==='caverns'?64:32,height:region.endsWith('-depths')?36:(region==='woods'||region==='woods-upper')?woodsSize.height:region==='caverns'?48:24});
+const dimensions=(region:string)=>({width:region.endsWith('-depths')?48:(region==='woods'||region==='woods-upper')?woodsSize.width:region==='caverns'?64:(region==='elderwood'||isVillageUpper(region))?elderwoodSize.width:32,height:region.endsWith('-depths')?36:(region==='woods'||region==='woods-upper')?woodsSize.height:region==='caverns'?48:(region==='elderwood'||isVillageUpper(region))?elderwoodSize.height:24});
 const editCache=new Map<string,GridEdits>();
 function storedEdit(region:string){if(!editCache.has(region)){const size=dimensions(region),raw=(overrides.maps as Record<string,unknown>)[region]??{};editCache.set(region,validateGridEdits(raw,size.width,size.height));}return editCache.get(region)!;}
 export function gridMap(region:string,authored=false):GridMap{
  const cacheKey=region+(authored?':authored':'');const old=cache.get(cacheKey);if(old)return old;
  const spawns=authoredGridSpawns;
  const lower=region.endsWith('-depths'),village=region==='elderwood'||isVillageUpper(region),cave=region.startsWith('caverns');
- const width=lower?48:(region==='woods'||region==='woods-upper')?woodsSize.width:region==='caverns'?64:32,height=lower?36:region==='woods'||region==='woods-upper'?woodsSize.height:region==='caverns'?48:24;
+ const width=lower?48:(region==='woods'||region==='woods-upper')?woodsSize.width:region==='caverns'?64:(region==='elderwood'||isVillageUpper(region))?elderwoodSize.width:32,height=lower?36:region==='woods'||region==='woods-upper'?woodsSize.height:region==='caverns'?48:(region==='elderwood'||isVillageUpper(region))?elderwoodSize.height:24;
  const cells=Array.from({length:height},()=>Array<number>(width).fill(cave||lower||isVillageUpper(region)?5:0)),objects:IslandObject[]=[],blocked=new Set<string>(),edges=new Set<string>();
  const rect=(x:number,y:number,w:number,h:number,material:number)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(j>=0&&i>=0&&j<height&&i<width)cells[j][i]=material;};
  const path=(points:readonly (readonly [number,number])[],material=1)=>{for(let i=1;i<points.length;i++){let [x,y]=points[i-1];const [tx,ty]=points[i];rect(x-1,y-1,3,3,material);while(x!==tx||y!==ty){x+=Math.sign(tx-x);y+=Math.sign(ty-y);rect(x-1,y-1,3,3,material);}}};
@@ -39,20 +40,19 @@ export function gridMap(region:string,authored=false):GridMap{
   prop('woods-flowers',37,3,1,1);prop('woods-stump',42,3,1,1);
  }else if(village){
   if(!isVillageUpper(region)){
-  rect(1,1,30,22,0);
-  // A main street with service lanes, forecourts and deliberate garden gaps.
-  rect(15,1,3,18,2);rect(8,9,20,2,1);rect(13,8,6,3,2);
-  rect(18,8,8,2,2);rect(24,8,2,2,2);rect(8,8,3,3,2);
-  rect(18,16,9,2,1);rect(25,16,2,3,2);rect(27,16,1,7,1);
-  rect(17,22,11,1,1);rect(22,21,3,2,2);
-  // Pond banks and the central timber crossing keep their existing water cells.
-  rect(1,19,30,4,3);rect(19,17,10,6,0);rect(19,22,9,1,1);rect(27,17,1,6,1);
-  rect(1,19,12,4,0);rect(2,20,11,3,3);rect(4,19,6,1,3);rect(1,21,1,2,3);rect(12,21,2,2,3);
-  rect(14,19,5,4,3);rect(15,19,3,4,4);
-  rect(18,18,7,1,1);rect(18,19,1,4,1);rect(17,22,7,1,1);
-  rect(15,19,3,4,4); // Keep the timber crossing continuous to the south bank.
-  rect(19,3,2,3,1); // Walled flower beds, reached through the southern gate.
-  rect(28,9,3,3,1); // Smithy's delivery yard, off the front-door route.
+  rect(1,1,width-2,height-2,0);
+  // Raised perimeter surrounds a lower village square with four staircase approaches.
+  for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if(x<5||x>=width-5||y<5||y>=height-5)rect(x,y,1,1,5);
+  path([[24,6],[24,13],[15,13],[15,26],[32,26],[32,13],[24,13]],2);
+  path([[24,27],[24,34]],2);path([[6,20],[15,20]],2);path([[32,20],[42,20]],2);
+  path([[8,12],[8,13],[15,13]],1);path([[38,13],[38,14],[32,14]],1);
+  path([[8,33],[8,34],[24,34]],1);path([[39,33],[39,34],[24,34]],1);
+  path([[13,26],[13,34],[8,34]],1);path([[34,26],[34,34],[39,34]],1);
+  for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if(x<5||x>=width-5||y<5||y>=height-5)rect(x,y,1,1,5);
+  // Two quiet fishing ponds, away from doors and cardinal stair landings.
+  rect(8,24,5,5,3);rect(9,23,3,1,3);rect(35,20,5,5,3);rect(36,19,3,1,3);rect(37,19,1,6,4);
+  }else{
+   for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if(onElderwoodRim(x,y))rect(x,y,1,1,0);
   }
   // Every village building is assembled from the same edge-aligned tile kit.
   for(const building of buildingsFor(region)){
@@ -69,44 +69,33 @@ export function gridMap(region:string,authored=false):GridMap{
   }
   if(!isVillageUpper(region)){
   for(const box of depotBoxes)prop('depot-box',box.x-.5,box.y-.5,1,1,1,1);
-  prop('depot-sign',8,1,3,1.25);
-  prop('village-forge',23,4,2,2,2,1);prop('elderwood-barrel',26,4,1,1,1,1);
-  prop('furn-chest-down',23,6,1,1,1,1);prop('town-tools',26,3,1,1);
+  const depot=villageBuildings.find(b=>b.id==='depot')!,smith=villageBuildings.find(b=>b.id==='smithy')!,bank=villageBuildings.find(b=>b.id==='bank')!,hall=villageBuildings.find(b=>b.id==='hall')!;
+  prop('depot-sign',depot.x+5,depot.y-1,3,1.25);
+  prop('village-forge',smith.x+1,smith.y+1,2,2,2,1);prop('elderwood-barrel',smith.x+4,smith.y+1,1,1,1,1);
+  prop('furn-chest-down',smith.x+1,smith.y+3,1,1,1,1);prop('town-tools',smith.x+4,smith.y,1,1);
   for(const station of craftingStations)if('npc'in station){blocked.add(`${Math.floor(station.npc.x)},${Math.floor(station.npc.y)}`);objects.push(mapObject(station.bench.key,station.bench.x*48,station.bench.y*48,96,96));for(const [x,y]of station.bench.cells)blocked.add(`${x},${y}`);}
-  rect(2,18,12,1,2);rect(13,14,1,5,2);
-  prop('village-counter',24,12,2,2,2,1);prop('village-table',21,18,2,2,2,1);
-  rect(13,11,7,6,2);prop('elderwood-portal',15,10.5,3,3);
-  for(const [x,y]of [[2,2],[2,5],[28,1],[28,7]])prop('elderwood-oak',x,y,3,3,1,1,1);
-  for(const [x,y]of [[2,7],[29,11],[1,9],[29,18]])prop('elderwood-oak',x,y,3,3,1,1,1);
-  prop('elderwood-bench',19,14,2,1,2,1);prop('elderwood-planter',19,13,1,1,1,1);
-  prop('woods-flowers',12,18,1,.6);prop('woods-flowers',20,10,1,.6);
-  for(const x of [13,19])for(const y of [8,17])prop('elderwood-lamp',x,y,1,2,1,1);
-  // A fenced public garden, workshop supplies and a pond-side flower walk.
-  prop('elderwood-fence-h',18,2,4,1,4,1);
-  for(const x of [18,21])for(const y of [3,5])prop('elderwood-fence-v',x,y,1,2,1,2);
-  for(const x of [18,21])prop('elderwood-fence-h',x,7,1,1,1,1);
-  for(const [x,y]of [[19,3],[20,4],[19,5]])prop('woods-flowers',x,y,1,1);
-  prop('furn-bench-up',20,6,1,1,1,1);
-  prop('furn-chest-left',28,10,1,1,1,1);prop('furn-chest-up',29,10,1,1,1,1);prop('furn-barrel-down',30,10,1,1,1,1);
-  prop('caverns-old-crate',28,11,1,1,1,1);
-  for(const [x,y]of [[2,18],[4,18],[10,18],[11,19],[20,18],[26,18]])prop('woods-flowers',x,y,1,1);
-  prop('furn-planter-down',12,2,1,1,1,1);prop('furn-barrel-down',23,3,1,1,1,1);
+  prop('village-counter',bank.x+1,bank.y,2,2,2,1);prop('village-table',hall.x+1,hall.y,2,2,2,1);
+  prop('elderwood-portal',24,26,1,1);
+  for(const [x,y]of [[12,6],[28,6],[6,14],[40,14],[6,25],[39,26],[15,30],[28,30]])prop('elderwood-oak',x,y,3,3,1,1,1);
+  for(const [x,y]of [[16,12],[31,12],[16,25],[31,25],[13,33],[33,33]])prop('elderwood-lamp',x,y,1,2,1,1);
+  prop('town-well',12,16,2,2,2,1);prop('elderwood-bench',18,19,2,1,2,1);
+  prop('elderwood-planter',18,23,1,1,1,1);prop('elderwood-planter',29,23,1,1,1,1);
+  prop('town-armor',smith.x+4,smith.y+2,1,2,1,1);prop('town-bookshelf',bank.x+4,bank.y,1,2,1,1);prop('town-chair',hall.x,hall.y+2,1,1,1,1);
+  for(const [x,y]of [[7,22],[12,22],[7,28],[34,19],[40,24],[19,25],[29,25],[15,8],[28,9],[16,32],[31,32]])prop('woods-flowers',x,y,1,1);
+  prop('elderwood-fence-h',16,7,5,1,5,1);for(const x of [16,20]){prop('elderwood-fence-v',x,8,1,3,1,3);prop('elderwood-fence-h',x,11,1,1,1,1);}for(const [x,y]of [[17,8],[19,8],[17,10]])prop('woods-flowers',x,y,1,1);prop('furn-bench-up',19,10,1,1,1,1);
+  prop('furn-chest-left',10,13,1,1,1,1);prop('furn-barrel-down',11,13,1,1,1,1);
   }else{
-   prop('town-bookshelf',6,2,2,2,2,1);prop('town-bed',6,5,2,2,2,2);prop('town-table',9,3,2,2,2,1);
-   prop('town-bookshelf',20,18,2,2,2,1);prop('town-bookshelf',22,18,2,2,2,1);
+   const depot=villageBuildings.find(b=>b.id==='depot')!,hall=villageBuildings.find(b=>b.id==='hall')!;
+   prop('town-bookshelf',depot.x+1,depot.y,2,2,2,1);prop('town-bed',depot.x+1,depot.y+4,2,2,2,2);prop('town-table',depot.x+5,depot.y+2,2,2,2,1);
+   prop('town-bookshelf',hall.x,hall.y,2,2,2,1);prop('town-bookshelf',hall.x+2,hall.y,2,2,2,1);
   }
   // Directional windows, room furnishings and wooden staircases share the same grid.
   for(const b of buildingsFor(region)){
    prop('town-window',b.x+1,b.y-.15,1.3,.9);
    if(b.width>6)prop('town-window',b.x+b.width-3,b.y-.15,1.3,.9);
   }
-  if(!isVillageUpper(region)){
-   prop('town-armor',26,5,1,2,1,1);
-   prop('town-bookshelf',27,12,1,2,1,1);prop('town-chair',20,20,1,1,1,1);
-   prop('town-well',20,8,2,2,2,1);prop('elderwood-bench',6,6,2,1,2,1);
-  }
-  prop(isVillageUpper(region)?'town-stairs-down':'town-stairs-up',10.5,4.5,2,2);
-  prop(isVillageUpper(region)?'town-stairs-down':'town-stairs-up',23.5,18.5,2,2);
+  prop(isVillageUpper(region)?'town-stairs-down':'town-stairs-up',27.5,19.5,2,2);
+  prop(isVillageUpper(region)?'town-stairs-down':'town-stairs-up',39.5,29.5,2,2);
  }else if(region==='woods'){
   for(const [x,y]of [[7,5],[51,5],[7,32],[51,32]])rect(x,y,11,9,0);
   path([[10,8],[22,8],[27,10],[34,8],[43,8],[48,10],[57,8],[55,14],[57,18],[57,22],[59,28],[57,36],[48,38],[40,36],[34,36],[26,36],[20,38],[10,36],[8,32],[10,28],[10,25],[10,20],[12,14],[10,8]]);path([[34,8],[34,13],[32,18],[34,24],[34,30],[36,33],[34,40]]);path([[10,23],[22,23],[27,25],[34,24],[42,23],[57,23]]);

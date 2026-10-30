@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {floorConnections,villageDoors,closedVillageDoors,canTravel,portalFor,gridCrossesWall} from '@realm/game-data';
 import {toggleVillageDoor,legal,pathfind,move} from '@realm/shared';
 test('both upper rooms have legal paired stairs and reachable return stairs without an outdoor shortcut',()=>{
- const up=floorConnections.filter(s=>s.to==='elderwood-upper');assert.equal(up.length,2);
+ const up=floorConnections.filter(s=>s.to==='elderwood-upper'&&!s.id.startsWith('elderwood-rim-'));assert.equal(up.length,2);
  for(const s of up){assert.ok(legal(s.arrival,s.to));const down=floorConnections.find(d=>d.from===s.to&&d.to===s.from&&d.x===s.x)!;assert.ok(down);assert.ok(pathfind(s.arrival,{x:down.x,y:down.y+1},s.to).length||Math.hypot(s.arrival.x-down.x,s.arrival.y-down.y-1)<.01);assert.ok(legal(down.arrival,down.to));assert.ok(pathfind(portalFor('elderwood').arrival,down.arrival,'elderwood').length);}
  assert.equal(canTravel(portalFor('elderwood-upper'),'elderwood-upper','woods'),false);assert.equal(canTravel(portalFor('elderwood'),'elderwood','elderwood-upper'),false);assert.equal(legal({x:16.5,y:15.5},'elderwood-upper'),false);
 });
