@@ -8,3 +8,4 @@ for(const extension of ['webp','png'])for(const [path,url] of Object.entries(fil
  const id=path.split('/').at(-1)!.replace(/\.[^.]+$/,'');icons.set(id,url);
 }
 export function itemSprite(id:string,name:string){const image=document.createElement('img');image.className='item-sprite';image.alt='';image.setAttribute('aria-hidden','true');const url=icons.get(id);if(url)image.src=url;else{image.hidden=true;void generatedItemUrl(id).then(url=>{if(url){image.src=url;image.hidden=false;}});}image.draggable=false;image.title=name;return image;}
+export async function itemImageUrl(id:string){return icons.get(id)??await generatedItemUrl(id);}

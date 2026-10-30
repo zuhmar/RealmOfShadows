@@ -75,3 +75,4 @@ header{top:116px;left:20px;gap:6px}.crest{font-size:17px}header small{font-size:
 #inventory-dialog>.portal-heading{position:sticky;top:0;z-index:5;background:#203f38;padding:8px 0;border-bottom:1px solid #b9a66e44}
 #town-service-panel{padding:12px;border:1px solid #b9a66e44;border-radius:12px;margin:12px 0;background:#17383188}#town-service-panel h3{margin-top:0}#town-service-panel>button{margin:4px 6px 0 0}
 #profession-list>details,#loot-equipment{scroll-margin-top:78px}
+#house-dialog{width:min(580px,94vw);max-height:85dvh;overflow:auto}#house-dialog .portal-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}#house-dialog h2{font-size:18px}#house-dialog button{min-height:44px}#house-dialog button:disabled{opacity:.45}#house-dialog .depot-item>span{flex:1}#house-feedback{min-height:24px}#house-dialog .portal-heading{position:sticky;top:0;background:#203f38;z-index:1}

@@ -1,4 +1,5 @@
-import {paintCliffTile} from './cliff-tiles';
+import {paintCliffTile,paintCliffRim} from './cliff-tiles';
+import {playerHouses} from '@realm/game-data';
 import type Phaser from 'phaser';
 import {elderwoodSize,elderwoodRimStairs,onElderwoodRim,stairsFor} from '@realm/game-data';
 /** A two-tile rock band assembled from native faces, edges and four corner parts. */
@@ -11,7 +12,14 @@ export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImag
  const part=north&&west?'nw':north&&east?'ne':south&&west?'sw':south&&east?'se':(north?y===3:south?y===H-4:west?x===3:x===W-4)?'face-top':'face-bottom';
  paintCliffTile(ctx,x*32,y*32,part,true,(x+y)%3,north?'south':south?'north':west?'east':'west');}
  }
+ paintHousingTerraces(ctx,atlas);
  for(const s of elderwoodRimStairs)paintCliffStairs(ctx,s);
+}
+/** House terraces extend the cliff walk using the same native cap and face parts. */
+export function paintHousingTerraces(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource){
+ const caps=new Set<string>();for(const h of playerHouses)for(let y=h.terrace.y;y<h.terrace.y+h.terrace.h;y++)for(let x=h.terrace.x;x<h.terrace.x+h.terrace.w;x++)caps.add(`${x},${y}`);
+ for(const key of caps){const[x,y]=key.split(',').map(Number);if(!caps.has(`${x},${y+1}`))for(let row=0;row<2;row++)if(y+1+row<elderwoodSize.height)paintCliffTile(ctx,x*32,(y+1+row)*32,row?'face-bottom':'face-top',true,x%3);}
+ for(const key of caps){const[x,y]=key.split(',').map(Number);ctx.drawImage(atlas,2,2,32,32,x*32,y*32,32,32);for(const[dx,dy,side]of [[0,-1,'north'],[0,1,'south'],[-1,0,'west'],[1,0,'east']] as const)if(!caps.has(`${x+dx},${y+dy}`))paintCliffRim(ctx,x*32,y*32,side,true);}
 }
 /** Direction-specific stair parts occupy a one-cell-wide run, with no artwork scaling. */
 export function paintCliffStairs(ctx:CanvasRenderingContext2D,s:typeof elderwoodRimStairs[number]){

@@ -1,3 +1,6 @@
+export * from './housing-visuals';
+import {housingRegions} from './housing';
+export * from './housing';
 import {villageBuildings} from './village-buildings';
 import {elderwoodSize,elderwoodPortal} from './elderwood-layout';
 import {woodsSize} from './woods-cliffs';
@@ -23,7 +26,7 @@ import {elderwoodBlocked,elderwoodObjects} from './elderwood';
 export {elderwoodGround,elderwoodBlocked,elderwoodFootprintBlocked,elderwoodPositionBlocked,elderwoodTerrainGeometry,elderwoodMap,elderwoodObjects,type ElderwoodTerrain} from './elderwood';
 export const WORLD = { tile:64, width:elderwoodSize.width, height:elderwoodSize.height, speed:4, sprint:1.5, capacity:32, spawn:{...elderwoodPortal.arrival} };
 export const landmarks=villageBuildings.map(b=>({name:b.name,x:b.x,y:b.y,w:b.width,h:b.height,color:0x8b9b79,description:b.id==='depot'?'Walk inside and click a box to use your personal storage.':'Walk inside this village building.'}));
-export const regionSize=(region:RegionId)=>isLowerFloor(region)?{width:48,height:36}:(region==='woods'||isRaisedFloor(region))?woodsSize:region==='caverns'?{width:64,height:48}:(region==='elderwood'||region==='elderwood-upper')?elderwoodSize:{width:32,height:24};
+export const regionSize=(region:RegionId)=>isLowerFloor(region)?{width:48,height:36}:(region==='woods'||isRaisedFloor(region))?woodsSize:region==='caverns'?{width:64,height:48}:(region==='elderwood'||housingRegions.includes(region as typeof housingRegions[number]))?elderwoodSize:{width:32,height:24};
 export function blocked(x:number,y:number,region:RegionId='elderwood'):boolean{return gridBlocked(region,x,y);}
 export type Facing='down'|'left'|'right'|'up';
 export interface SpriteManifest {key:string;url:string;frameWidth:number;frameHeight:number;anchor:{x:number;y:number};scale:number;animations:Partial<Record<'idle'|'walk',Record<Facing,{frames:number[];fps:number}>>>}
@@ -31,6 +34,8 @@ export interface SpriteManifest {key:string;url:string;frameWidth:number;frameHe
 export const characterSprite:SpriteManifest|null=null;
 
 export const regions = {
+ 'elderwood-homes-upper':{name:'Elderwood · Homes Floor 2',description:'Player-owned cliff houses.',ground:[0x426a50,0x456e52],road:[0xb4aa84,0xbab18d],accent:0x76d6d3,obstacles:[]},
+ 'elderwood-homes-attic':{name:'Elderwood · Homes Floor 3',description:'The manor attic.',ground:[0x426a50,0x456e52],road:[0xb4aa84,0xbab18d],accent:0x76d6d3,obstacles:[]},
  'elderwood-upper':{name:'Elderwood · Cliff Walk & Lofts',description:'Connected perimeter cliffs, the Depot loft and Hall library.',ground:[0x426a50,0x456e52],road:[0xb4aa84,0xbab18d],accent:0x76d6d3,obstacles:[]},
  'woods-upper':{name:'Whispering Woods · Highlands',description:'A raised wolf lookout above the northern trail.',ground:[0x294b38,0x31573e],road:[0x7d8060,0x878867],accent:0x9be5ad,obstacles:[]},
  elderwood:{name:'Elderwood',description:'The shared village and your safe haven.',ground:[0x426a50,0x456e52],road:[0xb4aa84,0xbab18d],accent:0x76d6d3,obstacles:[]},
@@ -43,8 +48,8 @@ export const regions = {
 export type RegionId=keyof typeof regions;
 export const PORTAL=elderwoodPortal;
 export function isRegion(value:unknown):value is RegionId{return typeof value==='string'&&Object.hasOwn(regions,value);}
-export const portalFor=(region:RegionId)=>isRaisedFloor(region)?{x:40.5,y:5.5,radius:1.2,arrival:{x:40.5,y:6.5}}:region==='elderwood-upper'?{x:28.5,y:21.5,radius:2.5,arrival:{x:28.5,y:22.5}}:isLowerFloor(region)?{x:24.5,y:30.5,radius:2.5,arrival:{x:24.5,y:32.5}}:region==='woods'?{x:34.5,y:25.5,radius:2.5,arrival:{x:34.5,y:27.5}}:region==='caverns'?{x:32.5,y:40.5,radius:2.5,arrival:{x:32.5,y:42.5}}:region==='elderwood'?PORTAL:{x:16.5,y:13.5,radius:2.5,arrival:{x:16.5,y:15.5}};
-export function canTravel(position:{x:number;y:number},from:RegionId,to:unknown):to is RegionId{return isRegion(to)&&!isRaisedFloor(from)&&!isRaisedFloor(to)&&!isLowerFloor(from)&&!isLowerFloor(to)&&from!=='elderwood-upper'&&to!=='elderwood-upper'&&from!==to&&Math.hypot(position.x-portalFor(from).x,position.y-portalFor(from).y)<=portalFor(from).radius;}
+export const portalFor=(region:RegionId)=>region==='elderwood-homes-upper'?{x:30.5,y:2.5,radius:1.2,arrival:{x:31.5,y:2.5}}:region==='elderwood-homes-attic'?{x:43.5,y:11.5,radius:1.2,arrival:{x:44.5,y:11.5}}:isRaisedFloor(region)?{x:40.5,y:5.5,radius:1.2,arrival:{x:40.5,y:6.5}}:region==='elderwood-upper'?{x:28.5,y:21.5,radius:2.5,arrival:{x:28.5,y:22.5}}:isLowerFloor(region)?{x:24.5,y:30.5,radius:2.5,arrival:{x:24.5,y:32.5}}:region==='woods'?{x:34.5,y:25.5,radius:2.5,arrival:{x:34.5,y:27.5}}:region==='caverns'?{x:32.5,y:40.5,radius:2.5,arrival:{x:32.5,y:42.5}}:region==='elderwood'?PORTAL:{x:16.5,y:13.5,radius:2.5,arrival:{x:16.5,y:15.5}};
+export function canTravel(position:{x:number;y:number},from:RegionId,to:unknown):to is RegionId{return isRegion(to)&&!isRaisedFloor(from)&&!isRaisedFloor(to)&&!isLowerFloor(from)&&!isLowerFloor(to)&&!housingRegions.includes(from as typeof housingRegions[number])&&!housingRegions.includes(to as typeof housingRegions[number])&&from!==to&&Math.hypot(position.x-portalFor(from).x,position.y-portalFor(from).y)<=portalFor(from).radius;}
 export {combat,wolfSpawns} from './combat';
 export {items,rewards,merchant,totalXp,levelForXp,type ItemId} from './economy';
 export * from './classes';

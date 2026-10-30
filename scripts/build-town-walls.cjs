@@ -65,7 +65,7 @@ function doorSvg(cells,open){
   };
   for(const side of ['n','s','e','w','nw','ne','sw','se','n-half','s-half'])await save('wall-'+side,svg(side));
   for(const side of ['n','s','n-half','s-half'])await save('wall-'+side+'-window',svg(side,true));
-  for(const cells of [2,3])for(const open of [true,false])await save(`door-${cells}-${open?'open':'closed'}`,doorSvg(cells,open));
+  for(const cells of [1,2,3])for(const open of [true,false])await save(`door-${cells}-${open?'open':'closed'}`,doorSvg(cells,open));
  }finally{await browser.close()}
  console.log('Built fitted walls, four integrated window panels and four full-width door frames');
 })();

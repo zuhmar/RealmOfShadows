@@ -87,7 +87,10 @@
     "test:elderwood-plan:browser": "node tests/browser-village-portal.cjs",
     "test:elderwood-plan:integration": "tsx tests/elderwood-plan.integration.ts",
     "test:village-cliffs:browser": "node tests/browser-village-cliffs.cjs",
-    "test:map-perspective:browser": "node tests/browser-map-perspective.cjs"
+    "test:map-perspective:browser": "node tests/browser-map-perspective.cjs",
+    "test:housing:integration": "tsx tests/housing.integration.ts",
+    "test:housing:browser": "node tests/browser-housing.cjs",
+    "test:housing:accounts:browser": "tsx tests/housing.browser.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

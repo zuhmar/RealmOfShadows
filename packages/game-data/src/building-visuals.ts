@@ -1,3 +1,4 @@
+import {housingVisuals} from './housing-visuals';
 import nativeSizes from './map-prop-sizes.json';
 import {modularFurniture} from './map-furniture';
 import {buildingsFor,type villageBuildings,isBuildingFloor} from './village-buildings';
@@ -9,7 +10,7 @@ export const townDoorTexture=(width:number,open:boolean)=>`house-door-${width}-$
 export function townDoorVisual(door:{x:number;y:number;width:number},open:boolean):IslandObject{
  return {...mapObject(townDoorTexture(door.width,open),(door.x-door.width/2)*48,(door.y+.5-townView.wallHeight)*48,door.width*48,townView.wallHeight*48),footY:(door.y+.5+1/32)*48};
 }
-export interface BuildingVisual extends IslandObject{roofFor?:string;wallFor?:string;wallSide?:string;signFor?:string;upperFor?:string;sourceKey?:string;roofPart?:'tile'|'ridge'|'chimney'}
+export interface BuildingVisual extends IslandObject{houseFor?:string;houseWallSide?:string;houseDoor?:string;houseUpper?:boolean;houseRoof?:boolean;roofFor?:string;wallFor?:string;wallSide?:string;signFor?:string;upperFor?:string;sourceKey?:string;roofPart?:'tile'|'ridge'|'chimney'}
 export function insideBuilding(p:{x:number;y:number},b:typeof villageBuildings[number]){return p.x>b.x&&p.x<b.x+b.width&&p.y>b.y&&p.y<b.y+b.height;}
 export function buildingVisuals(region:string,objects:readonly IslandObject[],roofs=true):BuildingVisual[]{
  const buildings=buildingsFor(region),result:BuildingVisual[]=[],height=townView.wallHeight;
@@ -68,5 +69,5 @@ export function buildingVisuals(region:string,objects:readonly IslandObject[],ro
    put('roof-chimney',b.x+b.width-1.6,top+.15,1,1.5,bottom+.07,{roofFor:b.id,roofPart:'chimney'});
   }
  }
- return result;
+ result.push(...housingVisuals(region,roofs));return result;
 }

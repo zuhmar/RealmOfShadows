@@ -50,3 +50,5 @@ export {sight} from "./combat";
 export {applyEquipment,effectiveAttributes,profileArmor} from './gear';
 
 export {toggleVillageDoor} from './village-doors';
+
+export * from './housing';

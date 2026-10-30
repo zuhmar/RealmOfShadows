@@ -99,3 +99,7 @@ Email and save status are private room messages, not replicated to other players
 These fixtures use fake users/keys and do not access your production Supabase
 project. Normal gameplay suites remain available and should run sequentially
 against a dedicated game server.
+
+## Player housing
+
+Run `migrations/202610300001_player_housing.sql` after both existing save migrations, then deploy Render and Vercel together. This adds five global houses and atomic ownership/item transfers. Existing environment variables are sufficient. See [player housing](../docs/player-housing.md) for prices, controls, tests and deployment checks. The production migration must be run in your Supabase SQL Editor; it has not been applied from this workspace.
