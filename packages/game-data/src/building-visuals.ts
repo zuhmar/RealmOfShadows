@@ -1,3 +1,4 @@
+import {connectedFenceVisuals,isMapFence} from './fences';
 import {housingVisuals} from './housing-visuals';
 import nativeSizes from './map-prop-sizes.json';
 import {modularFurniture} from './map-furniture';
@@ -16,6 +17,7 @@ export function buildingVisuals(region:string,objects:readonly IslandObject[],ro
  const buildings=buildingsFor(region),result:BuildingVisual[]=[],height=townView.wallHeight;
  const put=(key:string,x:number,y:number,w:number,h:number,footY:number,meta:Partial<BuildingVisual>={})=>result.push({...mapObject(key,x*48,y*48,w*48,h*48),footY:footY*48,...meta});
  for(const object of objects){
+  if(isMapFence(object.key))continue;
   if(buildings.length&&(/^(depot|village)-wall-/.test(object.key)||object.key==='town-window'))continue;
   const pieces=modularFurniture(object);if(pieces){result.push(...pieces);continue;}
   const copy:BuildingVisual={...object};
@@ -69,5 +71,5 @@ export function buildingVisuals(region:string,objects:readonly IslandObject[],ro
    put('roof-chimney',b.x+b.width-1.6,top+.15,1,1.5,bottom+.07,{roofFor:b.id,roofPart:'chimney'});
   }
  }
- result.push(...housingVisuals(region,roofs));return result;
+ result.push(...connectedFenceVisuals(objects));result.push(...housingVisuals(region,roofs));return result;
 }

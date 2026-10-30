@@ -1,3 +1,5 @@
+export * from './fences';
+export * from './neighborhood-dressing';
 export * from './housing-visuals';
 import {housingRegions} from './housing';
 export * from './housing';

@@ -38,3 +38,13 @@ The migration has been tested locally with PGlite/PostgreSQL and a mocked Supaba
 - `npm run test:housing:accounts:browser` signs in on mobile, buys through the dialog, places a real item, verifies the cutaway roof and takes the item back.
 
 Per-character housing writes share the existing save queue. Mutation requests pause during the cloud commit, preventing conflicting bag actions or prediction spam. A failed/uncertain transaction closes the save session and disconnects the character; later autosaves cannot overwrite an already committed transaction. Reconnect reloads confirmed gold, inventory and ownership. Optimistic house revisions prevent two rooms from buying the same property. Room ownership caches refresh every five seconds; mutations refresh before planning and the database remains authoritative.
+
+## Neighborhood gardens and connected fences
+
+The cliff promenades now have bent housing drives, four small shared courtyards, individual flower gardens, scattered groves and rocky/mossy cliff-side pockets. Decorative flora does not create gathering resources. Houses, ownership, display coordinates and the original village's terrain/collision stay unchanged.
+
+All new garden fences, plus the original village garden's visible fences, assemble from native 32×32 neighbor-mask tiles. North/east/south/west use bits 1/2/4/8; the renderer chooses ends, straight rails, corners and junctions from the actual occupied cells. Rails meet exactly at tile edges. Single-cell gate openings omit the fence cell and its collision, so the nearby segments finish in real end posts. Existing long fence footprints are converted only for rendering, preserving the original garden's collision.
+
+`npm run art:fences` regenerates SVG masters and transparent PNG parts. `npm run test:fences:browser` checks every possible reciprocal tile join pixel-for-pixel and renders an editor close-up. Shared tests verify actual mask neighbors, solid fences, open gates, usable courtyard interiors and routes to every house. The original village regression hash remains unchanged. `npm run test:neighborhood:integration` against the current game server exercises real gate entry/exit, an attempted move through a fence and the route back to a house.
+
+These decorations add shared collision on the cliff walk: deploy Render and Vercel together. No additional database migration is needed for the garden/fence polish.

@@ -1,4 +1,4 @@
-import {elderwoodTown} from './elderwood-layout';
+import {onElderwoodRim,elderwoodTown} from './elderwood-layout';
 import {houseCells,houseFloorIndex,playerHouses} from './housing';
 import {mapObject} from './island-layout';
 import type {BuildingVisual} from './building-visuals';
@@ -27,4 +27,4 @@ export function housingVisuals(region:string,roofs=true):BuildingVisual[]{
 }
 
 /** Only outdoor cliff dressing is projected below; the original town stays untouched. */
-export function outsideVillageCenter(o:{x:number;y:number;w:number;footY:number}){const x=(o.x+o.w/2)/48,y=o.footY/48,t=elderwoodTown;return x<t.x||x>=t.x+t.width||y<t.y||y>=t.y+t.height;}
+export function outsideVillageCenter(o:{x:number;y:number;w:number;footY:number}){const x=(o.x+o.w/2)/48,y=o.footY/48,t=elderwoodTown;return onElderwoodRim(Math.floor(x),Math.floor(y))||x<t.x||x>=t.x+t.width||y<t.y||y>=t.y+t.height;}

@@ -1,3 +1,4 @@
+import {dressNeighborhood} from './neighborhood-dressing';
 import {housingRegions,houseFloorIndex,playerHouses,houseCells} from './housing';
 import {elderwoodTown,elderwoodSize,onElderwoodRim} from './elderwood-layout';
 import {validateGridEdits,applyPropEdits,type GridEdits} from './grid-editing';
@@ -192,7 +193,7 @@ export function gridMap(region:string,authored=false):GridMap{
    // A connected promenade and short drives reach every front door.
    path([[21,21],[82,21],[82,90],[21,90],[21,21]],2);
    path([[52,30],[52,21]],2);path([[30,48],[21,48]],2);path([[73,48],[82,48]],2);path([[52,65],[52,90]],2);
-   for(const h of playerHouses){const x=Math.floor(h.door.x),y=Math.floor(h.door.y)+1;if(h.side==='north')path([[x,y],[x,21]],2);else if(h.side==='south')path([[x,y],[x,90]],2);else path([[x,y],[h.side==='west'?21:82,y]],2);}
+   for(const[i,h]of playerHouses.entries()){const x=Math.floor(h.door.x),y=Math.floor(h.door.y)+1,bend=i%2?2:-2;if(h.side==='north')path([[x,y],[x,18],[x+bend,18],[x+bend,21]],2);else if(h.side==='south')path([[x,y],[x,88],[x+bend,88],[x+bend,90]],2);else{const lane=h.side==='west'?18:85;path([[x,y],[lane,y],[lane,y+(i%2?1:-1)],[h.side==='west'?21:82,y+(i%2?1:-1)]],2);}}
   }
  }
  const homeFloor=houseFloorIndex(region);
@@ -205,6 +206,7 @@ export function gridMap(region:string,authored=false):GridMap{
   }}
  }
  if(region==='elderwood-upper'){for(const x of [10,28,46,64,82]){prop('elderwood-oak',x,1,3,3,1,1,1);prop('elderwood-oak',x,92,3,3,1,1,1);}for(const y of [15,27,39,51,63,75,87]){prop('elderwood-oak',2,y,3,3,1,1,1);prop('elderwood-oak',99,y,3,3,1,1,1);}for(const[x,y]of [[19,20],[84,20],[19,89],[84,89]])prop('elderwood-lamp',x,y,1,2,1,1);}
+ if(region==='elderwood-upper')dressNeighborhood(cells,objects,blocked);
  const override=authored?{}:storedEdit(region);
  if(override.cells)for(let y=0;y<height;y++)cells[y]=[...override.cells[y]];
  if(override.props||override.removedProps)applyPropEdits(objects,blocked,override);
