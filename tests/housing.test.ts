@@ -1,9 +1,10 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {existsSync} from 'node:fs';
-import {playerHouses,houseCells,housingRegions,houseDisplayTiles,emptyHouse,houseStairs,housingVisuals,elderwoodRimStairs,gridMap,gridCrossesWall,type HouseRecord} from '@realm/game-data';
+import {elderwoodTown,playerHouses,houseCells,housingRegions,houseDisplayTiles,emptyHouse,houseStairs,housingVisuals,elderwoodRimStairs,gridMap,gridCrossesWall,type HouseRecord} from '@realm/game-data';
 import {Economy,planHousing,publicHouse,pathfind,legal,newFighter} from '@realm/shared';
 const profile=()=>{const e=new Economy();e.join('p');const p=e.profiles.get('p')!;p.gold=4000;p.inventory=[{id:1,item:'potion',quantity:2}];return p;};
-test('five distinct irregular cliff houses have connected floors, one door and reachable entrances',()=>{
- assert.equal(playerHouses.length,5);assert.equal(new Set(playerHouses.map(h=>houseCells(h,0).size)).size,5);
+test('twenty irregular cliff houses have connected floors, one door and reachable entrances',()=>{
+ assert.equal(playerHouses.length,20);for(const side of ['north','south','east','west']){const homes=playerHouses.filter(h=>h.side===side);assert.equal(homes.length,5);assert.equal(new Set(homes.map(h=>houseCells(h,0).size)).size,5);}
+ const occupied=new Set<string>();for(const h of playerHouses)for(const key of houseCells(h,0)){assert.ok(!occupied.has(key),'no house overlap');occupied.add(key);const[x,y]=key.split(',').map(Number);assert.ok(x<elderwoodTown.x||x>=elderwoodTown.x+elderwoodTown.width||y<elderwoodTown.y||y>=elderwoodTown.y+elderwoodTown.height,'outside original village');}
  for(const h of playerHouses){const base=houseCells(h,0),xs=[...base].map(k=>+k.split(',')[0]),ys=[...base].map(k=>+k.split(',')[1]);assert.ok(base.size<(Math.max(...xs)-Math.min(...xs)+1)*(Math.max(...ys)-Math.min(...ys)+1),h.id+' irregular plan');
  const outside={x:h.door.x,y:h.door.y+1};assert.ok(legal(outside,housingRegions[0]),h.id+' doorstep');assert.equal(gridCrossesWall(housingRegions[0],outside,h.door),false);assert.ok(elderwoodRimStairs.some(s=>pathfind(s.top,outside,housingRegions[0]).length),h.id+' connected to cliff stairs');
  for(let f=0;f<h.floors.length;f++){const cells=houseCells(h,f),start=f?{x:h.stairs.x+1,y:h.stairs.y}:h.door;assert.ok(legal(start,housingRegions[f]),h.id+' floor landing');for(const key of cells){const[x,y]=key.split(',').map(Number),goal={x:x+.5,y:y+.5};assert.ok(legal(goal,housingRegions[f]));if(goal.x!==start.x||goal.y!==start.y)assert.ok(pathfind(start,goal,housingRegions[f]).length,h.id+' connected room');}assert.ok(houseDisplayTiles(h,f).length);}
@@ -24,5 +25,5 @@ test('display transfers preserve real ownership and rarity, reject outsiders, eq
  assert.match(planHousing(p,actor,house,'a','Hero',{...request,category:'weapon',item:p.weapon}) as string,/Unequip/);
  const gear={id:'10000000-0000-4000-8000-000000000001',base:'knightSword' as const,rarity:'legendary' as const};p.gear.push(gear);const gp=planHousing(p,actor,house,'a','Hero',{...request,category:'gear',item:gear.id});assert.notEqual(typeof gp,'string');if(typeof gp==='string')return;assert.deepEqual(gp.house.displays[0].item,{category:'gear',gear});assert.equal(gp.profile.gear.length,0);
  gp.profile.inventory=Array.from({length:32},(_,i)=>({id:i+1,item:'potion',quantity:99}));assert.match(planHousing(gp.profile,actor,gp.house,'a','Hero',{...request,kind:'take'}) as string,/bag is full/);
- assert.match(planHousing(p,{...actor,x:20,y:20},house,'a','Hero',request) as string,/Stand beside/);
+ assert.match(planHousing(p,{...actor,x:52,y:48},house,'a','Hero',request) as string,/Stand beside/);
 });

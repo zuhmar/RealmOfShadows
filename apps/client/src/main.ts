@@ -1,5 +1,5 @@
 import {HousingUI,drawHousingWorld} from './housing-ui';
-import {housingVisuals,houseAt,houseFloorIndex,isHousingFloor,playerHouses,houseById,housingRegions,nearHouseDoor,type PublicHouse} from '@realm/game-data';
+import {outsideVillageCenter,housingVisuals,houseAt,houseFloorIndex,isHousingFloor,playerHouses,houseById,housingRegions,nearHouseDoor,type PublicHouse} from '@realm/game-data';
 import {drawVillageCliffStairs} from './village-cliffs';
 import {drawVillagePortal} from './village-portal';
 import {drawRaisedFloor} from './stacked-floors';
@@ -258,7 +258,7 @@ class Elderwood extends Phaser.Scene {
  for(const obj of this.worldObjects)obj.destroy();
  const existing=new Set(this.children.list),config=regions[this.region];
  this.cameras.main.setBackgroundColor(isVillageUpper(this.region)?'#10222b':'#233c38');this.terrainCleanup=drawTiledTerrain(this,this.region);
- const grid=gridMap(this.region),mapConfig={width:grid.width*48,height:grid.height*48,worldWidth:grid.width,worldHeight:grid.height,offsetY:0},mapObjects=[...(this.region==='elderwood'?housingVisuals('elderwood-upper').map(o=>({...o,elevation:0})):[]),...(isVillageUpper(this.region)?buildingVisuals('elderwood',gridMap('elderwood').objects).filter(o=>!villageBuildings.filter(b=>b.id==='depot'||b.id==='hall').some(b=>[o.roofFor,o.wallFor,o.signFor,o.upperFor].includes(b.id)||insideBuilding({x:(o.x+o.w/2)/48,y:(o.y+o.h*.8)/48},b))).map(o=>({...o,elevation:0})):[]),...(this.region==='woods'?buildingVisuals('woods-upper',gridMap('woods-upper').objects).map(o=>({...o,elevation:floorDepth('woods-upper')})):[]),...(isRaisedFloor(this.region)?buildingVisuals('woods',gridMap('woods').objects).map(o=>({...o,elevation:0})):[]),...buildingVisuals(this.region,grid.objects).map(o=>({...o,elevation:floorDepth(this.region)}))];
+ const grid=gridMap(this.region),mapConfig={width:grid.width*48,height:grid.height*48,worldWidth:grid.width,worldHeight:grid.height,offsetY:0},mapObjects=[...(this.region==='elderwood'?[...housingVisuals('elderwood-upper'),...buildingVisuals('elderwood-upper',gridMap('elderwood-upper').objects,false).filter(o=>!o.houseFor&&outsideVillageCenter(o))].map(o=>({...o,elevation:0})):[]),...(isVillageUpper(this.region)?buildingVisuals('elderwood',gridMap('elderwood').objects).filter(o=>!villageBuildings.filter(b=>b.id==='depot'||b.id==='hall').some(b=>[o.roofFor,o.wallFor,o.signFor,o.upperFor].includes(b.id)||insideBuilding({x:(o.x+o.w/2)/48,y:(o.y+o.h*.8)/48},b))).map(o=>({...o,elevation:0})):[]),...(this.region==='woods'?buildingVisuals('woods-upper',gridMap('woods-upper').objects).map(o=>({...o,elevation:floorDepth('woods-upper')})):[]),...(isRaisedFloor(this.region)?buildingVisuals('woods',gridMap('woods').objects).map(o=>({...o,elevation:0})):[]),...buildingVisuals(this.region,grid.objects).map(o=>({...o,elevation:floorDepth(this.region)}))];
  const illustratedMap=true;
  if(illustratedMap){
  for(const object of mapObjects){if((this.region==='elderwood'||isVillageUpper(this.region))&&object.key==='elderwood-portal')continue;const sx=mapConfig.worldWidth*64/mapConfig.width,sy=mapConfig.worldHeight*64/mapConfig.height;

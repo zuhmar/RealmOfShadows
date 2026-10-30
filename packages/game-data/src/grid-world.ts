@@ -1,12 +1,12 @@
 import {housingRegions,houseFloorIndex,playerHouses,houseCells} from './housing';
-import {elderwoodSize,onElderwoodRim} from './elderwood-layout';
+import {elderwoodTown,elderwoodSize,onElderwoodRim} from './elderwood-layout';
 import {validateGridEdits,applyPropEdits,type GridEdits} from './grid-editing';
 import {woodsCliffs,woodsSize,woodsRidges,ridgeCells,woodsExpansionSpawns} from './woods-cliffs';
 import {woodsLedge} from './elevation';
-import {craftingStations} from './town-services';
-import {villageBuildings,buildingsFor,isVillageUpper} from './village-buildings';
+import {baseCraftingStations as craftingStations} from './town-services';
+import {baseVillageBuildings as villageBuildings,isVillageUpper} from './village-buildings';
 import {woodsGridEncounters} from './woods-grid-spawns';
-import {depotBoxes} from './depot';
+import {baseDepotBoxes as depotBoxes} from './depot';
 import overrides from './grid-overrides.json';
 import type {RegionId} from './index';
 import {mapObject,type IslandObject} from './island-layout';
@@ -23,7 +23,7 @@ export function gridMap(region:string,authored=false):GridMap{
  const spawns=authoredGridSpawns;
  const lower=region.endsWith('-depths'),village=region==='elderwood'||isVillageUpper(region)||housingRegions.includes(region as typeof housingRegions[number]),cave=region.startsWith('caverns');
  const width=lower?48:(region==='woods'||region==='woods-upper')?woodsSize.width:region==='caverns'?64:(region==='elderwood'||isVillageUpper(region)||housingRegions.includes(region as typeof housingRegions[number]))?elderwoodSize.width:32,height=lower?36:region==='woods'||region==='woods-upper'?woodsSize.height:region==='caverns'?48:(region==='elderwood'||isVillageUpper(region)||housingRegions.includes(region as typeof housingRegions[number]))?elderwoodSize.height:24;
- const cells=Array.from({length:height},()=>Array<number>(width).fill(cave||lower||isVillageUpper(region)?5:0)),objects:IslandObject[]=[],blocked=new Set<string>(),edges=new Set<string>();
+ let cells=Array.from({length:height},()=>Array<number>(width).fill(village||cave||lower||isVillageUpper(region)?5:0)),objects:IslandObject[]=[],blocked=new Set<string>(),edges=new Set<string>();
  const rect=(x:number,y:number,w:number,h:number,material:number)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(j>=0&&i>=0&&j<height&&i<width)cells[j][i]=material;};
  const path=(points:readonly (readonly [number,number])[],material=1)=>{for(let i=1;i<points.length;i++){let [x,y]=points[i-1];const [tx,ty]=points[i];rect(x-1,y-1,3,3,material);while(x!==tx||y!==ty){x+=Math.sign(tx-x);y+=Math.sign(ty-y);rect(x-1,y-1,3,3,material);}}};
  const dressingSeed=(x:number,y:number)=>{let n=(Math.imul(x,73856093)^Math.imul(y,19349663))>>>0;n=Math.imul(n^(n>>>16),0x7feb352d);return(n^(n>>>15))>>>0;};
@@ -42,20 +42,22 @@ export function gridMap(region:string,authored=false):GridMap{
  }else if(houseFloorIndex(region)>0){
   rect(0,0,width,height,5);
  }else if(village){
+  const townWidth=elderwoodTown.width,townHeight=elderwoodTown.height;
+  const buildingsFor=(id:string)=>id==='elderwood'?villageBuildings:villageBuildings.filter(b=>b.id==='depot'||b.id==='hall');
   if(!isVillageUpper(region)){
-  rect(1,1,width-2,height-2,0);
+  rect(1,1,townWidth-2,townHeight-2,0);
   // Raised perimeter surrounds a lower village square with four staircase approaches.
-  for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if(x<5||x>=width-5||y<5||y>=height-5)rect(x,y,1,1,5);
+  for(let y=1;y<townHeight-1;y++)for(let x=1;x<townWidth-1;x++)if(x<5||x>=townWidth-5||y<5||y>=townHeight-5)rect(x,y,1,1,5);
   path([[24,6],[24,13],[15,13],[15,26],[32,26],[32,13],[24,13]],2);
   path([[24,27],[24,34]],2);path([[6,20],[15,20]],2);path([[32,20],[42,20]],2);
   path([[8,12],[8,13],[15,13]],1);path([[38,13],[38,14],[32,14]],1);
   path([[8,33],[8,34],[24,34]],1);path([[39,33],[39,34],[24,34]],1);
   path([[13,26],[13,34],[8,34]],1);path([[34,26],[34,34],[39,34]],1);
-  for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if(x<5||x>=width-5||y<5||y>=height-5)rect(x,y,1,1,5);
+  for(let y=1;y<townHeight-1;y++)for(let x=1;x<townWidth-1;x++)if(x<5||x>=townWidth-5||y<5||y>=townHeight-5)rect(x,y,1,1,5);
   // Two quiet fishing ponds, away from doors and cardinal stair landings.
   rect(8,24,5,5,3);rect(9,23,3,1,3);rect(35,20,5,5,3);rect(36,19,3,1,3);rect(37,19,1,6,4);
   }else{
-   for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if(onElderwoodRim(x,y))rect(x,y,1,1,0);
+   for(let y=1;y<townHeight-1;y++)for(let x=1;x<townWidth-1;x++)if(x<3||x>=townWidth-3||y<3||y>=townHeight-3)rect(x,y,1,1,0);
   }
   // Every village building is assembled from the same edge-aligned tile kit.
   for(const building of buildingsFor(region)){
@@ -178,15 +180,31 @@ export function gridMap(region:string,authored=false):GridMap{
   for(const [x,y,w,h]of rooms){if(cave){prop('caverns-crystal-violet',x,y,2,2);prop('caverns-crystal-teal',x+w-2,y+h-2,2,2);prop('caverns-lantern-blue',x+w-1,y+1,.6,1.5);}else{prop('woods-stump',x,y,2,2);prop('woods-mushrooms',x+w-2,y+h-2,1,1);prop('woods-lamp',x+w-1,y+1,.6,1.5);}}
   if(!cave){for(const [x,y]of [[6,4],[14,9],[9,11]])prop('woods-web',x,y,2,2);prop('woods-den',4,20,3,2);prop('woods-ruin',40,3,1,2);}
  }else{path([[4,12],[27,12]]);path([[16,4],[16,20]]);rect(4,4,5,5,3);rect(23,16,5,5,3);prop('elderwood-portal',15,10.5,3,3);}
+ // Translate the complete original town once, without resizing or rearranging its features.
+ if(region==='elderwood'||region==='elderwood-upper'){
+  const original=cells;cells=Array.from({length:height},()=>Array<number>(width).fill(5));
+  for(let y=0;y<elderwoodTown.height;y++)for(let x=0;x<elderwoodTown.width;x++)cells[y+elderwoodTown.y][x+elderwoodTown.x]=original[y][x];
+  for(const o of objects){o.x+=elderwoodTown.x*48;o.y+=elderwoodTown.y*48;o.footY+=elderwoodTown.y*48;if(o.footprint){o.footprint.x+=elderwoodTown.x;o.footprint.y+=elderwoodTown.y;}}
+  const rawBlocked=[...blocked];blocked.clear();for(const k of rawBlocked){const[x,y]=k.split(',').map(Number);blocked.add(`${x+elderwoodTown.x},${y+elderwoodTown.y}`);}
+  const rawEdges=[...edges];edges.clear();for(const k of rawEdges){const[type,xy]=k.split(':'),[x,y]=xy.split(',').map(Number);edges.add(`${type}:${x+elderwoodTown.x},${y+elderwoodTown.y}`);}
+  if(region==='elderwood-upper'){
+   for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if(onElderwoodRim(x,y))rect(x,y,1,1,0);
+   // A connected promenade and short drives reach every front door.
+   path([[21,21],[82,21],[82,90],[21,90],[21,21]],2);
+   path([[52,30],[52,21]],2);path([[30,48],[21,48]],2);path([[73,48],[82,48]],2);path([[52,65],[52,90]],2);
+   for(const h of playerHouses){const x=Math.floor(h.door.x),y=Math.floor(h.door.y)+1;if(h.side==='north')path([[x,y],[x,21]],2);else if(h.side==='south')path([[x,y],[x,90]],2);else path([[x,y],[h.side==='west'?21:82,y]],2);}
+  }
+ }
  const homeFloor=houseFloorIndex(region);
  if(homeFloor>=0){
-  if(homeFloor===0)for(const h of playerHouses)rect(h.terrace.x,h.terrace.y,h.terrace.w,h.terrace.h,0);
+  // Housing sits on the existing expanded plateau; no terraces intrude into town.
   for(const h of playerHouses){const floorCells=houseCells(h,homeFloor);for(const key of floorCells){const[x,y]=key.split(',').map(Number);rect(x,y,1,1,4);
    for(const[dx,dy]of [[0,-1],[0,1],[-1,0],[1,0]])if(!floorCells.has(`${x+dx},${y+dy}`)){
     const door=homeFloor===0&&dy===1&&x===Math.floor(h.door.x)&&y===Math.floor(h.door.y);if(!door)edges.add(dx?`v:${x+(dx>0?1:0)},${y}`:`h:${x},${y+(dy>0?1:0)}`);
    }
   }}
  }
+ if(region==='elderwood-upper'){for(const x of [10,28,46,64,82]){prop('elderwood-oak',x,1,3,3,1,1,1);prop('elderwood-oak',x,92,3,3,1,1,1);}for(const y of [15,27,39,51,63,75,87]){prop('elderwood-oak',2,y,3,3,1,1,1);prop('elderwood-oak',99,y,3,3,1,1,1);}for(const[x,y]of [[19,20],[84,20],[19,89],[84,89]])prop('elderwood-lamp',x,y,1,2,1,1);}
  const override=authored?{}:storedEdit(region);
  if(override.cells)for(let y=0;y<height;y++)cells[y]=[...override.cells[y]];
  if(override.props||override.removedProps)applyPropEdits(objects,blocked,override);

@@ -6,15 +6,22 @@ import type {ItemId} from './economy';
 export const housingRegions=['elderwood-upper','elderwood-homes-upper','elderwood-homes-attic'] as const;
 export const isHousingFloor=(region:string)=>housingRegions.includes(region as typeof housingRegions[number]);
 export interface HouseRoom{x:number;y:number;w:number;h:number}
-export interface PlayerHouse{id:string;name:string;price:number;roof:string;floors:readonly (readonly HouseRoom[])[];door:{x:number;y:number};terrace:HouseRoom;stairs:{x:number;y:number}}
-/** Five separate properties. Unions of rectangles make stepped/L/T plans, never scaled shells. */
-export const playerHouses:readonly PlayerHouse[]=[
- {id:'briar',name:'Briar Cottage',price:500,roof:'bank',floors:[[{x:8,y:1,w:5,h:4},{x:12,y:3,w:3,h:2}]],door:{x:10.5,y:4.5},terrace:{x:7,y:1,w:9,h:6},stairs:{x:9.5,y:2.5}},
- {id:'pinewatch',name:'Pinewatch House',price:1000,roof:'workshop',floors:[[{x:29,y:1,w:7,h:4},{x:33,y:4,w:3,h:2}],[{x:29,y:1,w:7,h:4}]],door:{x:34.5,y:5.5},terrace:{x:28,y:1,w:9,h:6},stairs:{x:30.5,y:2.5}},
- {id:'stonebend',name:'Stonebend Lodge',price:1500,roof:'smithy',floors:[[{x:1,y:10,w:4,h:7},{x:4,y:13,w:3,h:4}],[{x:1,y:10,w:4,h:6}]],door:{x:5.5,y:16.5},terrace:{x:1,y:9,w:7,h:10},stairs:{x:2.5,y:12.5}},
- {id:'eastridge',name:'Eastridge Manor',price:2500,roof:'hall',floors:[[{x:41,y:9,w:6,h:5},{x:43,y:14,w:4,h:3}],[{x:41,y:9,w:6,h:5}],[{x:42,y:10,w:4,h:3}]],door:{x:44.5,y:16.5},terrace:{x:40,y:8,w:7,h:11},stairs:{x:43.5,y:11.5}},
- {id:'sunset',name:'Sunset Terrace',price:750,roof:'depot',floors:[[{x:16,y:34,w:8,h:3},{x:18,y:37,w:4,h:2}]],door:{x:16.5,y:36.5},terrace:{x:15,y:33,w:10,h:6},stairs:{x:20.5,y:35.5}},
+export interface PlayerHouse{id:string;name:string;price:number;roof:string;side:'north'|'south'|'west'|'east';floors:readonly (readonly HouseRoom[])[];door:{x:number;y:number};terrace:HouseRoom;stairs:{x:number;y:number}}
+/** Five different plans on each side, all on the expanded cliff belt outside the old town. */
+const plans=[
+ {name:'Cottage',price:500,roof:'bank',floors:[[{x:0,y:0,w:5,h:4},{x:4,y:2,w:3,h:2}]],door:{x:2.5,y:3.5},stairs:{x:1.5,y:1.5}},
+ {name:'House',price:1000,roof:'workshop',floors:[[{x:0,y:0,w:7,h:4},{x:4,y:3,w:3,h:2}],[{x:0,y:0,w:7,h:4}]],door:{x:5.5,y:4.5},stairs:{x:1.5,y:1.5}},
+ {name:'Lodge',price:1500,roof:'smithy',floors:[[{x:0,y:0,w:4,h:7},{x:3,y:3,w:3,h:4}],[{x:0,y:0,w:4,h:6}]],door:{x:4.5,y:6.5},stairs:{x:1.5,y:2.5}},
+ {name:'Manor',price:2500,roof:'hall',floors:[[{x:0,y:0,w:6,h:5},{x:2,y:5,w:4,h:3}],[{x:0,y:0,w:6,h:5}],[{x:1,y:1,w:4,h:3}]],door:{x:3.5,y:7.5},stairs:{x:2.5,y:2.5}},
+ {name:'Terrace',price:750,roof:'depot',floors:[[{x:0,y:0,w:8,h:3},{x:2,y:3,w:4,h:2}]],door:{x:.5,y:2.5},stairs:{x:4.5,y:1.5}},
 ];
+const sidePlans={north:[0,1,2,3,4],west:[2,0,1,3,4],east:[3,0,1,2,4],south:[4,0,1,2,3]} as const;
+const legacy:Record<string,{id:string;name:string}>={north0:{id:'briar',name:'Briar Cottage'},north1:{id:'pinewatch',name:'Pinewatch House'},west0:{id:'stonebend',name:'Stonebend Lodge'},east0:{id:'eastridge',name:'Eastridge Manor'},south0:{id:'sunset',name:'Sunset Terrace'}};
+export const playerHouses:readonly PlayerHouse[]=(['north','west','east','south'] as const).flatMap(side=>sidePlans[side].map((template,i)=>{
+ const p=plans[template],x=side==='west'?7:side==='east'?86:7+i*18,y=side==='north'?7:side==='south'?79:24+i*12,old=legacy[side+i];
+ const move=<T extends {x:number;y:number}>(v:T)=>({...v,x:v.x+x,y:v.y+y});
+ return{id:old?.id??`${side}${i+1}`,name:old?.name??`${side[0].toUpperCase()+side.slice(1)} ${p.name} ${i+1}`,side,price:p.price,roof:p.roof,floors:p.floors.map(f=>f.map(move)),door:move(p.door),stairs:move(p.stairs),terrace:{x:x-2,y:y-2,w:12,h:12}};
+}));
 export const houseById=(id:unknown)=>typeof id==='string'?playerHouses.find(h=>h.id===id):undefined;
 export const houseFloorIndex=(region:string)=>housingRegions.indexOf(region as typeof housingRegions[number]);
 const cellCache=new WeakMap<PlayerHouse,Map<number,Set<string>>>();

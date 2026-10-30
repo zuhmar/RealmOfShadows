@@ -1,14 +1,18 @@
 # Player houses on Elderwood's cliffs
 
-Five properties sit on widened terraces connected to the existing cliff walk. Every door is one cell wide. Each footprint is a union of rooms, with matching stepped tile roofs and exposed boundary walls; the houses are not square copies. Terrain, walls, roofs and stair parts retain the existing map artwork and grid scale.
+Twenty properties occupy a wide, connected cliff belt: **five north, five south, five west, five east**. Elderwood is now **104×96 cells**. The original **48×40 village** is inset at `(28,28)` without rearranging it; its terrain, wall edges, solid props, Depot, ponds, trader and crafting hall retain their original relative layout. Houses and yards lie completely outside that original rectangle. Promenades and short drives connect every door to the four existing cliff stairs. Trees and lamps dress the outer neighborhoods, visible from both ground and cliff walk.
 
-| House | Cliff side | Floors | Price |
-| --- | --- | --- | --- |
-| Briar Cottage | North-west | 1 | 500 gold |
-| Pinewatch House | North-east | 2 | 1,000 gold |
-| Stonebend Lodge | West | 2 | 1,500 gold |
-| Eastridge Manor | East | 3 | 2,500 gold |
-| Sunset Terrace | South | 1 | 750 gold |
+Each side has five different irregular plans, with 1–3 floors. All doors remain one cell wide, and larger architecture still assembles from tile parts.
+
+| Plan on each side | Floors | Price |
+| --- | --- | --- |
+| Cottage | 1 | 500 gold |
+| House | 2 | 1,000 gold |
+| Lodge | 2 | 1,500 gold |
+| Manor | 3 | 2,500 gold |
+| Terrace | 1 | 750 gold |
+
+The original IDs `briar`, `pinewatch`, `stonebend`, `eastridge`, and `sunset` remain valid. Fifteen additional lots complete the four neighborhoods. Their original owners and displayed items are preserved by the expansion migration, which translates display coordinates exactly once.
 
 Climb any of the four village cliff stairs, then click a house's single door. The player approaches its doorstep and opens a dialog. Unowned houses show a gold purchase button; owned houses show their public owner's name. Owners use their Supabase display name if configured, otherwise a public Adventurer identifier. Email addresses and account UUIDs are not sent in housing snapshots.
 
@@ -20,15 +24,15 @@ House ground floors live on `elderwood-upper`; additional floors use `elderwood-
 
 ## Deploy
 
-1. In this project's Supabase SQL Editor, run [202610300001_player_housing.sql](../supabase/migrations/202610300001_player_housing.sql) **after the two existing character-save migrations**. It is safe to rerun and preserves existing ownership. It creates global housing rows and service-role-only RPCs, with RLS blocking direct browser access.
+1. After the two existing character-save migrations, run [202610300001_player_housing.sql](../supabase/migrations/202610300001_player_housing.sql) if not already applied. Then run [202610300002_expand_cliff_neighborhoods.sql](../supabase/migrations/202610300002_expand_cliff_neighborhoods.sql) in Supabase's SQL Editor. The expansion adds fifteen lots and translates existing displays without clearing ownership or inventory. Both migrations are safe to rerun. RLS continues to block direct browser writes. Old-layout servers cannot commit house mutations after the expansion migration, preventing item coordinates from reverting during deployment.
 2. Redeploy **Render and Vercel together** so clients and server use the same new rooms, collision edges and stairs. Existing Supabase environment variables are reused. No new keys are needed.
 3. Sign in, earn the listed gold, climb to the cliffs and click a door. Check the owner label, place an item, sign out and back in, and verify it remains displayed.
 
-The migration has been tested locally with PGlite/PostgreSQL and a mocked Supabase REST service. It has not been applied to production from this workspace, which has no Supabase administration connection. Until applied, the town still loads; purchases are disabled with an explicit housing availability message.
+The migration has been tested locally with PGlite/PostgreSQL and a mocked Supabase REST service. It has not been applied to production from this workspace, which has no Supabase administration connection. Until all twenty lots are present, the town still loads; purchases are disabled with an explicit housing availability message.
 
 ## Verification
 
-- `npm run build` and `npm test` cover floor paths, wall edges, distinct shapes, real texture keys, actual item ownership, gold, equipped/full-bag rejection, SQL transactions, revision races, stale leases and permission restrictions.
+- `npm run build` and `npm test` cover a regression hash of the original village terrain/collision, twenty non-overlapping properties, five per side, floor paths, wall edges, distinct shapes, real texture keys, actual item ownership, gold, equipped/full-bag rejection, SQL transactions, revision races, stale leases and permission restrictions.
 - `npm run test:housing:integration` exercises the real multiplayer server with signed-in and guest clients, gold deduction, public ownership, supply/Legendary displays, restart persistence, retrieval and all three manor floors.
 - `npm run test:housing:browser` checks desktop/mobile cliff approaches, guest restrictions, single-door textures and floor rendering.
 - `npm run test:housing:accounts:browser` signs in on mobile, buys through the dialog, places a real item, verifies the cutaway roof and takes the item back.

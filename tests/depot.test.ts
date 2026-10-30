@@ -1,14 +1,15 @@
+import {townPoint,elderwoodTown} from '@realm/game-data';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {Economy,newFighter,legal,pathfind} from '@realm/shared';
 import {depotBoxes,depotRules,depotUsage,inventoryUsage,gridMap,gearStats,portalFor} from '@realm/game-data';
 import {readProgress,writeProgress} from '../packages/shared/src/saves';
-const setup=()=>{const e=new Economy();e.join('p');return {e,profile:e.profiles.get('p')!,p:Object.assign(newFighter(),{x:20.5,y:17.5})};};
+const setup=()=>{const e=new Economy();e.join('p');return {e,profile:e.profiles.get('p')!,p:Object.assign(newFighter(),townPoint({x:20.5,y:17.5}))};};
 const gear=()=>({id:crypto.randomUUID(),base:'clothTunic' as const,rarity:'legendary' as const});
 test('Depot is a visible walk-in village room with solid walls and accessible personal boxes',()=>{
  const map=gridMap('elderwood');assert.ok(!map.objects.some(o=>o.key==='elderwood-tavern'));assert.ok(map.objects.some(o=>o.key==='depot-sign'));assert.ok(map.objects.filter(o=>o.key==='depot-floor').length>=30);
  for(const box of depotBoxes){assert.equal(legal(box),false);assert.ok(pathfind(portalFor('elderwood').arrival,{x:box.x,y:box.y+1}).length);}
- assert.ok(legal({x:24.5,y:23.5}));assert.ok(legal({x:24.5,y:19.5}));assert.equal(legal({x:17.5,y:18.5}),true);
+ assert.ok(legal(townPoint({x:24.5,y:23.5})));assert.ok(legal(townPoint({x:24.5,y:19.5})));assert.equal(legal(townPoint({x:17.5,y:18.5})),true);
 });
 test('all item categories deposit and withdraw atomically; rolled gear retains identity and bonuses',()=>{
  const {e,p,profile}=setup(),g=gear(),stats=gearStats(g);profile.gear.push(g);profile.inventory=[{id:10,item:'pelt',quantity:5}];e.serial=10;
@@ -21,7 +22,7 @@ test('requests require proximity and ownership; equipped gear and repeated or fo
  const {e,p,profile}=setup();assert.match(e.act('p',p,{kind:'depot-deposit',category:'weapon',item:'wand'},0),/Unequip/);
  e.act('p',p,{kind:'equip-item',item:'clothTunic'},0);assert.match(e.act('p',p,{kind:'depot-deposit',category:'equipment',item:'clothTunic'},0),/Unequip/);
  const g=gear();profile.gear.push(g);e.act('p',p,{kind:'equip-gear',item:g.id},0);assert.match(e.act('p',p,{kind:'depot-deposit',category:'gear',item:g.id},0),/Unequip/);e.act('p',p,{kind:'unequip-gear',item:g.id},0);
- p.region='woods';assert.match(e.act('p',p,{kind:'depot-deposit',category:'gear',item:g.id},0),/Walk inside/);p.region='elderwood';p.x=16.5;assert.match(e.act('p',p,{kind:'depot-deposit',category:'gear',item:g.id},0),/Walk inside/);p.x=20.5;
+ p.region='woods';assert.match(e.act('p',p,{kind:'depot-deposit',category:'gear',item:g.id},0),/Walk inside/);p.region='elderwood';p.x=16.5+elderwoodTown.x;assert.match(e.act('p',p,{kind:'depot-deposit',category:'gear',item:g.id},0),/Walk inside/);p.x=20.5+elderwoodTown.x;
  assert.match(e.act('p',p,{kind:'depot-deposit',category:'gear',item:g.id,box:'fake'},0),/Walk inside/);assert.match(e.act('p',p,{kind:'depot-deposit',category:'gear',item:g.id},0),/deposited/);assert.match(e.act('p',p,{kind:'depot-deposit',category:'gear',item:g.id},0),/do not own/);
  e.act('p',p,{kind:'depot-withdraw',category:'gear',item:g.id},0);e.act('p',p,{kind:'depot-withdraw',category:'gear',item:g.id},0);assert.equal(profile.gear.filter(i=>i.id===g.id).length,1);
 });

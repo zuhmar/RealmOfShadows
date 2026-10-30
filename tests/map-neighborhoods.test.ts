@@ -1,14 +1,15 @@
+import {townPoint,elderwoodTown} from '@realm/game-data';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {gridMap,portalFor,resourceNodes,gridSpawns} from '@realm/game-data';
 import {legal,pathfind} from '@realm/shared';
 test('Elderwood garden, workyard and pond walk have open approaches and solid fences',()=>{
  const map=gridMap('elderwood'),arrival=portalFor('elderwood').arrival;
- for(const goal of [{x:18.5,y:9.5},{x:18.5,y:11.5},{x:18.5,y:12.5},{x:12.5,y:13.5},{x:7.5,y:24.5}]){assert.ok(legal(goal),JSON.stringify(goal));assert.ok(pathfind(arrival,goal).length,JSON.stringify(goal)+' reachable');}
- for(const p of [{x:16.5,y:9.5},{x:20.5,y:9.5},{x:18.5,y:7.5}])assert.equal(legal(p),false,'garden fence blocks movement');
+ for(const goal of [townPoint({x:18.5,y:9.5}),townPoint({x:18.5,y:11.5}),townPoint({x:18.5,y:12.5}),townPoint({x:12.5,y:13.5}),townPoint({x:7.5,y:24.5})]){assert.ok(legal(goal),JSON.stringify(goal));assert.ok(pathfind(arrival,goal).length,JSON.stringify(goal)+' reachable');}
+ for(const p of [townPoint({x:16.5,y:9.5}),townPoint({x:20.5,y:9.5}),townPoint({x:18.5,y:7.5})])assert.equal(legal(p),false,'garden fence blocks movement');
  assert.ok(map.objects.some(p=>p.key==='furn-chest-left'));assert.ok(map.objects.some(p=>p.key==='elderwood-fence-h'));
  assert.equal(resourceNodes.filter(n=>n.region==='elderwood').length,0,'town remains fishing-only');
- for(let y=19;y<25;y++)for(let x=37;x<38;x++)assert.equal(map.cells[y][x],4,'continuous timber crossing');
+ for(let y=19;y<25;y++)for(let x=37;x<38;x++)assert.equal(map.cells[y+elderwoodTown.y][x+elderwoodTown.x],4,'continuous timber crossing');
 });
 test('scattered forest trees leave all encounter routes and portal/stair connections open',()=>{
  const map=gridMap('woods'),trees=map.objects.filter(o=>o.key==='woods-oak'||o.key==='woods-pine');

@@ -2,7 +2,7 @@ export * from './housing-visuals';
 import {housingRegions} from './housing';
 export * from './housing';
 import {villageBuildings} from './village-buildings';
-import {elderwoodSize,elderwoodPortal} from './elderwood-layout';
+import {townPoint,elderwoodSize,elderwoodPortal} from './elderwood-layout';
 import {woodsSize} from './woods-cliffs';
 import {isRaisedFloor} from './elevation';
 export * from './elevation';
@@ -48,7 +48,7 @@ export const regions = {
 export type RegionId=keyof typeof regions;
 export const PORTAL=elderwoodPortal;
 export function isRegion(value:unknown):value is RegionId{return typeof value==='string'&&Object.hasOwn(regions,value);}
-export const portalFor=(region:RegionId)=>region==='elderwood-homes-upper'?{x:30.5,y:2.5,radius:1.2,arrival:{x:31.5,y:2.5}}:region==='elderwood-homes-attic'?{x:43.5,y:11.5,radius:1.2,arrival:{x:44.5,y:11.5}}:isRaisedFloor(region)?{x:40.5,y:5.5,radius:1.2,arrival:{x:40.5,y:6.5}}:region==='elderwood-upper'?{x:28.5,y:21.5,radius:2.5,arrival:{x:28.5,y:22.5}}:isLowerFloor(region)?{x:24.5,y:30.5,radius:2.5,arrival:{x:24.5,y:32.5}}:region==='woods'?{x:34.5,y:25.5,radius:2.5,arrival:{x:34.5,y:27.5}}:region==='caverns'?{x:32.5,y:40.5,radius:2.5,arrival:{x:32.5,y:42.5}}:region==='elderwood'?PORTAL:{x:16.5,y:13.5,radius:2.5,arrival:{x:16.5,y:15.5}};
+export const portalFor=(region:RegionId)=>region==='elderwood-homes-upper'?{x:26.5,y:8.5,radius:1.2,arrival:{x:27.5,y:8.5}}:region==='elderwood-homes-attic'?{x:88.5,y:26.5,radius:1.2,arrival:{x:89.5,y:26.5}}:isRaisedFloor(region)?{x:40.5,y:5.5,radius:1.2,arrival:{x:40.5,y:6.5}}:region==='elderwood-upper'?{...townPoint({x:28.5,y:21.5}),radius:2.5,arrival:townPoint({x:28.5,y:22.5})}:isLowerFloor(region)?{x:24.5,y:30.5,radius:2.5,arrival:{x:24.5,y:32.5}}:region==='woods'?{x:34.5,y:25.5,radius:2.5,arrival:{x:34.5,y:27.5}}:region==='caverns'?{x:32.5,y:40.5,radius:2.5,arrival:{x:32.5,y:42.5}}:region==='elderwood'?PORTAL:{x:16.5,y:13.5,radius:2.5,arrival:{x:16.5,y:15.5}};
 export function canTravel(position:{x:number;y:number},from:RegionId,to:unknown):to is RegionId{return isRegion(to)&&!isRaisedFloor(from)&&!isRaisedFloor(to)&&!isLowerFloor(from)&&!isLowerFloor(to)&&!housingRegions.includes(from as typeof housingRegions[number])&&!housingRegions.includes(to as typeof housingRegions[number])&&from!==to&&Math.hypot(position.x-portalFor(from).x,position.y-portalFor(from).y)<=portalFor(from).radius;}
 export {combat,wolfSpawns} from './combat';
 export {items,rewards,merchant,totalXp,levelForXp,type ItemId} from './economy';
@@ -91,4 +91,4 @@ export type {GridDocument,GridEdits,EditorProp,EditorSpawn} from './grid-editing
 
 export {authoredGridSpawns} from './grid-world';
 
-export {elderwoodSize,elderwoodPortal,elderwoodRimStairs,onElderwoodRim} from './elderwood-layout';
+export {townPoint,elderwoodTown,elderwoodSize,elderwoodPortal,elderwoodRimStairs,onElderwoodRim} from './elderwood-layout';

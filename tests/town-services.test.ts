@@ -1,3 +1,4 @@
+import {elderwoodTown} from '@realm/game-data';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {craftingStations,craftingStation,canUseCraftingStation,gridMap,portalFor,villageBuildings} from '@realm/game-data';
@@ -6,8 +7,8 @@ test('four dedicated crafters stand behind distinct solid benches in one reachab
  const map=gridMap('elderwood'),npcs=craftingStations.filter(s=>'npc'in s),hall=villageBuildings.find(b=>b.id==='workshop')!;
  assert.equal(hall.name,'Crafting Hall');assert.equal(npcs.length,4);assert.equal(new Set(npcs.flatMap(s=>s.skills)).size,4);
  assert.equal(new Set(npcs.map(s=>s.bench.key)).size,4);
- assert.deepEqual(npcs.map(s=>[s.npc.x,s.npc.y]),[[32.5,7.5],[42.5,7.5],[32.5,12.5],[42.5,12.5]]);
- for(const x of [36,37,38])for(let y=8;y<13;y++)assert.equal(map.blocked.has(`${x},${y}`),false,'clear central aisle');
+ assert.deepEqual(npcs.map(s=>[s.npc.x,s.npc.y]),[[32.5,7.5],[42.5,7.5],[32.5,12.5],[42.5,12.5]].map(([x,y])=>[x+elderwoodTown.x,y+elderwoodTown.y]));
+ for(const x of [36,37,38])for(let y=8;y<13;y++)assert.equal(map.blocked.has(`${x+elderwoodTown.x},${y+elderwoodTown.y}`),false,'clear central aisle');
  for(const station of craftingStations){
   assert.equal(map.blocked.has(`${Math.floor(station.x)},${Math.floor(station.y)}`),false,station.id+' service point');
   assert.ok(pathfind(portalFor('elderwood').arrival,station,'elderwood').length,station.id+' entrance route');

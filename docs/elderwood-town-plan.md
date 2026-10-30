@@ -1,6 +1,8 @@
 # Central Depot village
 
-Elderwood now uses a 48×40 grid on both its ground and upper floors. The previous
+The current world is **104×96 cells**, with the original **48×40 town inset at (28,28)**. Its original terrain and collision are preserved exactly. The broad outer cliff belt holds five player houses on each side (20 total), with connected promenades. See [player housing](player-housing.md) for the expansion and database migration. Coordinates in the original town blueprint below are local: add `(28,28)` with `townPoint` for current world coordinates.
+
+The original central village uses a 48×40 grid on both its ground and upper floors. The previous
 32×24 village plan has been replaced; other islands retain their existing bounds.
 The shared plan is in `elderwood-layout.ts` and `village-buildings.ts`.
 

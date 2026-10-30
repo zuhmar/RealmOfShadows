@@ -1,3 +1,4 @@
+import {townPoint} from '@realm/game-data';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {isHousingFloor,gridMap,gridKey,gridSpawns,gridDirections,portalFor,stairsFor,regions,monsters} from '@realm/game-data';
@@ -28,7 +29,7 @@ test('four cardinal monsters leave diagonal escapes; all eight cells are needed 
  const next=move(p,{x:1,y:1,sprint:false,seq:1},.05,'woods',occupied);assert.ok(next.x>p.x&&next.y>p.y);assert.ok(pathfind(p,{x:11.5,y:17.5},'woods',occupied).length);
 });
 test('arrivals choose a nearby free center and dead monsters do not reserve cells',()=>{
- const p={x:16.5,y:15.5},occupied=new Set([gridKey(p)]),landing=freeLanding(p,'elderwood',occupied);assert.notEqual(gridKey(landing),gridKey(p));assert.ok(legal(landing,'elderwood'));
+ const p=townPoint({x:16.5,y:15.5}),occupied=new Set([gridKey(p)]),landing=freeLanding(p,'elderwood',occupied);assert.notEqual(gridKey(landing),gridKey(p));assert.ok(legal(landing,'elderwood'));
  assert.equal(occupiedCells([{x:1.5,y:1.5,hp:0,region:'woods'}],'woods').size,0);
 });
 test('every placed prop has a standalone PNG and all eight island sets contain distinct native 32px materials',async()=>{

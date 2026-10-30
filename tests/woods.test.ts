@@ -2,7 +2,7 @@ const PORTAL=portalFor('woods');
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {monsters,monsterSpawns,portalFor,woodsObjects,woodsGeometry,woodsMap,woodsClearings,regionSize} from '@realm/game-data';
+import {combatRegion,monsters,monsterSpawns,portalFor,woodsObjects,woodsGeometry,woodsMap,woodsClearings,regionSize} from '@realm/game-data';
 import {CombatSimulation,newFighter,Economy,legal,pathfind} from '@realm/shared';
 import {woodsSvgFiles} from '../scripts/build-woods-svg';
 test('all four woods habitats connect to the portal and spawn on walkable land',()=>{
@@ -43,11 +43,11 @@ test('returning to the portal cancels monster windups',()=>{
 });
 
 test('expanded woods supports distant exploration and retains town bounds',()=>{
- assert.deepEqual(regionSize('woods'),{width:96,height:72});assert.equal(regionSize('elderwood').width,48);
+ assert.deepEqual(regionSize('woods'),{width:96,height:72});assert.equal(regionSize('elderwood').width,104);
  assert.equal(woodsMap.worldWidth,68);assert.equal(woodsMap.width/woodsMap.height,1.5);
  for(const clearing of woodsClearings){const target={x:clearing.x/48,y:clearing.y/48+woodsMap.offsetY};assert.ok(legal(target,'woods'),clearing.name);assert.ok(pathfind(PORTAL.arrival,target,'woods').length,clearing.name);}
  const boar=monsterSpawns.find(s=>s.kind==='boar')!,bear=monsterSpawns.find(s=>s.kind==='bear')!;
- assert.ok(boar.x>32);assert.ok(bear.y>24);assert.ok(!legal(boar,'elderwood'));assert.ok(!legal({x:95.9,y:20},'woods'));
+ assert.ok(boar.x>32);assert.ok(bear.y>24);assert.equal(combatRegion('elderwood'),false);assert.ok(!legal({x:95.9,y:20},'woods'));
 });
 
 test('expanded habitats have spaced populations outside the portal sanctuary',()=>{
