@@ -82,7 +82,8 @@
     "test:elevation:browser": "tsx tests/browser-elevation.cjs",
     "test:woods-cliffs:browser": "node tests/browser-woods-cliffs.cjs",
     "test:woods-highlands:browser": "node tests/browser-woods-highlands.cjs",
-    "test:woods-highlands:integration": "tsx tests/woods-highlands.integration.ts"
+    "test:woods-highlands:integration": "tsx tests/woods-highlands.integration.ts",
+    "test:map-editor:touch": "node tests/browser-editor-touch.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

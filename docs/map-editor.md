@@ -27,7 +27,9 @@ spawns. Water, wall terrain and solid props reject new monster placements.
 Hold Space or use Pan to drag the view; middle-drag works too. Ctrl/Cmd+wheel
 zooms around the cursor. Fit and the minimap navigate large maps. Layer toggles
 control roofs, props, spawns, landmarks, grid and collision. On mobile, Layers
-opens the navigator/inspector drawer. Use the Pan tool for touch navigation.
+opens the navigator/inspector drawer. Touch screens start in Touch: Move mode: one-finger drags navigate without
+painting. The visible Move/Paint switch enables editing; switch back to Move
+when navigating. Palette and tool rows scroll with ordinary finger swipes.
 
 ## Saving and deployment
 
@@ -63,3 +65,7 @@ The editor never changes character art, monster animations, quests or inventory.
 erase, history, export, recovery and floors, plus rectangle/fill/picker/pan/zoom
 and preservation of a draft after invalid import. Shared tests cover real prop
 collision, fixed landmark protection and malformed edit rejection.
+
+`npm run test:map-editor:touch` uses real browser touch gestures in portrait and
+landscape to verify map panning without edits, Move/Paint switching, and native
+palette/tool-row scrolling.
