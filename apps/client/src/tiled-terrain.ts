@@ -1,13 +1,13 @@
-import {paintLedge,paintWoodsCliffs} from './stacked-floors';
+import {paintLedge,paintWoodsCliffs,paintRidge} from './stacked-floors';
 import type Phaser from 'phaser';
 import {paintConnectedTerrain,usesConnectedTerrain} from './connected-terrain';
-import {gridMap,islandForRegion,type RegionId} from '@realm/game-data';
+import {gridMap,woodsRidges,islandForRegion,type RegionId} from '@realm/game-data';
 const files=import.meta.glob('../../../assets/world/terrain/*/atlas.png',{eager:true,query:'?url',import:'default'}) as Record<string,string>;
 export const terrainTileAssets=Object.entries(files).map(([path,url])=>({key:`terrain-${path.split('/').at(-2)}-32`,url}));
 export const terrainTileAsset=terrainTileAssets.find(a=>a.key==='terrain-elderwood-32')!;
 export const terrainKey=(region:string)=>`terrain-${islandForRegion(region)}-32`;
 export function paintRegion(ctx:CanvasRenderingContext2D,region:RegionId,atlas:CanvasImageSource,cells=gridMap(region).cells){
- if(region==='woods-upper'){paintConnectedTerrain(ctx,gridMap('woods').cells,atlas);paintWoodsCliffs(ctx,atlas);ctx.fillStyle='#10222b55';ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);ctx.save();ctx.translate(37*32,3*32);paintLedge(ctx,atlas);ctx.restore();return;}
+ if(region==='woods-upper'){paintConnectedTerrain(ctx,gridMap('woods').cells,atlas);paintWoodsCliffs(ctx,atlas,cells);ctx.fillStyle='#10222b55';ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);for(const r of woodsRidges)paintRidge(ctx,atlas,r,cells);ctx.save();ctx.translate(37*32,3*32);paintLedge(ctx,atlas,false,cells);ctx.restore();return;}
  if(region!=='elderwood-upper'){paintConnectedTerrain(ctx,cells,atlas);if(region==='woods'){paintWoodsCliffs(ctx,atlas);ctx.save();ctx.translate(37*32,3*32);paintLedge(ctx,atlas);ctx.restore();}return;}
  paintConnectedTerrain(ctx,gridMap('elderwood').cells,atlas);ctx.fillStyle='#10222bd9';ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);
  // Show the town below the upper rooms, with walkable floor cells highlighted.

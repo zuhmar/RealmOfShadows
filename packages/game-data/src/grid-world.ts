@@ -1,3 +1,4 @@
+import {validateGridEdits,applyPropEdits,type GridEdits} from './grid-editing';
 import {woodsCliffs,woodsSize,woodsRidges,ridgeCells,woodsExpansionSpawns} from './woods-cliffs';
 import {woodsLedge} from './elevation';
 import {craftingStations} from './town-services';
@@ -12,8 +13,12 @@ export const gridDirections=[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,
 const cache=new Map<string,GridMap>();
 export const gridCell=(p:{x:number;y:number})=>({x:Math.floor(p.x)+.5,y:Math.floor(p.y)+.5});
 export const gridKey=(p:{x:number;y:number})=>`${Math.floor(p.x)},${Math.floor(p.y)}`;
-export function gridMap(region:string):GridMap{
- const old=cache.get(region);if(old)return old;
+const dimensions=(region:string)=>({width:region.endsWith('-depths')?48:(region==='woods'||region==='woods-upper')?woodsSize.width:region==='caverns'?64:32,height:region.endsWith('-depths')?36:(region==='woods'||region==='woods-upper')?woodsSize.height:region==='caverns'?48:24});
+const editCache=new Map<string,GridEdits>();
+function storedEdit(region:string){if(!editCache.has(region)){const size=dimensions(region),raw=(overrides.maps as Record<string,unknown>)[region]??{};editCache.set(region,validateGridEdits(raw,size.width,size.height));}return editCache.get(region)!;}
+export function gridMap(region:string,authored=false):GridMap{
+ const cacheKey=region+(authored?':authored':'');const old=cache.get(cacheKey);if(old)return old;
+ const spawns=authoredGridSpawns;
  const lower=region.endsWith('-depths'),village=region==='elderwood'||isVillageUpper(region),cave=region.startsWith('caverns');
  const width=lower?48:(region==='woods'||region==='woods-upper')?woodsSize.width:region==='caverns'?64:32,height=lower?36:region==='woods'||region==='woods-upper'?woodsSize.height:region==='caverns'?48:24;
  const cells=Array.from({length:height},()=>Array<number>(width).fill(cave||lower||isVillageUpper(region)?5:0)),objects:IslandObject[]=[],blocked=new Set<string>(),edges=new Set<string>();
@@ -126,7 +131,7 @@ export function gridMap(region:string):GridMap{
   for(const s of woodsExpansionSpawns)rect(Math.floor(s.x),Math.floor(s.y),1,1,1);
   for(const cliff of woodsCliffs)rect(cliff.x,cliff.y,cliff.size,cliff.size,5);
   const originalTrail=new Set<string>();for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if([1,2,4].includes(cells[y][x]))originalTrail.add(`${x},${y}`);
-  const protectedSpawns=new Set(gridSpawns('woods').map(p=>`${Math.floor(p.x)},${Math.floor(p.y)}`));
+  const protectedSpawns=new Set(spawns('woods').map(p=>`${Math.floor(p.x)},${Math.floor(p.y)}`));
   const seed=dressingSeed;
   // Read an immutable copy so shoulder weathering never erodes a trail's center.
   const unweathered=cells.map(row=>[...row]);
@@ -135,7 +140,7 @@ export function gridMap(region:string):GridMap{
   for(let y=2;y<height-4;y++)for(let x=2;x<width-4;x++){
    const inClearing=(x>=5&&x<=19&&(y<=15||y>=29))||(x>=49&&x<=63&&(y<=15||(y>=27&&y<=42)))||(x>=29&&x<=40&&y>=19&&y<=32);
    const trunkY=y+2,nearRoad=[-1,0,1].some(dx=>[-1,0,1].some(dy=>originalTrail.has(`${x+dx},${trunkY+dy}`)));
-   if(inClearing||nearRoad||cells[trunkY][x]!==0||gridSpawns('woods').some(p=>Math.hypot(p.x-x-.5,p.y-trunkY-.5)<2.5))continue;treeSites.push({x,y,seed:seed(x,y)});
+   if(inClearing||nearRoad||cells[trunkY][x]!==0||spawns('woods').some(p=>Math.hypot(p.x-x-.5,p.y-trunkY-.5)<2.5))continue;treeSites.push({x,y,seed:seed(x,y)});
   }
   const planted:{x:number;y:number}[]=[];
   for(const site of treeSites.sort((a,b)=>a.seed-b.seed)){
@@ -143,7 +148,7 @@ export function gridMap(region:string):GridMap{
    planted.push(site);prop(site.seed%3?'woods-oak':'woods-pine',site.x,site.y,2,3,1,1);
   }
   // Understory follows trail margins without blocking combat or gathering approaches.
-  for(let y=3;y<height-4;y++)for(let x=3;x<width-4;x++)if(cells[y][x]===0&&seed(x,y)%29===0&&!blocked.has(`${x},${y}`)&&!gridSpawns('woods').some(p=>Math.hypot(p.x-x-.5,p.y-y-.5)<2)&&[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>originalTrail.has(`${x+dx},${y+dy}`)))prop(seed(x,y)%2?'woods-fern':'woods-mushrooms',x,y,1,1);
+  for(let y=3;y<height-4;y++)for(let x=3;x<width-4;x++)if(cells[y][x]===0&&seed(x,y)%29===0&&!blocked.has(`${x},${y}`)&&!spawns('woods').some(p=>Math.hypot(p.x-x-.5,p.y-y-.5)<2)&&[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>originalTrail.has(`${x+dx},${y+dy}`)))prop(seed(x,y)%2?'woods-fern':'woods-mushrooms',x,y,1,1);
   prop('woods-den',7,3,3,2);
   for(const [key,x,y]of [['woods-log',20,15],['woods-stump',26,16],['woods-flowers',24,19],['woods-mushrooms',42,29],['woods-boulder',46,31],['woods-ruin',37,17],['woods-fern',28,18]] as const)prop(key,x,y,key==='woods-flowers'||key==='woods-mushrooms'||key==='woods-fern'?1:2, key==='woods-ruin'?2:1);
   for(const [x,y]of [[7,33],[15,34],[7,38]])prop('woods-web',x,y,2,2);
@@ -164,7 +169,7 @@ export function gridMap(region:string):GridMap{
   const route:readonly (readonly[number,number])[]=lower?[[24,31],[24,24],[9,24],[9,8],[37,8],[37,23],[24,23]]:[[32,40],[32,31],[12,31],[12,11],[32,11],[32,31],[50,31],[50,10]];
   path(route,cave?2:1);if(lower)path([[24,31],[24,8]],cave?2:1);if(!lower)path([[32,11],[32,22],[50,22],[50,31]],2);
   // Irregular chamber shoulders spare marked paths and monster spawn rings.
-  const spawnSites=gridSpawns(region as RegionId);
+  const spawnSites=spawns(region as RegionId);
   for(const [x,y,w,h]of rooms)for(let xx=x;xx<x+w;xx++)for(const yy of [y,y+h-1]){
    const notch=dressingSeed(Math.floor(xx/3),yy)%3===0;
    if(notch&&cells[yy][xx]===0&&spawnSites.every(p=>Math.hypot(p.x-xx-.5,p.y-yy-.5)>2))cells[yy][xx]=5;
@@ -181,16 +186,17 @@ export function gridMap(region:string):GridMap{
   for(const [x,y,w,h]of rooms){if(cave){prop('caverns-crystal-violet',x,y,2,2);prop('caverns-crystal-teal',x+w-2,y+h-2,2,2);prop('caverns-lantern-blue',x+w-1,y+1,.6,1.5);}else{prop('woods-stump',x,y,2,2);prop('woods-mushrooms',x+w-2,y+h-2,1,1);prop('woods-lamp',x+w-1,y+1,.6,1.5);}}
   if(!cave){for(const [x,y]of [[6,4],[14,9],[9,11]])prop('woods-web',x,y,2,2);prop('woods-den',4,20,3,2);prop('woods-ruin',40,3,1,2);}
  }else{path([[4,12],[27,12]]);path([[16,4],[16,20]]);rect(4,4,5,5,3);rect(23,16,5,5,3);prop('elderwood-portal',15,10.5,3,3);}
- const override=(overrides.maps as Record<string,{cells?:number[][]}>)[region];
- if(override?.cells){if(override.cells.length!==height||override.cells.some(row=>row.length!==width||row.some(n=>!Number.isInteger(n)||n<0||n>5)))throw Error(`Invalid grid terrain override: ${region}`);for(let y=0;y<height;y++)cells[y]=[...override.cells[y]];}
+ const override=authored?{}:storedEdit(region);
+ if(override.cells)for(let y=0;y<height;y++)cells[y]=[...override.cells[y]];
+ if(override.props||override.removedProps)applyPropEdits(objects,blocked,override);
  for(let x=0;x<width;x++){cells[0][x]=5;cells[height-1][x]=5;}for(let y=0;y<height;y++){cells[y][0]=5;cells[y][width-1]=5;}
  const propBlocked=new Set(blocked);
  for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(cells[y][x]===3||cells[y][x]===5)blocked.add(`${x},${y}`);
- const result={width,height,cells,objects,blocked,propBlocked,edges};cache.set(region,result);return result;
+ const result={width,height,cells,objects,blocked,propBlocked,edges};cache.set(cacheKey,result);return result;
 }
 export function gridBlocked(region:string,x:number,y:number){const map=gridMap(region);return x<0||y<0||x>=map.width||y>=map.height||map.blocked.has(`${Math.floor(x)},${Math.floor(y)}`);}
 type GridMonster='wolf'|'spider'|'boar'|'bear'|'bat'|'crawler'|'golem'|'wyrm';
-export function gridSpawns(region:RegionId):{id:string;kind:GridMonster;region:RegionId;x:number;y:number}[]{
+export function authoredGridSpawns(region:RegionId):{id:string;kind:GridMonster;region:RegionId;x:number;y:number}[]{
  if(region==='woods-upper')return [...[[38.5,4.5],[41.5,4.5],[38.5,6.5]].map(([x,y],i)=>({id:`ledge-wolf-${i+1}`,kind:'wolf' as const,region,x,y})),...woodsRidges.flatMap(r=>r.monsters?[[r.parts[0].x+2.5,r.parts[0].y+2.5],[r.parts[0].x+7.5,r.parts[0].y+3.5],[r.parts[1].x+3.5,r.parts[1].y+3.5]].map(([x,y],i)=>({id:`ridge-${r.id}-${i+1}`,kind:r.monsters,region,x,y})):[])];
  if(region==='woods')return [...woodsExpansionSpawns.map(s=>({...s,region})),...(Object.entries(woodsGridEncounters) as [keyof typeof woodsGridEncounters,typeof woodsGridEncounters[keyof typeof woodsGridEncounters]][]).flatMap(([kind,area])=>[...area.habitat,...area.approach].map(([x,y],i)=>({id:`${kind}-${i+1}`,kind,region,x:x+.5,y:y+.5})))];
  const woods=region.startsWith('woods'),lower=region.endsWith('-depths');
@@ -200,6 +206,8 @@ export function gridSpawns(region:RegionId):{id:string;kind:GridMonster;region:R
  if(lower&&!woods){const vault=result.at(-1)!;vault.x=37.5;vault.y=6.5;}
  return result;
 }
+
+export function gridSpawns(region:RegionId){const edit=storedEdit(region),removed=new Set(edit.removedSpawns??[]);return [...authoredGridSpawns(region).filter(s=>!removed.has(s.id)),...(edit.spawns??[]).map(s=>({...s,region}))];}
 
 /** Trace grid-boundary crossings. At a diagonal join both orthogonal routes must be clear. */
 export function gridCrossesWall(region:string,from:{x:number;y:number},to:{x:number;y:number}):boolean{

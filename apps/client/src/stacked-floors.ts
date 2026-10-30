@@ -1,8 +1,8 @@
 import type Phaser from 'phaser';
 import {woodsLedge,woodsCliffs,woodsRidges,ridgeCells,type WoodsRidge,gridMap,stairsFor} from '@realm/game-data';
 /** Shared by terrain previews and the depth-sorted outdoor floor overlay. */
-export function paintLedge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,scenic=false){
- const l=woodsLedge,cells=gridMap('woods-upper').cells,W=l.width*32,H=l.height*32,B=(l.height+l.faceHeight)*32;
+export function paintLedge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,scenic=false,cells=gridMap('woods-upper').cells){
+ const l=woodsLedge,W=l.width*32,H=l.height*32,B=(l.height+l.faceHeight)*32;
  const polygon=(points:number[][],fill:string,stroke?:string)=>{
   ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();
   ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1.2;ctx.stroke();}
@@ -57,7 +57,7 @@ export function paintLedge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,
 
 }
 /** Joined tile footprints share one turf cap: no dividing walls where ridges meet. */
-export function paintRidge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,ridge:WoodsRidge){
+export function paintRidge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,ridge:WoodsRidge,upperCells=gridMap('woods-upper').cells){
  const cells=ridgeCells(ridge),has=(x:number,y:number)=>cells.has(`${x},${y}`);
  // Each uninterrupted face is one fractured rock mass, with no seams at tile joins.
  const fronts=[...cells].map(k=>k.split(',').map(Number)).filter(([x,y])=>!has(x,y+1)).sort((a,b)=>a[1]-b[1]||a[0]-b[0]);
@@ -72,7 +72,7 @@ export function paintRidge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,
   ctx.restore();
  }
  for(const key of cells){const[x,y]=key.split(',').map(Number),px=x*32,py=y*32;
-  ctx.drawImage(atlas,2,2,32,32,px,py,32,32);
+  ctx.drawImage(atlas,upperCells[y][x]*36+2,2,32,32,px,py,32,32);
   // Exposed rim only; shared edges between adjoining parts remain open grass.
   for(const [dx,dy]of [[0,-1],[-1,0],[1,0],[0,1]])if(!has(x+dx,y+dy)){
    ctx.fillStyle='#687969';if(dy)ctx.fillRect(px,py+(dy===1?26:0),32,6);else ctx.fillRect(px+(dx===1?26:0),py,6,32);
@@ -83,7 +83,7 @@ export function paintRidge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,
  for(let i=0;i<8;i++){const w=28+i*2;ctx.fillStyle='#354d40';ctx.fillRect(cx-w/2-2,top+i*8,w+4,9);ctx.fillStyle=i%2?'#95a084':'#87977f';ctx.fillRect(cx-w/2,top+i*8,w,5);ctx.fillStyle='#bbc0a1';ctx.fillRect(cx-w/2+1,top+i*8,w-2,1);}
 }
 /** Boundary cliffs share the ledge's stone palette, with joined corners and no root-wall tiles. */
-export function paintWoodsCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource){
+export function paintWoodsCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,upperCells=gridMap('woods-upper').cells){
  const map=gridMap('woods'),W=map.width,H=map.height;
  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(x===0||y===0||x===W-1||y===H-1){
   ctx.save();ctx.translate(x*32,y*32);
@@ -99,7 +99,7 @@ export function paintWoodsCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImageS
   if(y===0){ctx.moveTo(0,30);ctx.lineTo(32,30);}if(y===H-1){ctx.moveTo(0,2);ctx.lineTo(32,2);}
   if(x===0){ctx.moveTo(30,0);ctx.lineTo(30,32);}if(x===W-1){ctx.moveTo(2,0);ctx.lineTo(2,32);}ctx.stroke();ctx.restore();
  }
- for(const r of woodsRidges)paintRidge(ctx,atlas,r);
+ for(const r of woodsRidges)paintRidge(ctx,atlas,r,upperCells);
  for(const c of woodsCliffs){ctx.save();ctx.translate(c.x*32,c.y*32);ctx.scale(c.size/6,c.size/6);paintLedge(ctx,atlas,true);ctx.restore();}
 }
 export function drawRaisedFloor(scene:Phaser.Scene,region:string,click:(id:string)=>void){

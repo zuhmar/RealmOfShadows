@@ -84,3 +84,8 @@ export * from './map-furniture';
 export {woodsCliffs,woodsSize,woodsRidges,ridgeCells,woodsExpansionSpawns} from './woods-cliffs';
 
 export type {WoodsRidge} from './woods-cliffs';
+
+export {editorPropKeys,editorObject,propIdentity,editableProp,validateGridEdits,applyPropEdits} from './grid-editing';
+export type {GridDocument,GridEdits,EditorProp,EditorSpawn} from './grid-editing';
+
+export {authoredGridSpawns} from './grid-world';
