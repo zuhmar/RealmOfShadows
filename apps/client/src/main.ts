@@ -336,7 +336,7 @@ class Elderwood extends Phaser.Scene {
  drawTownServices(this,this.region,id=>this.approachResource(id));
  drawProfessionNodes(this,this.region,id=>this.approachResource(id),()=>this.approachResource('workbench'));
  this.worldObjects=this.children.list.filter(obj=>!existing.has(obj));
- document.querySelector('h1')!.textContent=config.name;
+
  }
  approachStoryNpc(id:string){
  if(!this.entryReady||this.traveling||this.fighter.hp<=0||document.querySelector('dialog[open]'))return;const npc=storyNpc(id);if(!npc||npc.region!==this.region)return;

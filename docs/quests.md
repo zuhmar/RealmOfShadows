@@ -101,7 +101,7 @@ island contacts. `test:quests:browser` covers the existing Mara workflow.
 
 ## Guided opening and repeatable tasks
 
-The collapsible HUD tracker follows Rowan → woodland training → level-5 class
+The compact book icon below the profile opens the HUD tracker, which follows Rowan → woodland training → level-5 class
 choice/mentor → woodland boss → Orin. The Journal popup's Track objective selector can
 pin an eligible main or side quest; Automatic resumes the story or active hunt.
 NPC markers: gold ! offers a quest, gold ? has a story reward, muted … means a
@@ -146,3 +146,8 @@ No database schema migration is required. Deploy client and server together.
 
 Additional checks: `npm run test:tasks:browser` (Vite on port 5304 or
 TEST_CLIENT_URL) and `npm run test:story:integration`.
+
+The floating region/game title has been removed. The collapsed tracker is a
+44px touch target with a 30px icon; its details open below the icon in a bounded,
+scrollable panel. Check mobile portrait and landscape with
+`npm run test:tracker-icon:browser`.

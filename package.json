@@ -115,7 +115,8 @@
     "test:automatic-loot:browser": "node tests/browser-automatic-loot.cjs",
     "test:dock-progress:browser": "node tests/browser-dock-progress.cjs",
     "test:inventory-wayfarer:browser": "node tests/browser-inventory-wayfarer.cjs",
-    "art:wayfarer": "python3 scripts/encode-wayfarer-art.py"
+    "art:wayfarer": "python3 scripts/encode-wayfarer-art.py",
+    "test:tracker-icon:browser": "node tests/browser-tracker-icon.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",
