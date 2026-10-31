@@ -98,6 +98,7 @@
     "test:housing:accounts:browser": "tsx tests/housing.browser.ts",
     "art:fences": "node scripts/build-connected-fences.cjs",
     "test:fences:browser": "node tests/browser-connected-fences.cjs",
+    "test:neighborhood-life:browser": "node tests/browser-neighborhood-life.cjs",
     "test:neighborhood:integration": "tsx tests/neighborhood.integration.ts"
   },
   "devDependencies": {

@@ -48,3 +48,11 @@ All new garden fences, plus the original village garden's visible fences, assemb
 `npm run art:fences` regenerates SVG masters and transparent PNG parts. `npm run test:fences:browser` checks every possible reciprocal tile join pixel-for-pixel and renders an editor close-up. Shared tests verify actual mask neighbors, solid fences, open gates, usable courtyard interiors and routes to every house. The original village regression hash remains unchanged. `npm run test:neighborhood:integration` against the current game server exercises real gate entry/exit, an attempted move through a fence and the route back to a house.
 
 These decorations add shared collision on the cliff walk: deploy Render and Vercel together. No additional database migration is needed for the garden/fence polish.
+
+## Neighborhood streets and public spaces
+
+Housing drives now use one-cell lanes; the promenade uses two cells while the four main village approaches remain broad. North and south streets extend to the outer cottages. Side drives route below the complete house footprint, including L-shaped wings. All twenty paved doorsteps connect without requiring grass shortcuts.
+
+The upper belt includes North Well Court, West Flower Walk, South Picnic Green and East Orchard, with seats, planting and connections to the street network. Loose oak groves and small garden props use existing sprites, with single-cell solid footprints and clear formal paths. House IDs, prices, geometry, owners, displays and the original village are preserved. These decorative trees and flowers are not gathering resources.
+
+Run `npm run test:neighborhood-life:browser` for desktop/mobile walking and screenshots of the four places. The unit suite checks paved access to every house and public space. Deploy Render and Vercel together for the new prop collisions; no SQL migration is needed.
