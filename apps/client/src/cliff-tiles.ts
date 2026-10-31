@@ -35,14 +35,21 @@ export function paintCliffTile(ctx:CanvasRenderingContext2D,x:number,y:number,pa
   c.beginPath();c.moveTo(west?0:32,north?0:32);c.lineTo(west?0:32,north?24:8);c.lineTo(west?24:8,north?0:32);c.closePath();c.fillStyle=west?'#a0ad873d':'#172e3159';c.fill();
   c.strokeStyle=west?'#adb697':'#344b3f';c.lineWidth=1;c.beginPath();c.moveTo(west?0:32,north?24:8);c.lineTo(west?24:8,north?0:32);c.stroke();
  }
- if(part.startsWith('stairs-')){const direction=part.slice(7),horizontal=direction==='east'||direction==='west';c.fillStyle='#344b3f';c.fillRect(0,0,32,32);
- for(let i=0;i<4;i++){const p=i*8,reverse=direction==='north'||direction==='west';
- c.fillStyle='#4c5c4a';if(horizontal)c.fillRect(p,3,8,26);else c.fillRect(3,p,26,8);
- c.fillStyle='#97a186';if(horizontal)c.fillRect(p+(reverse?3:0),3,5,26);else c.fillRect(3,p+(reverse?3:0),26,5);
- c.fillStyle='#c3c9a8';if(horizontal)c.fillRect(p+(reverse?7:0),3,1,26);else c.fillRect(3,p+(reverse?7:0),26,1);
- c.fillStyle='#263b30';if(horizontal)c.fillRect(p+(reverse?0:6),3,2,26);else c.fillRect(3,p+(reverse?0:6),26,2);
+ if(part.startsWith('stairs-')){
+  // A complete staircase is ONE transparent 32px tile, not a strip of repeated treads.
+  c.clearRect(0,0,32,32);c.save();c.translate(16,16);
+  const direction=part.slice(7);c.rotate(({south:0,north:Math.PI,east:-Math.PI/2,west:Math.PI/2} as Record<string,number>)[direction]);c.translate(-16,-16);
+  // Solid right-hand stringer and base distinguish the raised flight from painted stripes.
+  c.fillStyle='#514b37';c.beginPath();c.moveTo(21,2);c.lineTo(31,26);c.lineTo(31,31);c.lineTo(12,31);c.lineTo(2,7);c.closePath();c.fill();
+  for(let i=0;i<6;i++){
+   const x=2+i*1.6,y=2+i*4.5,w=19;
+   c.fillStyle='#655e46';c.beginPath();c.moveTo(x,y+2.5);c.lineTo(x+w,y+2.5);c.lineTo(x+w+1.5,y+5);c.lineTo(x+1.5,y+5);c.closePath();c.fill();
+   c.fillStyle='#bcb58c';c.beginPath();c.moveTo(x+w,y);c.lineTo(x+w+1.5,y+2.5);c.lineTo(x+w+1.5,y+5);c.lineTo(x+w,y+2.5);c.closePath();c.fill();
+   c.fillStyle=i%2?'#e0d9ac':'#d6cfa2';c.beginPath();c.moveTo(x,y);c.lineTo(x+w,y);c.lineTo(x+w+1.5,y+2.5);c.lineTo(x+1.5,y+2.5);c.closePath();c.fill();
+   c.strokeStyle='#fff2c3';c.lineWidth=.7;c.beginPath();c.moveTo(x+.6,y+.4);c.lineTo(x+w-.4,y+.4);c.stroke();
+  }
+  c.restore();
  }
- c.fillStyle='#a0ad87';if(horizontal)c.fillRect(0,0,32,3);else c.fillRect(0,0,3,32);c.fillStyle='#4a6154';if(horizontal)c.fillRect(0,29,32,3);else c.fillRect(29,0,3,32);}
  cache.set(key,tile);}
  ctx.drawImage(tile,x,y);
 }

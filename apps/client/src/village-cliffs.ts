@@ -2,7 +2,7 @@ import {paintCliffRim,paintCliffTile} from './cliff-tiles';
 import type Phaser from 'phaser';
 import {gridMap,elderwoodTown,elderwoodSize,elderwoodRimStairs,onElderwoodRim,onElderwoodLand,stairsFor} from '@realm/game-data';
 /** A two-tile rock band assembled from native faces, edges and four corner parts. */
-export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource){
+export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,upperFloor=false){
  const{width:W,height:H}=elderwoodSize;const T=elderwoodTown,upper=gridMap('elderwood-upper').cells;
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
  if(!onElderwoodLand(x,y)){
@@ -19,23 +19,17 @@ export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImag
  const part=north&&west?'nw':north&&east?'ne':south&&west?'sw':south&&east?'se':(north?ly===3:south?ly===T.height-4:west?lx===3:lx===T.width-4)?'face-top':'face-bottom';
  paintCliffTile(ctx,x*32,y*32,part,true,(x+y)%3,north?'south':south?'north':west?'east':'west');}
  }
- for(const s of elderwoodRimStairs)paintCliffStairs(ctx,s);
+ for(const s of elderwoodRimStairs)paintCliffStairs(ctx,s,upperFloor);
 }
-/** Direction-specific stair parts occupy a one-cell-wide run, with no artwork scaling. */
-export function paintCliffStairs(ctx:CanvasRenderingContext2D,s:typeof elderwoodRimStairs[number]){
- const horizontal=s.x!==s.top.x,part=`stairs-${s.id}` as const;
- const start=Math.floor(horizontal?Math.min(s.x,s.top.x):Math.min(s.y,s.top.y)),end=Math.floor(horizontal?Math.max(s.x,s.top.x):Math.max(s.y,s.top.y));
- for(let t=start;t<=end;t++){
-  const x=(horizontal?t:Math.floor(s.x))*32,y=(horizontal?Math.floor(s.y):t)*32;
-  paintCliffTile(ctx,x,y,part,true);
-  // Distinct flat landings cap the run; the middle cells retain recessed risers.
-  if(t===start||t===end){ctx.fillStyle='#8d9980';ctx.fillRect(x+3,y+3,26,26);ctx.strokeStyle='#bcc4a0';ctx.strokeRect(x+3.5,y+3.5,25,25);ctx.strokeStyle='#57694f';ctx.beginPath();ctx.moveTo(x+4,y+17);ctx.lineTo(x+28,y+17);ctx.stroke();}
- }
+/** One complete flight occupies exactly the clickable transition cell. */
+export function paintCliffStairs(ctx:CanvasRenderingContext2D,s:typeof elderwoodRimStairs[number],upper=false){
+ const p=upper?s.top:s;
+ paintCliffTile(ctx,Math.floor(p.x)*32,Math.floor(p.y)*32,`stairs-${s.id}`,true);
 }
 export function drawVillageCliffStairs(scene:Phaser.Scene,region:string,click:(id:string)=>void){
  if(region!=='elderwood'&&region!=='elderwood-upper')return;
  for(const s of elderwoodRimStairs){const up=region==='elderwood',stair=stairsFor(region).find(r=>r.id===`elderwood-rim-${s.id}-${up?'up':'down'}`)!;
- const x=up?(s.x+s.top.x)/2:s.top.x,y=up?(s.y+s.top.y)/2:s.top.y;
+ const x=up?s.x:s.top.x,y=up?s.y:s.top.y;
  const zone=scene.add.zone(x*64,y*64,64,64).setInteractive({useHandCursor:true}).setDepth(10000).setData('stair',stair.id);
  zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===scene.game.canvas&&!p.rightButtonDown())click(stair.id)});
  scene.add.text(x*64,y*64-45,up?'↑ Cliff walk':'↓ Village',{fontSize:'11px',color:'#eee4c3',backgroundColor:'#243f32'}).setOrigin(.5).setDepth(10001);

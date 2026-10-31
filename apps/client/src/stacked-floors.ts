@@ -8,14 +8,14 @@ function paintPlateau(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,cells
  for(const key of cells){const[x,y]=key.split(',').map(Number);ctx.drawImage(atlas,terrain(x,y)*36+2,2,32,32,x*32,y*32,32,32);
  for(const[dx,dy,side]of [[0,-1,'north'],[0,1,'south'],[-1,0,'west'],[1,0,'east']] as const)if(!has(x+dx,y+dy))paintCliffRim(ctx,x*32,y*32,side);
  for(const[dx,dy,corner]of [[-1,-1,'nw'],[1,-1,'ne'],[-1,1,'sw'],[1,1,'se']] as const)if(!has(x+dx,y)&&!has(x,y+dy)){ctx.save();ctx.beginPath();ctx.rect(x*32+(dx<0?0:24),y*32+(dy<0?0:24),8,8);ctx.clip();paintCliffTile(ctx,x*32,y*32,corner);ctx.restore();}}
- if(stair)for(let row=0;row<2;row++)paintCliffTile(ctx,Math.floor(stair.x)*32,(stair.y+row)*32,'stairs-south');
+ if(stair)paintCliffTile(ctx,Math.floor(stair.x)*32,Math.floor(stair.y)*32,'stairs-south');
 }
-export function paintLedge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,scenic=false,cells=gridMap('woods-upper').cells){
+export function paintLedge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,scenic=false,cells=gridMap('woods-upper').cells,upper=false){
  const l=woodsLedge,parts=new Set<string>();for(let y=0;y<l.height;y++)for(let x=0;x<l.width;x++)parts.add(`${x},${y}`);
- paintPlateau(ctx,atlas,parts,(x,y)=>scenic?0:cells[l.y+y][l.x+x],scenic?undefined:{x:3.5,y:l.height});
+ paintPlateau(ctx,atlas,parts,(x,y)=>scenic?0:cells[l.y+y][l.x+x],scenic?undefined:{x:3.5,y:upper?2:l.height+2});
 }
-export function paintRidge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,ridge:WoodsRidge,upperCells=gridMap('woods-upper').cells){
- paintPlateau(ctx,atlas,ridgeCells(ridge),(x,y)=>upperCells[y][x],{x:ridge.stair.x,y:ridge.stair.y+.5});
+export function paintRidge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,ridge:WoodsRidge,upperCells=gridMap('woods-upper').cells,upper=false){
+ paintPlateau(ctx,atlas,ridgeCells(ridge),(x,y)=>upperCells[y][x],{x:ridge.stair.x,y:ridge.stair.y+(upper?0:3)});
 }
 /** Scenic footprints retain their authored size; two rows are reserved for rock faces. */
 export function paintScenicCliff(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,size:number){
@@ -28,13 +28,13 @@ export function paintWoodsCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImageS
 }
 export function drawRaisedFloor(scene:Phaser.Scene,region:string,click:(id:string)=>void){
  if(region!=='woods'&&region!=='woods-upper')return;
- const l=woodsLedge,key='woods-visible-ledge';
+ const l=woodsLedge,key=`woods-visible-ledge-${region}`;
  for(const r of woodsRidges){
-  const minX=Math.min(...r.parts.map(p=>p.x)),minY=Math.min(...r.parts.map(p=>p.y)),maxX=Math.max(...r.parts.map(p=>p.x+p.w)),maxY=Math.max(...r.parts.map(p=>p.y+p.h))+2,key=`woods-ridge-${r.id}`;
-  if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,(maxX-minX)*32,(maxY-minY)*32)!;const ctx=t.getContext();ctx.translate(-minX*32,-minY*32);paintRidge(ctx,scene.textures.get('terrain-woods-32').getSourceImage() as HTMLImageElement,r);t.refresh();}
+  const minX=Math.min(...r.parts.map(p=>p.x)),minY=Math.min(...r.parts.map(p=>p.y)),maxX=Math.max(...r.parts.map(p=>p.x+p.w)),maxY=Math.max(...r.parts.map(p=>p.y+p.h))+2,key=`woods-ridge-${r.id}-${region}`;
+  if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,(maxX-minX)*32,(maxY-minY)*32)!;const ctx=t.getContext();ctx.translate(-minX*32,-minY*32);paintRidge(ctx,scene.textures.get('terrain-woods-32').getSourceImage() as HTMLImageElement,r,undefined,region==='woods-upper');t.refresh();}
   scene.add.image(minX*64,minY*64,key).setOrigin(0).setScale(2).setDepth(maxY*64-1).setData('raisedRidge',r.id);
   const stair=stairsFor(region).find(s=>s.id===`woods-ridge-${r.id}-${region==='woods'?'up':'down'}`)!;
-  const zone=scene.add.zone(r.stair.x*64,(r.stair.y+(region==='woods'?1.5:0))*64,96,128).setInteractive({useHandCursor:true}).setDepth(maxY*64+1).setData('stair',stair.id);
+  const zone=scene.add.zone(stair.x*64,stair.y*64,64,64).setInteractive({useHandCursor:true}).setDepth(maxY*64+1).setData('stair',stair.id);
   zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===scene.game.canvas&&!p.rightButtonDown())click(stair.id)});
   scene.add.text(r.stair.x*64,(r.stair.y+.5)*64,stair.label,{fontSize:'12px',color:'#f0e2bc',backgroundColor:'#233d37'}).setOrigin(.5).setDepth(maxY*64+2);
  }
@@ -43,10 +43,10 @@ export function drawRaisedFloor(scene:Phaser.Scene,region:string,click:(id:strin
  if(!scene.textures.exists(scenicKey)){const t=scene.textures.createCanvas(scenicKey,c.size*32,c.size*32)!;paintScenicCliff(t.getContext(),scene.textures.get('terrain-woods-32').getSourceImage() as HTMLImageElement,c.size);t.refresh();}
  scene.add.image(c.x*64,c.y*64,scenicKey).setOrigin(0).setScale(2).setDepth((c.y+c.size)*64-1).setData('scenicCliff',true);}
 
- if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,l.width*32,(l.height+l.faceHeight)*32)!;paintLedge(texture.getContext(),scene.textures.get('terrain-woods-32').getSourceImage() as HTMLImageElement);texture.refresh();}
+ if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,l.width*32,(l.height+l.faceHeight+1)*32)!;paintLedge(texture.getContext(),scene.textures.get('terrain-woods-32').getSourceImage() as HTMLImageElement,false,undefined,region==='woods-upper');texture.refresh();}
  scene.add.image(l.x*64,l.y*64,key).setOrigin(0).setScale(2).setDepth((l.y+l.height+l.faceHeight)*64-1).setData('raisedFloor','woods-upper');
- const stair=stairsFor(region).find(s=>s.id.startsWith('woods-ledge-'))!,up=stair.direction==='up',size=up?160:92;
- const zone=scene.add.zone(stair.x*64,(up?stair.y-1:stair.y+.75)*64,size,size).setInteractive({useHandCursor:true}).setDepth(2000).setData('stair',stair.id);
+ const stair=stairsFor(region).find(s=>s.id.startsWith('woods-ledge-'))!,up=stair.direction==='up',size=64;
+ const zone=scene.add.zone(stair.x*64,stair.y*64,size,size).setInteractive({useHandCursor:true}).setDepth(2000).setData('stair',stair.id);
  zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===scene.game.canvas&&!p.rightButtonDown())click(stair.id)});
  scene.add.text(stair.x*64,(up?stair.y-2.6:7.3)*64,stair.label,{fontSize:'12px',color:'#f0e2bc',backgroundColor:'#233d37'}).setOrigin(.5).setDepth(2001);
 }
