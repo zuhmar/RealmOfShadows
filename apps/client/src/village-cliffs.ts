@@ -2,6 +2,13 @@ import {paintCliffStudy} from './cliff-study';
 import {paintCliffContour,paintCliffTile} from './cliff-tiles';
 import type Phaser from 'phaser';
 import {gridMap,elderwoodTown,elderwoodSize,elderwoodRimStairs,elderwoodStairTile,onElderwoodRim,onElderwoodLand,stairsFor} from '@realm/game-data';
+/** Outdoor upper surfaces, including the short paved recesses through the cliff band. */
+export function villageCliffSurface(x:number,y:number,cells=gridMap('elderwood-upper').cells){
+ if(onElderwoodRim(x,y))return true;
+ const lx=x-elderwoodTown.x,ly=y-elderwoodTown.y;
+ const band=lx>=3&&lx<elderwoodTown.width-3&&ly>=3&&ly<elderwoodTown.height-3&&(lx<5||lx>=elderwoodTown.width-5||ly<5||ly>=elderwoodTown.height-5);
+ return band&&cells[y]?.[x]===2;
+}
 /** A two-tile rock band assembled from native faces, edges and four corner parts. */
 export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,upperFloor=false){
  const{width:W,height:H}=elderwoodSize;const T=elderwoodTown,upper=gridMap('elderwood-upper').cells;
@@ -13,7 +20,7 @@ export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImag
   else if(onElderwoodLand(x,y-2))paintCliffTile(ctx,x*32,y*32,'face-bottom',true,x,'south','bottom',false);
   continue;
  }
- if(onElderwoodRim(x,y)){ctx.drawImage(atlas,upper[y][x]*36+2,2,32,32,x*32,y*32,32,32);paintVillageOuterRim(ctx,x,y);continue;}
+ if(villageCliffSurface(x,y,upper)){ctx.drawImage(atlas,upper[y][x]*36+2,2,32,32,x*32,y*32,32,32);paintVillageOuterRim(ctx,x,y);continue;}
  const lx=x-T.x,ly=y-T.y;
  if(lx>=3&&lx<T.width-3&&ly>=3&&ly<T.height-3&&(lx<5||lx>=T.width-5||ly<5||ly>=T.height-5)){
  const north=ly<5,south=ly>=T.height-5,west=lx<5,east=lx>=T.width-5;
@@ -41,5 +48,8 @@ export function drawVillageCliffStairs(scene:Phaser.Scene,region:string,click:(i
 
 /** Exposed cap edges follow the shared collision contour on both floors. */
 export function paintVillageOuterRim(ctx:CanvasRenderingContext2D,x:number,y:number){
- if(onElderwoodRim(x,y))paintCliffContour(ctx,x,y,onElderwoodRim,true);
+ const upper=gridMap('elderwood-upper').cells;
+ // Paving replaces the earth lip at an opening; no grass border is painted over stone.
+ if(upper[y]?.[x]===2)return;
+ if(villageCliffSurface(x,y,upper))paintCliffContour(ctx,x,y,(xx,yy)=>villageCliffSurface(xx,yy,upper),true);
 }

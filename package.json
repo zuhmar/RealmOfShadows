@@ -89,6 +89,7 @@
     "test:cliff-assembly:browser": "node tests/browser-cliff-assembly.cjs",
     "test:cliff-contours:browser": "node tests/browser-cliff-contours.cjs",
     "test:joined-cliffs:browser": "node tests/browser-joined-cliffs.cjs",
+    "test:stair-landings:browser": "node tests/browser-stair-landing-visuals.cjs",
     "test:cliff-study:browser": "node tests/browser-cliff-study.cjs",
     "test:single-cell-stairs:browser": "node tests/browser-single-cell-stairs.cjs",
     "test:village-cliffs:browser": "node tests/browser-village-cliffs.cjs",

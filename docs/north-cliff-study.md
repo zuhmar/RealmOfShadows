@@ -10,3 +10,5 @@ The approved north entrance has been extended to all four Elderwood cliff entran
 The stair and landing are drawn by `apps/client/src/cliff-study.ts`; surrounding rock uses the same shared fracture field and contour renderer as every other cliff. The former seven-cell scenery patch has been removed. `npm run test:cliff-study:browser` checks the one-cell footprint and real approach, climb and descent using mouse and touch, and exports native and gameplay screenshots to `/tmp/cliff-study-*`.
 
 Deploy Render and Vercel together because the shared upper-floor collision and stair destinations changed. No database migration is needed.
+
+Landing rendering uses the same upper-surface material in both ground and upper views, including paved recesses through the cliff band. Grass/earth contours are skipped on stone walkways and follow the actual surface around openings. `npm run test:stair-landings:browser` compares every stair recess across both floor renders and checks that no grass edge overlays any paved cliff-walk tile. This visual-only correction needs Vercel, with no Render or SQL update.
