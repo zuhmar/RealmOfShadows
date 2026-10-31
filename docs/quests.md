@@ -19,7 +19,7 @@ Click a named NPC to approach and open their conversation. Accept quests there;
 conversation objectives offer Continue conversation. Claim completed rewards at
 the contact. Mara can still coordinate adventure-island quests to preserve the
 previous workflow. Elderwood quests require their own named contact.
-Bag → Quests contains the full journal, backstory, rank and keepsakes.
+Journal contains the full journal, backstory, rank and keepsakes.
 
 | NPC | Location | Role and approved human appearance |
 | --- | --- | --- |
@@ -102,7 +102,7 @@ island contacts. `test:quests:browser` covers the existing Mara workflow.
 ## Guided opening and repeatable tasks
 
 The collapsible HUD tracker follows Rowan → woodland training → level-5 class
-choice/mentor → woodland boss → Orin. The journal's Track objective selector can
+choice/mentor → woodland boss → Orin. The Journal popup's Track objective selector can
 pin an eligible main or side quest; Automatic resumes the story or active hunt.
 NPC markers: gold ! offers a quest, gold ? has a story reward, muted … means a
 quest is in progress; teal ◆ offers tasks and teal ? has a task reward. Find
@@ -122,7 +122,7 @@ previously claimed quests receive no retroactive EXP.
 At level 11, with a chosen class and The Woodland Trial claimed, Orin introduces
 monster tasks. This is the Caverns story unlock; portal exploration behavior is
 unchanged. Mara also arranges hunts from Elderwood. The task board is available
-in Orin's conversation and Bag → Monster tasks. One active hunt can target any
+in Orin's conversation and Journal → Monster tasks. One active hunt can target any
 of the eight implemented monsters: wolf, spider, boar, bear, bat, crawler, golem
 or wyrm. Normal hunts offer 10/25/50 kills; boss hunts offer 1/3/5. No future
 monster types are advertised until their encounters exist.

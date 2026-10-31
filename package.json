@@ -112,7 +112,8 @@
     "test:shop:browser": "node tests/browser-cosmetic-shop.cjs",
     "test:shop:integration": "tsx tests/cosmetic-shop.integration.ts",
     "test:hud:browser": "node tests/browser-hud-skin.cjs",
-    "test:automatic-loot:browser": "node tests/browser-automatic-loot.cjs"
+    "test:automatic-loot:browser": "node tests/browser-automatic-loot.cjs",
+    "test:dock-progress:browser": "node tests/browser-dock-progress.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",
