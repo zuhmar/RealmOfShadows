@@ -1,11 +1,11 @@
 # Combat bot
 
-Profile → Bot configures nearby automatic hunting. Enable bot, close the profile,
+Bottom HUD → Bot configures nearby automatic hunting. Enable bot, close the profile,
 and it finds a reachable matching monster on the current floor. Search distance
 can be 6, 10 or 16 tiles. Any normal monster excludes bosses; selecting a boss
 explicitly allows that boss. The bot reuses click-to-attack pathfinding, weapon
-range, line of sight and normal attack requests. It never changes floors or
-collects loot automatically. Normal kill credit, quests and task progress apply.
+range, line of sight and normal attack requests. It never changes floors. Loot from credited kills now goes directly into the bag
+through the shared automatic-loot system. Full-bag bundles stay on the ground. Normal kill credit, quests and task progress apply.
 
 Add learned spells to the rotation, then use Earlier/Later/Remove to arrange it.
 Only learned spells are offered and only learned spells can be attempted.
@@ -25,7 +25,7 @@ It does not buy supplies or grant items. No target is needed to use a potion
 while the bot is enabled in a hunting area.
 
 Menus pause the bot and stop its owned attack/route; closing them resumes it.
-Manual map clicks, keyboard movement, Esc, the profile toggle and the visible
+Manual map clicks, keyboard movement, Esc, the bot popup toggle and the visible
 Bot · Stop button give control back to the player. Travel, death, loss of focus
 and disconnect stop automation. It runs only while the client is open and
 active, rather than continuing on the server after logout. Settings persist in
@@ -41,3 +41,8 @@ Code: `apps/client/src/bot-brain.ts` (decisions), `bot-ui.ts` (settings), and
 `npm run test:bot:browser`, and `npm run test:bot:online`. Browser tests expect
 Vite at port 5314 or TEST_CLIENT_URL. The online test needs VITE_SERVER_URL
 pointing to a running local game server. No database migration is needed.
+
+The bottom dock contains Bag, Shop and Bot. While running it overlays a small Stop icon above the Bot button, with a
+44px touch target. The dock always keeps three main buttons. Manual potion/loot buttons, the 3/E shortcuts and the bag potion Use action
+are removed. Set the potion health threshold in the Bot popup; close it to resume.
+Both Render and Vercel must deploy this change for authoritative automatic loot.

@@ -111,7 +111,8 @@
     "test:character-slots:browser": "tsx tests/character-slots.browser.ts",
     "test:shop:browser": "node tests/browser-cosmetic-shop.cjs",
     "test:shop:integration": "tsx tests/cosmetic-shop.integration.ts",
-    "test:hud:browser": "node tests/browser-hud-skin.cjs"
+    "test:hud:browser": "node tests/browser-hud-skin.cjs",
+    "test:automatic-loot:browser": "node tests/browser-automatic-loot.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

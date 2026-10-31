@@ -1,4 +1,3 @@
 import shop from '../../../assets/ui/hud/shop.svg?url';
-import potion from '../../../assets/ui/hud/potion.svg?url';
-import loot from '../../../assets/ui/hud/loot.svg?url';
-export const hudIcons={shop,potion,loot};
+import bot from '../../../assets/ui/hud/bot.svg?url';
+export const hudIcons={shop,bot};
