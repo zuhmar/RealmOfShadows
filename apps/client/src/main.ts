@@ -61,7 +61,7 @@ class Elderwood extends Phaser.Scene {
  document.querySelector('#character-panel')!.addEventListener('click',()=>this.openCharacter());document.querySelector('#close-character')!.addEventListener('click',()=>document.querySelector<HTMLDialogElement>('#character-dialog')!.close());
  this.economy.automaticLoot=true;this.economy.join('local');this.bag=this.economy.snapshot('local',0);this.housing=new HousingUI(()=>this.bag,r=>{if(this.online)this.room?.send('house',r);else this.housing?.result('Sign in and connect to buy a permanent house.');});
  this.shopUI=new CosmeticShopUI(this,()=>this.bag,async()=>(await this.accounts?.session())?.access_token,c=>this.economyAction({kind:'cosmetics',cosmetics:c}),()=>{this.stopBot();this.selected='';this.cast('stop');});
- this.botUI=new BotUI(this.bot,()=>this.stopBot());
+ this.botUI=new BotUI(this.bot,()=>this.stopBot(),()=>this.startBot());
  this.journeyUI=new JourneyUI(step=>{if(step.contact?.region===this.region)this.approachStoryNpc(step.contact.id);else if(isLowerFloor(this.region)||isRaisedFloor(this.region)||isHousingFloor(this.region))notice('Use the stairs to return to the surface, then take the portal.');else this.approachInteraction('portal')},()=>{this.openInventory(false);document.querySelector<HTMLDetailsElement>('#quest-journal')!.open=true;document.querySelector('#quest-journal')!.scrollIntoView({block:'start'});});
  this.storyDialog=new StoryDialog(()=>this.bag,()=>({...this.local,region:this.region}),r=>this.economyAction(r),()=>this.openClasses());
  installMonsterAnimations(this);
@@ -215,6 +215,7 @@ class Elderwood extends Phaser.Scene {
  if(kind==='bolt')this.autoAttack=true;if(kind==='stop')this.autoAttack=false;
  }
  openBot(){if(!this.entryReady||this.traveling)return;for(const d of Array.from(document.querySelectorAll<HTMLDialogElement>('dialog[open]')))d.close();this.route=[];this.input.keyboard?.resetKeys();document.querySelector<HTMLDialogElement>('#bot-dialog')!.showModal();}
+ startBot(){if(!this.entryReady||this.traveling||this.fighter.hp<=0)return;this.pendingStory=undefined;this.pendingHouse=undefined;this.pendingInteraction=undefined;this.pendingStair=undefined;this.pendingDoor=undefined;this.pendingDepot=undefined;this.selected='';this.cast('stop');this.input.keyboard?.resetKeys();this.bot.enabled=true;this.bot.status='Starting';this.botUI?.render(this.bag?.learnedSpells??[]);}
  stopBot(){const was=this.bot.enabled;this.bot.stop();if(was){this.selected='';this.cast('stop');}this.botUI?.render(this.bag?.learnedSpells??[]);}
  updateBot(){
  const bag=this.bag;if(!bag||!this.bot.enabled)return;if(this.fighter.hp<=0){this.stopBot();return;}

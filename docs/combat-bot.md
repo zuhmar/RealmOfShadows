@@ -42,7 +42,8 @@ Code: `apps/client/src/bot-brain.ts` (decisions), `bot-ui.ts` (settings), and
 Vite at port 5314 or TEST_CLIENT_URL. The online test needs VITE_SERVER_URL
 pointing to a running local game server. No database migration is needed.
 
-The bottom dock contains Bag, Shop and Bot. While running it overlays a small Stop icon above the Bot button, with a
-44px touch target. The dock always keeps three main buttons. Manual potion/loot buttons, the 3/E shortcuts and the bag potion Use action
+The bottom dock contains Bag, Shop and Bot. A permanent overlay above Bot shows Play when stopped and Stop when running,
+with a 44px touch target. Tap it to start or stop using saved settings without
+opening the controls. The dock always keeps three main buttons. Manual potion/loot buttons, the 3/E shortcuts and the bag potion Use action
 are removed. Set the potion health threshold in the Bot popup; close it to resume.
 Both Render and Vercel must deploy this change for authoritative automatic loot.
