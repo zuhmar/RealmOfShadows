@@ -105,7 +105,9 @@
     "test:story:browser": "node tests/browser-story.cjs",
     "test:story:integration": "tsx tests/story.integration.ts",
     "art:story-items": "python3 scripts/extract-story-items.py",
-    "test:tasks:browser": "node tests/browser-tasks.cjs"
+    "test:tasks:browser": "node tests/browser-tasks.cjs",
+    "test:bot:browser": "node tests/browser-bot.cjs",
+    "test:bot:online": "node tests/browser-bot-online.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",
