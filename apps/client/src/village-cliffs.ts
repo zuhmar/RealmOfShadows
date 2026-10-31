@@ -9,8 +9,8 @@ export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImag
  if(!onElderwoodLand(x,y)){
   ctx.fillStyle='#172e35';ctx.fillRect(x*32,y*32,32,32);
   // Two native face rows descend from each exposed southern ledge, including inlet corners.
-  if(onElderwoodLand(x,y-1))paintCliffTile(ctx,x*32,y*32,'face-top',true,x%3);
-  else if(onElderwoodLand(x,y-2))paintCliffTile(ctx,x*32,y*32,'face-bottom',true,x%3);
+  if(onElderwoodLand(x,y-1))paintCliffTile(ctx,x*32,y*32,'face-top',true,x,'south','top',false);
+  else if(onElderwoodLand(x,y-2))paintCliffTile(ctx,x*32,y*32,'face-bottom',true,x,'south','bottom',false);
   continue;
  }
  if(onElderwoodRim(x,y)){ctx.drawImage(atlas,upper[y][x]*36+2,2,32,32,x*32,y*32,32,32);paintVillageOuterRim(ctx,x,y);continue;}
@@ -20,7 +20,7 @@ export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImag
  const section=north?(ly===3?'top':'bottom'):south?(ly===T.height-5?'top':'bottom'):undefined;
  const cornerWest=west&&lx===3,cornerEast=east&&lx===T.width-4;
  const part=north&&cornerWest?'nw':north&&cornerEast?'ne':south&&cornerWest?'sw':south&&cornerEast?'se':section==='top'?'face-top':section==='bottom'?'face-bottom':'face-middle';
- paintCliffTile(ctx,x*32,y*32,part,true,x%3,north?'south':south?'north':west?'east':'west',section);}
+ paintCliffTile(ctx,x*32,y*32,part,true,x,north?'south':south?'north':west?'east':'west',section,false);}
  }
  paintCliffStudy(ctx,atlas,upperFloor);
 }

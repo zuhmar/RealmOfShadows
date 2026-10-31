@@ -7,6 +7,6 @@ The approved north entrance has been extended to all four Elderwood cliff entran
 - The north flight, both 64×64 gameplay click zones, the upper arrival and the descent trigger are centered at (52.5, 32.5). Clicking from below approaches the existing ground transition at (52.5, 33.5). A one-cell-wide upper stair recess connects the flight to the cliff walk at (52.5, 30.5). The other three entrances use the same shared geometry rule.
 - Upper-floor collision includes four short stair recesses; the ground village, houses, fences, items and saves are preserved.
 
-The implementation is `apps/client/src/cliff-study.ts`. `npm run test:cliff-study:browser` checks the one-cell footprint and real approach, climb and descent using mouse and touch, and exports native and gameplay screenshots to `/tmp/cliff-study-*`.
+The stair and landing are drawn by `apps/client/src/cliff-study.ts`; surrounding rock uses the same shared fracture field and contour renderer as every other cliff. The former seven-cell scenery patch has been removed. `npm run test:cliff-study:browser` checks the one-cell footprint and real approach, climb and descent using mouse and touch, and exports native and gameplay screenshots to `/tmp/cliff-study-*`.
 
 Deploy Render and Vercel together because the shared upper-floor collision and stair destinations changed. No database migration is needed.
