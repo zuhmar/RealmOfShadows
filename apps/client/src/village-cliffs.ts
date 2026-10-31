@@ -17,8 +17,9 @@ export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImag
  const lx=x-T.x,ly=y-T.y;
  if(lx>=3&&lx<T.width-3&&ly>=3&&ly<T.height-3&&(lx<5||lx>=T.width-5||ly<5||ly>=T.height-5)){
  const north=ly<5,south=ly>=T.height-5,west=lx<5,east=lx>=T.width-5;
- const part=north&&west?'nw':north&&east?'ne':south&&west?'sw':south&&east?'se':(north?ly===3:south?ly===T.height-4:west?lx===3:lx===T.width-4)?'face-top':'face-bottom';
- paintCliffTile(ctx,x*32,y*32,part,true,(x+y)%3,north?'south':south?'north':west?'east':'west');}
+ const section=north?(ly===3?'top':'bottom'):south?(ly===T.height-5?'top':'bottom'):undefined;
+ const part=north&&west?'nw':north&&east?'ne':south&&west?'sw':south&&east?'se':section==='top'?'face-top':section==='bottom'?'face-bottom':'face-middle';
+ paintCliffTile(ctx,x*32,y*32,part,true,x%3,north?'south':south?'north':west?'east':'west',section);}
  }
  paintCliffStudy(ctx,atlas,upperFloor);
 }

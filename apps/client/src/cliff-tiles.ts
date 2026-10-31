@@ -1,18 +1,18 @@
-import {paintRecessedStair,paintRockFace,polygon} from './stone-cliff-art';
+import {paintRecessedStair,paintRockFace,paintJoinedRockSection,polygon} from './stone-cliff-art';
 /** Fixed native 32×32 cliff parts. Larger cliffs repeat parts, never resize artwork. */
 export const CLIFF_TILE_SIZE=32;
-export type CliffPart='face-top'|'face-bottom'|'north'|'south'|'east'|'west'|'nw'|'ne'|'sw'|'se'|'stairs-north'|'stairs-south'|'stairs-east'|'stairs-west';
+export type CliffPart='face-top'|'face-bottom'|'face-middle'|'north'|'south'|'east'|'west'|'nw'|'ne'|'sw'|'se'|'stairs-north'|'stairs-south'|'stairs-east'|'stairs-west';
 export type CliffFacing='north'|'south'|'east'|'west';
 const cache=new Map<string,HTMLCanvasElement>();
-export function paintCliffTile(ctx:CanvasRenderingContext2D,x:number,y:number,part:CliffPart,village=false,variant=0,facing:CliffFacing='south'){
- const key=`${part}:${village}:${variant%3}:${facing}`;let tile=cache.get(key);
+export function paintCliffTile(ctx:CanvasRenderingContext2D,x:number,y:number,part:CliffPart,village=false,variant=0,facing:CliffFacing='south',section?:'top'|'bottom'){
+ const key=`${part}:${village}:${variant%3}:${facing}:${section??''}`;let tile=cache.get(key);
  if(!tile){
   tile=document.createElement('canvas');tile.width=tile.height=32;const c=tile.getContext('2d')!;
   if(part.startsWith('stairs-')){
    c.translate(16,16);c.rotate(({north:0,south:Math.PI,east:Math.PI/2,west:-Math.PI/2} as Record<string,number>)[part.slice(7)]);c.translate(-16,-16);paintRecessedStair(c,0,0);
   }else{
-   paintRockFace(c,variant,facing,part==='face-top');
-   if(part==='face-bottom'){c.fillStyle='#152c2533';c.fillRect(0,29,32,3);}
+   const band=section??(part==='face-top'?'top':part==='face-bottom'?'bottom':part==='face-middle'?'middle':undefined);
+   if(band)paintJoinedRockSection(c,variant,facing,band);else paintRockFace(c,variant,facing);
    const edge=(side:string)=>{
     const near=side==='north'||side==='west',horizontal=side==='north'||side==='south',pos=near?0:24;
     c.fillStyle=near?'#a2a17b':'#515b44';if(horizontal)c.fillRect(0,pos,32,8);else c.fillRect(pos,0,8,32);

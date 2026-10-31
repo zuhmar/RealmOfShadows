@@ -22,7 +22,7 @@ export function paintScenicCliff(ctx:CanvasRenderingContext2D,atlas:CanvasImageS
  const cells=new Set<string>();for(let y=0;y<size-2;y++)for(let x=0;x<size;x++)cells.add(`${x},${y}`);paintPlateau(ctx,atlas,cells,()=>0);
 }
 export function paintWoodsCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,upperCells=gridMap('woods-upper').cells){
- const map=gridMap('woods');for(let y=0;y<map.height;y++)for(let x=0;x<map.width;x++)if(x===0||y===0||x===map.width-1||y===map.height-1)paintCliffTile(ctx,x*32,y*32,'face-top',false,(x+y)%3);
+ const map=gridMap('woods');for(let y=0;y<map.height;y++)for(let x=0;x<map.width;x++)if(x===0||y===0||x===map.width-1||y===map.height-1)paintCliffTile(ctx,x*32,y*32,y===0?'face-top':y===map.height-1?'face-bottom':'face-middle',false,x%3);
  for(const r of woodsRidges)paintRidge(ctx,atlas,r,upperCells);
  for(const c of woodsCliffs){ctx.save();ctx.translate(c.x*32,c.y*32);paintScenicCliff(ctx,atlas,c.size);ctx.restore();}
 }
