@@ -108,7 +108,9 @@
     "test:tasks:browser": "node tests/browser-tasks.cjs",
     "test:bot:browser": "node tests/browser-bot.cjs",
     "test:bot:online": "node tests/browser-bot-online.cjs",
-    "test:character-slots:browser": "tsx tests/character-slots.browser.ts"
+    "test:character-slots:browser": "tsx tests/character-slots.browser.ts",
+    "test:shop:browser": "node tests/browser-cosmetic-shop.cjs",
+    "test:shop:integration": "tsx tests/cosmetic-shop.integration.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

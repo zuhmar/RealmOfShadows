@@ -12,7 +12,7 @@ export interface ProgressStore{
 }
 export class SupabaseStore implements ProgressStore{
  constructor(private url:string,private secret:string){}
- private async request(path:string,body?:unknown,token?:string){
+ async request(path:string,body?:unknown,token?:string){
  const headers:Record<string,string>={apikey:this.secret,'Content-Type':'application/json'};
  if(token)headers.Authorization=`Bearer ${token}`;else if(this.secret.startsWith('eyJ'))headers.Authorization=`Bearer ${this.secret}`;
  const response=await fetch(`${this.url.replace(/\/$/,'')}${path}`,{method:body===undefined?'GET':'POST',headers,body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(10000)});

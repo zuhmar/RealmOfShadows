@@ -104,3 +104,4 @@ export * from './story-items';
 
 export * from './tasks';
 export * from './journey-guide';
+export * from './cosmetic-shop';
