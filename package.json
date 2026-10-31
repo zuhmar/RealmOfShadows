@@ -72,6 +72,8 @@
     "test:avatar-idle:browser": "node tests/browser-avatar-idle.cjs",
     "test:combat-feedback:browser": "node tests/browser-combat-feedback.cjs",
     "test:quests:browser": "node tests/browser-quests.cjs",
+    "test:gathering-art:browser": "node tests/browser-gathering-art.cjs",
+    "art:gathering-nodes": "python3 scripts/extract-gathering-nodes.py",
     "art:professions": "python3 scripts/extract-profession-icons.py",
     "test:professions:browser": "node tests/browser-professions.cjs",
     "test:professions:integration": "tsx tests/professions.integration.ts",
