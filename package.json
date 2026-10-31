@@ -101,7 +101,10 @@
     "art:fences": "node scripts/build-connected-fences.cjs",
     "test:fences:browser": "node tests/browser-connected-fences.cjs",
     "test:neighborhood-life:browser": "node tests/browser-neighborhood-life.cjs",
-    "test:neighborhood:integration": "tsx tests/neighborhood.integration.ts"
+    "test:neighborhood:integration": "tsx tests/neighborhood.integration.ts",
+    "test:story:browser": "node tests/browser-story.cjs",
+    "test:story:integration": "tsx tests/story.integration.ts",
+    "art:story-items": "python3 scripts/extract-story-items.py"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

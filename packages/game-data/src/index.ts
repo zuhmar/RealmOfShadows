@@ -98,3 +98,6 @@ export {townPoint,elderwoodTown,elderwoodSize,elderwoodPortal,elderwoodRimStairs
 export * from './neighborhood-life';
 
 export * from './building-windows';
+
+export * from './story-characters';
+export * from './story-items';

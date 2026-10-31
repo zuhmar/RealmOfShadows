@@ -1,4 +1,4 @@
-import {resourceTarget,fishForIsland,fishingCastClear,craftRecipes,professionRules,professionLevel,craftingStations,canUseCraftingStation,items,gearDefinition,isGearBase,lootEquipmentRules,inventoryFits,type ProfessionId,type ItemId} from '@realm/game-data';
+import {recordQuestEvent,islandForRegion,resourceTarget,fishForIsland,fishingCastClear,craftRecipes,professionRules,professionLevel,craftingStations,canUseCraftingStation,items,gearDefinition,isGearBase,lootEquipmentRules,inventoryFits,type ProfessionId,type ItemId} from '@realm/game-data';
 import type {Profile,Stack} from './economy';
 import type {Fighter} from './combat';
 import {sight} from './combat';
@@ -16,7 +16,7 @@ export class ProfessionSystem{
  if(time<cast.endsAt)continue;this.casts.delete(id);
  const pool=fishForIsland(p.region).filter(f=>f.level<=professionLevel(profile.professions.fishing)),fish=pool[Math.min(pool.length-1,Math.floor(random()*pool.length))];if(!fish)continue;
  const inventory=add(profile.inventory,fish.item,1);if(!inventory||!inventoryFits(profile,{...profile,inventory})){this.results.push({id,message:'Your bag is full. No fish collected.'});continue;}
- profile.inventory=inventory;profile.professions.fishing=Math.min(10*99**2,profile.professions.fishing+fish.xp);this.results.push({id,message:`Caught ${items[fish.item].name}. +${fish.xp} fishing EXP. Click water to cast again.`});
+ profile.inventory=inventory;recordQuestEvent(profile.quests,'gather','any',islandForRegion(p.region));profile.professions.fishing=Math.min(10*99**2,profile.professions.fishing+fish.xp);this.results.push({id,message:`Caught ${items[fish.item].name}. +${fish.xp} fishing EXP. Click water to cast again.`});
  }
  }
  act(id:string,p:Fighter,profile:Profile,kind:string,item:unknown,time:number,add:(stacks:Stack[],item:ItemId,quantity:number)=>Stack[]|null,random:()=>number=Math.random):string{
@@ -35,7 +35,7 @@ export class ProfessionSystem{
  if(time<(this.depleted.get(node.id)??0))return `This resource is replenishing · ${Math.ceil((this.depleted.get(node.id)!-time)/60)} min remaining.`;
  if(time<(this.ready.get(id)??0))return 'Wait a moment before gathering again.';
  const inventory=add(profile.inventory,node.item,1);if(!inventory||!inventoryFits(profile,{...profile,inventory}))return 'Your bag is full. Free a slot before gathering.';
- profile.inventory=inventory;gain(node.skill,node.xp);this.depleted.set(node.id,time+professionRules.nodeRespawn);this.ready.set(id,time+professionRules.gatherCooldown);return `Gathered ${items[node.item].name}. +${node.xp} ${node.skill} EXP.`;
+ profile.inventory=inventory;recordQuestEvent(profile.quests,'gather','any',islandForRegion(p.region));gain(node.skill,node.xp);this.depleted.set(node.id,time+professionRules.nodeRespawn);this.ready.set(id,time+professionRules.gatherCooldown);return `Gathered ${items[node.item].name}. +${node.xp} ${node.skill} EXP.`;
  }
  const recipe=craftRecipes.find(r=>r.id===item);if(!recipe)return 'Choose a valid recipe.';
  if(!craftingStations.some(station=>canUseCraftingStation(p,station,recipe.skill)&&sight(p,station,p.region)))return 'Visit the matching crafting workbench in the Crafting Hall.';
@@ -47,6 +47,6 @@ export class ProfessionSystem{
  if(recipe.output.gear){if(!isGearBase(recipe.output.item)||gear.length>=lootEquipmentRules.maxInstances)return 'Your equipment storage is full.';gear.push({id:crypto.randomUUID(),base:recipe.output.item,rarity:'uncommon'});}
  else{const output=add(inventory,recipe.output.item as ItemId,recipe.output.quantity);if(!output)return 'Your bag is full. Free a slot before crafting.';inventory=output;}
  if(!inventoryFits(profile,{...profile,inventory,gear}))return 'Your bag is full. Free a slot before crafting.';
- profile.inventory=inventory;profile.gear=gear;gain(recipe.skill,recipe.xp);return `Crafted ${recipe.output.gear?`Uncommon ${gearDefinition(recipe.output.item as never).name}`:items[recipe.output.item as ItemId].name}. +${recipe.xp} ${recipe.skill} EXP.`;
+ profile.inventory=inventory;profile.gear=gear;recordQuestEvent(profile.quests,'craft','any',islandForRegion(p.region));gain(recipe.skill,recipe.xp);return `Crafted ${recipe.output.gear?`Uncommon ${gearDefinition(recipe.output.item as never).name}`:items[recipe.output.item as ItemId].name}. +${recipe.xp} ${recipe.skill} EXP.`;
  }
 }

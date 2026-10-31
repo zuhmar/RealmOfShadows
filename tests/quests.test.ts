@@ -5,11 +5,11 @@ import {Economy,newFighter} from '@realm/shared';
 import {readProgress,writeProgress} from '../packages/shared/src/saves';
 const setup=()=>{const e=new Economy(()=>0);e.join('p');const p=Object.assign(newFighter(),merchant),profile=e.profiles.get('p')!;return {e,p,profile};};
 test('each combat island has exactly two sequential main quests and three optional side quests',()=>{
- assert.equal(quests.length,35);assert.equal(new Set(quests.map(q=>q.id)).size,35);
+ assert.equal(quests.length,40);assert.equal(new Set(quests.map(q=>q.id)).size,40);
  for(const island of new Set(quests.map(q=>q.island))){const group=quests.filter(q=>q.island===island);assert.equal(group.filter(q=>q.type==='main').length,2);assert.equal(group.filter(q=>q.type==='side').length,3);assert.equal(group[1].requires,group[0].id);assert.ok(group.every(q=>q.gold>0&&q.xp>0));}
 });
 test('acceptance checks NPC proximity, prerequisites, level and planned islands; ignores forged rewards and progress',()=>{
- const {e,p,profile}=setup();assert.match(e.act('p',{...p,region:'woods'},{kind:'quest-accept',item:'woods-main-1'},0),/Visit Mara/);assert.match(e.act('p',p,{kind:'quest-accept',item:'woods-main-2'},0),/previous/);assert.match(e.act('p',p,{kind:'quest-accept',item:'caverns-main-1'},0),/level 11/);assert.match(e.act('p',p,{kind:'quest-accept',item:'swamp-main-1'},0),/not available/);
+ const {e,p,profile}=setup();assert.match(e.act('p',{...p,region:'woods'},{kind:'quest-accept',item:'woods-main-1'},0),/Visit .*Mara/);assert.match(e.act('p',p,{kind:'quest-accept',item:'woods-main-2'},0),/previous/);assert.match(e.act('p',p,{kind:'quest-accept',item:'caverns-main-1'},0),/level 11/);assert.match(e.act('p',p,{kind:'quest-accept',item:'swamp-main-1'},0),/not available/);
  e.act('p',p,{kind:'quest-accept',item:'woods-main-1',progress:[6,4],gold:999999},0);assert.deepEqual(profile.quests['woods-main-1'],{progress:[0,0],claimed:false});assert.match(e.act('p',p,{kind:'quest-claim',item:'woods-main-1'},0),/Complete/);assert.equal(profile.gold,0);assert.match(e.act('p',p,{kind:'quest-accept',item:'woods-main-1'},0),/already/);
 });
 test('only credited kills after acceptance count, including parent-island lower floors; claims pay once',()=>{

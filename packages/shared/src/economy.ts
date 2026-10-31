@@ -1,6 +1,6 @@
 import {ProfessionSystem,type FishingCast} from './professions';
 import {transferDepot} from './depot';
-import {newProfessions,type ProfessionXp,questById,questComplete,recordQuestEvent,type QuestJournal,equipmentDropChance,defaultCosmetics,validCosmetics,migrateCosmetics,type Cosmetics,emptyDepot,type DepotContents,islandForRegion,inventoryUsage,inventoryFits,inventoryRules,supplySellPrice,catalogueSellPrice,droppedSellPrice,emptyGearLoadout,gearDefinition,gearSlot,gearName,gearStats,rollRarity,islandEquipmentTiers,lootEquipmentRules,type GearInstance,type GearLoadout,newAttributes,attributePoints,attributeRules,isAttribute,maxHealth,type Attributes,type SkillId,monsters,monsterKind,equipmentItems,equipmentSlots,emptyEquipment,starterEquipment,isEquipment,isEquipmentSlot,equipmentArmor,type RegionId,type Equipment,type EquipmentId,type EquipmentSlot,items,rewards,merchant,combat as C,totalXp,levelForXp,type ItemId,classes,weapons,classRules,isClassChoice,isWeapon,skillLevel,spells,isSpell,canLearnSpell,type SpellId,type ClassId,type WeaponId} from '@realm/game-data';
+import {newProfessions,type ProfessionXp,questContact,atStoryNpc,storyNpc,recordQuestFacts,questById,questComplete,recordQuestEvent,type QuestJournal,equipmentDropChance,defaultCosmetics,validCosmetics,migrateCosmetics,type Cosmetics,emptyDepot,type DepotContents,islandForRegion,inventoryUsage,inventoryFits,inventoryRules,supplySellPrice,catalogueSellPrice,droppedSellPrice,emptyGearLoadout,gearDefinition,gearSlot,gearName,gearStats,rollRarity,islandEquipmentTiers,lootEquipmentRules,type GearInstance,type GearLoadout,newAttributes,attributePoints,attributeRules,isAttribute,maxHealth,type Attributes,type SkillId,monsters,monsterKind,equipmentItems,equipmentSlots,emptyEquipment,starterEquipment,isEquipment,isEquipmentSlot,equipmentArmor,type RegionId,type Equipment,type EquipmentId,type EquipmentSlot,items,rewards,merchant,combat as C,totalXp,levelForXp,type ItemId,classes,weapons,classRules,isClassChoice,isWeapon,skillLevel,spells,isSpell,canLearnSpell,type SpellId,type ClassId,type WeaponId} from '@realm/game-data';
 import {sight,type Fighter,type Kill} from './combat';
 import {applyEquipment,effectiveAttributes,profileArmor,cloneGear,equippedInstance} from './gear';
 export interface Stack{id:number;item:ItemId;quantity:number}
@@ -12,7 +12,7 @@ export class Economy{
  professions=new ProfessionSystem();
  profiles=new Map<string,Profile>();drops=new Map<string,Drop>();lastKill=0;serial=0;
  join(id:string){if(!this.profiles.has(id))this.profiles.set(id,{professions:newProfessions(),quests:{},cosmetics:defaultCosmetics(),depot:emptyDepot(),gear:[],equippedGear:emptyGearLoadout(),attributes:newAttributes(),equipment:emptyEquipment(),ownedEquipment:[...starterEquipment],learnedSpells:[],classId:'citizen',weapon:'wand',ownedWeapons:[...classRules.starterWeapons],skills:{melee:1,distance:1,magic:1,shielding:1},skillXp:{melee:0,distance:0,magic:0,shielding:0},gold:0,xp:0,level:1,inventory:[],potionReadyAt:0});}
- sync(id:string,p:Fighter){const profile=this.profiles.get(id);if(!profile)return;profile.skillXp={melee:p.meleeXp,distance:p.distanceXp,magic:p.magicXp,shielding:p.shieldingXp};profile.skills={melee:skillLevel(p.meleeXp),distance:skillLevel(p.distanceXp),magic:skillLevel(p.magicXp),shielding:skillLevel(p.shieldingXp)};}
+ sync(id:string,p:Fighter){const profile=this.profiles.get(id);if(!profile)return;profile.skillXp={melee:p.meleeXp,distance:p.distanceXp,magic:p.magicXp,shielding:p.shieldingXp};profile.skills={melee:skillLevel(p.meleeXp),distance:skillLevel(p.distanceXp),magic:skillLevel(p.magicXp),shielding:skillLevel(p.shieldingXp)};recordQuestFacts(profile);}
  leave(id:string){this.professions.leave(id);this.profiles.delete(id);for(const [key,d] of this.drops)if(d.owner===id)this.drops.delete(key);}
  process(kills:Kill[],players:Map<string,Fighter>|{get(id:string):Fighter|undefined},time:number){
  this.professions.tick(time,players,this.profiles,this.add.bind(this),this.random);
@@ -30,13 +30,26 @@ export class Economy{
  if(!request||typeof request!=='object')return 'Invalid action.';const {kind,drop,weapon,classId,spell,item,slot,attribute}=request as {kind:unknown;drop:unknown;weapon:unknown;classId:unknown;spell:unknown;item:unknown;slot:unknown;attribute:unknown};
  if(kind==='gather'||kind==='craft')return this.professions.act(id,p,profile,kind,item,time,this.add.bind(this),this.random);
  if(kind==='food'){if(time<profile.potionReadyAt)return 'Your food or potion is still on cooldown.';if(p.hp>=maxHealth(p.attributes))return 'Your health is already full.';const fish=profile.inventory.find(s=>s.item==='cookedFish');if(!fish)return 'No cooked fish in your bag.';fish.quantity--;profile.inventory=profile.inventory.filter(s=>s.quantity>0);p.hp=Math.min(maxHealth(p.attributes),p.hp+30);profile.potionReadyAt=time+items.potion.cooldown;return 'Ate cooked fish · Restored up to 30 HP.';}
+ if(kind==='quest-talk'){
+ const npc=storyNpc(item);if(!npc||!atStoryNpc(p,npc.id)||!sight(p,npc,p.region))return 'Walk closer to this story contact on the same floor.';
+ if(p.auto)return 'Stop attacking before speaking with a story contact.';
+ recordQuestEvent(profile.quests,'talk',npc.id,islandForRegion(p.region));recordQuestFacts(profile);return `${npc.name}: ${npc.greeting}`;
+ }
  if(kind==='quest-accept'||kind==='quest-claim'){
  const q=questById(item);if(!q||!q.playable)return 'This quest is not available yet.';
- if(p.region!=='elderwood'||Math.hypot(p.x-merchant.x,p.y-merchant.y)>merchant.range)return 'Visit Mara the Trader to accept quests and claim rewards.';
+ const contact=questContact(q,profile.classId),nearContact=atStoryNpc(p,contact.id)&&sight(p,contact,p.region),atMara=q.island!=='elderwood'&&p.region==='elderwood'&&Math.hypot(p.x-merchant.x,p.y-merchant.y)<=merchant.range;
+ if(!nearContact&&!atMara)return `Visit ${contact.name}${q.island==='elderwood'?'':' or Mara the Trader'} to accept quests and claim rewards.`;
+ if(p.auto)return 'Stop attacking before speaking with a story contact.';
  if(profile.level<q.level)return `Reach level ${q.level} for this quest.`;
  if(q.requires&&!profile.quests[q.requires]?.claimed)return 'Complete and claim the previous main quest first.';
  const progress=profile.quests[q.id];
- if(kind==='quest-accept'){if(progress)return 'Quest already accepted.';profile.quests[q.id]={progress:q.objectives.map(()=>0),claimed:false};return `Quest accepted: ${q.name}.`;}
+ if(kind==='quest-accept'){
+ if(progress)return 'Quest already accepted.';
+ if(q.storyRequires?.some(id=>!profile.quests[id]?.claimed))return 'Complete the previous story chapter before beginning this one.';
+ if(q.classRequired&&profile.classId==='citizen')return 'Choose Knight, Archer, Mage or Rogue before continuing your class journey.';
+ profile.quests[q.id]={progress:q.objectives.map(()=>0),claimed:false};recordQuestFacts(profile);return `Quest accepted: ${q.name}.`;
+ }
+ recordQuestFacts(profile);
  if(!progress||progress.claimed||!questComplete(q,progress))return 'Complete the quest objectives before claiming.';
  progress.claimed=true;profile.gold=Math.min(Number.MAX_SAFE_INTEGER,profile.gold+q.gold);profile.xp=Math.min(totalXp(rewards.levelCap),profile.xp+q.xp);profile.level=levelForXp(profile.xp);return `Quest complete: ${q.name}. +${q.gold} gold · +${q.xp} EXP.`;
  }
