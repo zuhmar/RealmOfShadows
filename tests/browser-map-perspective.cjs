@@ -1,6 +1,6 @@
 const{chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});try{
- const p=await b.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto((process.env.TEST_CLIENT_URL??'http://localhost:5286')+'/map-editor.html');await p.waitForFunction(()=>document.querySelector('#status').textContent.includes('48 × 40'));
+ const p=await b.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto((process.env.TEST_CLIENT_URL??'http://localhost:5286')+'/map-editor.html');await p.waitForFunction(()=>document.querySelector('#status').textContent.includes('104 × 96'));
  const result=await p.evaluate(async()=>{
   const{paintCliffTile}=await import('/src/cliff-tiles.ts'),{mapObjectTileAssets}=await import('/src/map-object-tiles.ts');
   const average=(ctx,x,y,w,h)=>{const d=ctx.getImageData(x,y,w,h).data;let n=0,sum=0;for(let i=0;i<d.length;i+=4)if(d[i+3]>200){sum+=d[i]*.2126+d[i+1]*.7152+d[i+2]*.0722;n++;}return sum/n;};

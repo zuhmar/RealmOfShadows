@@ -1,13 +1,13 @@
 import {houseStairs} from './housing';
-import {townPoint,elderwoodRimStairs} from './elderwood-layout';
+import {townPoint,elderwoodRimStairs,elderwoodStairTile} from './elderwood-layout';
 import {woodsRidges} from './woods-cliffs';
 import type {RegionId} from './index';
 export interface StairConnection{id:string;from:RegionId;to:RegionId;x:number;y:number;radius:number;arrival:{x:number;y:number};direction:'up'|'down';label:string}
 export const floorConnections:readonly StairConnection[]=[
  ...houseStairs(),
  ...elderwoodRimStairs.flatMap(s=>[
- {id:`elderwood-rim-${s.id}-up`,from:'elderwood' as const,to:'elderwood-upper' as const,x:s.x,y:s.y,radius:1.2,arrival:s.top,direction:'up' as const,label:`Up to ${s.id} cliffs`},
- {id:`elderwood-rim-${s.id}-down`,from:'elderwood-upper' as const,to:'elderwood' as const,...s.top,radius:1.2,arrival:s.return,direction:'down' as const,label:`Down to Elderwood`},
+ {id:`elderwood-rim-${s.id}-up`,from:'elderwood' as const,to:'elderwood-upper' as const,x:s.x,y:s.y,radius:1.2,arrival:elderwoodStairTile(s),direction:'up' as const,label:`Up to ${s.id} cliffs`},
+ {id:`elderwood-rim-${s.id}-down`,from:'elderwood-upper' as const,to:'elderwood' as const,...elderwoodStairTile(s),radius:.7,arrival:s.return,direction:'down' as const,label:`Down to Elderwood`},
  ]),
  ...woodsRidges.flatMap(r=>[
   {id:`woods-ridge-${r.id}-up`,from:'woods' as const,to:'woods-upper' as const,x:r.stair.x,y:r.stair.y+3,radius:1.2,arrival:r.stair,direction:'up' as const,label:`Up to ${r.name}`},

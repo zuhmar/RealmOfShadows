@@ -8,7 +8,7 @@ function paintPlateau(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,cells
  for(const key of cells){const[x,y]=key.split(',').map(Number);ctx.drawImage(atlas,terrain(x,y)*36+2,2,32,32,x*32,y*32,32,32);
  for(const[dx,dy,side]of [[0,-1,'north'],[0,1,'south'],[-1,0,'west'],[1,0,'east']] as const)if(!has(x+dx,y+dy))paintCliffRim(ctx,x*32,y*32,side);
  for(const[dx,dy,corner]of [[-1,-1,'nw'],[1,-1,'ne'],[-1,1,'sw'],[1,1,'se']] as const)if(!has(x+dx,y)&&!has(x,y+dy)){ctx.save();ctx.beginPath();ctx.rect(x*32+(dx<0?0:24),y*32+(dy<0?0:24),8,8);ctx.clip();paintCliffTile(ctx,x*32,y*32,corner);ctx.restore();}}
- if(stair)paintCliffTile(ctx,Math.floor(stair.x)*32,Math.floor(stair.y)*32,'stairs-south');
+ if(stair)paintCliffTile(ctx,Math.floor(stair.x)*32,Math.floor(stair.y)*32,'stairs-north');
 }
 export function paintLedge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,scenic=false,cells=gridMap('woods-upper').cells,upper=false){
  const l=woodsLedge,parts=new Set<string>();for(let y=0;y<l.height;y++)for(let x=0;x<l.width;x++)parts.add(`${x},${y}`);

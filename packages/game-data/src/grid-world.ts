@@ -1,6 +1,6 @@
 import {dressNeighborhood} from './neighborhood-dressing';
 import {housingRegions,houseFloorIndex,playerHouses,houseCells} from './housing';
-import {elderwoodTown,elderwoodSize,onElderwoodRim,onElderwoodLand} from './elderwood-layout';
+import {elderwoodTown,elderwoodSize,elderwoodRimStairs,elderwoodStairTile,onElderwoodRim,onElderwoodLand} from './elderwood-layout';
 import {validateGridEdits,applyPropEdits,type GridEdits} from './grid-editing';
 import {woodsCliffs,woodsSize,woodsRidges,ridgeCells,woodsExpansionSpawns} from './woods-cliffs';
 import {woodsLedge} from './elevation';
@@ -190,6 +190,8 @@ export function gridMap(region:string,authored=false):GridMap{
   const rawEdges=[...edges];edges.clear();for(const k of rawEdges){const[type,xy]=k.split(':'),[x,y]=xy.split(',').map(Number);edges.add(`${type}:${x+elderwoodTown.x},${y+elderwoodTown.y}`);}
   if(region==='elderwood-upper'){
    for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if(onElderwoodRim(x,y))rect(x,y,1,1,0);
+   // One-cell-wide stair recesses join the upper walk to the physical stair tile.
+   for(const s of elderwoodRimStairs){const p=elderwoodStairTile(s);let x=Math.floor(s.top.x),y=Math.floor(s.top.y);const tx=Math.floor(p.x),ty=Math.floor(p.y);rect(x,y,1,1,2);while(x!==tx||y!==ty){x+=Math.sign(tx-x);y+=Math.sign(ty-y);rect(x,y,1,1,2);}}
    // A connected promenade and short drives reach every front door.
    path([[21,21],[82,21],[82,90],[21,90],[21,21]],2);
    path([[52,30],[52,21]],2);path([[30,48],[21,48]],2);path([[73,48],[82,48]],2);path([[52,65],[52,90]],2);

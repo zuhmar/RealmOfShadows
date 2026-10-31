@@ -19,3 +19,9 @@ export function onElderwoodLand(x:number,y:number){
  return x>=west&&x<elderwoodSize.width-east&&y>=north&&y<elderwoodSize.height-south;
 }
 export const onElderwoodRim=(x:number,y:number)=>onElderwoodLand(x,y)&&(x<elderwoodTown.x+3||x>=elderwoodTown.x+45||y<elderwoodTown.y+3||y>=elderwoodTown.y+37);
+
+/** Shared physical stair cell: artwork, upper arrival and descent use this location. */
+export function elderwoodStairTile(s:typeof elderwoodRimStairs[number]){
+ const dx=Math.sign(s.top.x-s.x),dy=Math.sign(s.top.y-s.y);
+ return {x:s.x+dx,y:s.y+dy};
+}
