@@ -25,6 +25,7 @@ function svg(side,windows=false){
   }
   art+=`<path d="M0 0H${width}V12H0Z" fill="url(#woodTexture)"/><path d="M0 1H${width}M0 11H${width}" stroke="#614224" stroke-width="2"/><path d="M0 4H${width}" stroke="#e0b478" stroke-width="2"/>`;
  }
+ if(vertical&&windows){const x=side==='e'?52:0;art+=`<rect x="${x+1}" y="20" width="10" height="26" rx="1" fill="#694828" stroke="#483522"/><rect x="${x+3}" y="23" width="6" height="20" fill="#527989"/><path d="M${x+4} 24V31" stroke="#b5d5d5" opacity=".7"/><path d="M${x+2} 33H${x+10}" stroke="#694828" stroke-width="2"/><path d="M${x} 46H${x+12}" stroke="#bd8b4c" stroke-width="2"/>`;}
  // One fixed elevated view: bright cap, occluded join, darker east-facing timber.
  if(vertical){const x=side==='e'?52:0;art+=`<rect x="${x}" y="0" width="12" height="64" fill="${side==='e'?'#172d3440':'#f4ddb919'}"/><path d="M${x+1} 0V64" stroke="#efd1a0" stroke-width="1" opacity=".55"/>`;}
  else art+=`<path d="M0 12H${width}V16H0Z" fill="#332b2440"/><path d="M0 1H${width}" stroke="#f3d5a0" stroke-width="2"/><path d="M0 77H${width}V80H0Z" fill="#272e2b55"/>`;
@@ -64,8 +65,8 @@ function doorSvg(cells,open){
    await fs.writeFile(path.join(root,'assets/world/objects/house-'+key+'.png'),Buffer.from(data,'base64'));
   };
   for(const side of ['n','s','e','w','nw','ne','sw','se','n-half','s-half'])await save('wall-'+side,svg(side));
-  for(const side of ['n','s','n-half','s-half'])await save('wall-'+side+'-window',svg(side,true));
+  for(const side of ['n','s','n-half','s-half','e','w'])await save('wall-'+side+'-window',svg(side,true));
   for(const cells of [1,2,3])for(const open of [true,false])await save(`door-${cells}-${open?'open':'closed'}`,doorSvg(cells,open));
  }finally{await browser.close()}
- console.log('Built fitted walls, four integrated window panels and four full-width door frames');
+ console.log('Built fitted walls, six integrated window panels and single/double/triple door frames');
 })();

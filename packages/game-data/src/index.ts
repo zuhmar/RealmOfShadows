@@ -96,3 +96,5 @@ export {authoredGridSpawns} from './grid-world';
 export {townPoint,elderwoodTown,elderwoodSize,elderwoodPortal,elderwoodRimStairs,elderwoodStairTile,onElderwoodRim,onElderwoodLand} from './elderwood-layout';
 
 export * from './neighborhood-life';
+
+export * from './building-windows';

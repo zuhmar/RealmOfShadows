@@ -1,3 +1,4 @@
+import {selectWindowPanels,type WindowAnchor} from './building-windows';
 import {connectedFenceVisuals,isMapFence} from './fences';
 import {housingVisuals} from './housing-visuals';
 import nativeSizes from './map-prop-sizes.json';
@@ -11,7 +12,7 @@ export const townDoorTexture=(width:number,open:boolean)=>`house-door-${width}-$
 export function townDoorVisual(door:{x:number;y:number;width:number},open:boolean):IslandObject{
  return {...mapObject(townDoorTexture(door.width,open),(door.x-door.width/2)*48,(door.y+.5-townView.wallHeight)*48,door.width*48,townView.wallHeight*48),footY:(door.y+.5+1/32)*48};
 }
-export interface BuildingVisual extends IslandObject{houseFor?:string;houseWallSide?:string;houseDoor?:string;houseUpper?:boolean;houseRoof?:boolean;roofFor?:string;wallFor?:string;wallSide?:string;signFor?:string;upperFor?:string;sourceKey?:string;roofPart?:'tile'|'ridge'|'chimney'}
+export interface BuildingVisual extends IslandObject{windowAt?:WindowAnchor;houseFor?:string;houseWallSide?:string;houseDoor?:string;houseUpper?:boolean;houseRoof?:boolean;roofFor?:string;wallFor?:string;wallSide?:string;signFor?:string;upperFor?:string;sourceKey?:string;roofPart?:'tile'|'ridge'|'chimney'}
 export function insideBuilding(p:{x:number;y:number},b:typeof villageBuildings[number]){return p.x>b.x&&p.x<b.x+b.width&&p.y>b.y&&p.y<b.y+b.height;}
 export function buildingVisuals(region:string,objects:readonly IslandObject[],roofs=true):BuildingVisual[]{
  const buildings=buildingsFor(region),result:BuildingVisual[]=[],height=townView.wallHeight;
@@ -41,20 +42,19 @@ export function buildingVisuals(region:string,objects:readonly IslandObject[],ro
    const lift=story*height,meta={wallFor:b.id,...(story?{upperFor:b.id}:{})};
    const door=(x:number)=>region==='elderwood'&&story===0&&x>=b.x+b.door&&x<b.x+b.door+b.doorWidth;
    // Every panel has the same native pixels per cell and a 12px cap.
-   for(const side of ['n','s']){
-    let x=b.x+1;
-    while(x<b.x+b.width-1){
-     if(side==='s'&&door(x)){x++;continue;}
-     const width=x+1<b.x+b.width-1&&!(side==='s'&&door(x+1))?2:1,base=(side==='n'?b.y:bottom)-lift;
-     put(`house-wall-${side}${width===1?'-half':''}-window`,x,base-height,width,height,base+lift,{...meta,wallSide:side});x+=width;
+   for(const side of ['n','s'] as const){
+    const panels=Array.from({length:b.width-2},(_,i)=>b.x+1+i).filter(x=>side!=='s'||!door(x));
+    const windows=selectWindowPanels(panels,twoStories?2:undefined);
+    for(const x of panels){const base=(side==='n'?b.y:bottom)-lift,isWindow=windows.has(x);
+     put(`house-wall-${side}-half${isWindow?'-window':''}`,x,base-height,1,height,base+lift,{...meta,wallSide:side,...(isWindow&&!story?{windowAt:{x:x+.5,y:side==='n'?b.y:bottom,side,building:b.id,kind:'village' as const,region}}:{})});
     }
    }
-   // Side caps join the horizontal caps exactly; no overlapping corner sprites.
+   // Side caps use the same sparse window budget and retain the original wall thickness.
    const start=b.y-height-lift+townView.wallThickness,end=bottom-height-lift;
-   for(let y=start;y<end-1e-6;y++){
-    const length=Math.min(1,end-y);
-    put('house-wall-w',b.x,y,1,length,y+height+lift,{...meta,wallSide:'w'});
-    put('house-wall-e',b.x+b.width-1,y,1,length,y+height+lift,{...meta,wallSide:'e'});
+   const sideWindows=selectWindowPanels(Array.from({length:Math.max(0,b.height-2)},(_,i)=>i+1),twoStories?2:undefined);
+   for(let y=start,i=0;y<end-1e-6;y++,i++){
+    const length=Math.min(1,end-y),isWindow=sideWindows.has(i)&&length===1;
+    for(const side of ['w','e'] as const)put(`house-wall-${side}${isWindow?'-window':''}`,side==='w'?b.x:b.x+b.width-1,y,1,length,y+height+lift,{...meta,wallSide:side,...(isWindow&&!story?{windowAt:{x:side==='w'?b.x:b.x+b.width,y:b.y+i+.5,side,building:b.id,kind:'village' as const,region}}:{})});
    }
    for(const [side,x,base]of [['nw',b.x,b.y],['ne',b.x+b.width-1,b.y],['sw',b.x,bottom],['se',b.x+b.width-1,bottom]] as const)
     put(`house-wall-${side}`,x,base-height-lift,1,height,base+.01,{...meta,wallSide:side});

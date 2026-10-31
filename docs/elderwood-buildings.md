@@ -30,3 +30,11 @@ walls. Tests cover portal-to-interior routes, perimeter collision, open doors,
 solid furniture, and desktop/mobile guest/multiplayer entry and exit. Depot
 storage and resource coverage retain their existing checks. Build and deploy
 both client and server for matching building collision.
+
+## Windows and looking inside
+
+Each building side has two to four windows across the complete visible shell, spaced between plain wall panels. Multi-story buildings share that window budget instead of repeating a full row on every floor. East/west windows are built into the same narrow timber wall profile.
+
+Walking within 1.25 cells of an exterior window on the same floor temporarily cuts away its building roof and fades its walls so the interior can be seen. Moving away restores the exterior. Window proximity does not unlock houses, open doors, remove collision or permit attacks through walls. The existing interior roof cutaway remains active after entering normally.
+
+`npm run test:window-peeking:browser` checks real walking, reveal/restoration, solid window walls and loaded assets on desktop and mobile. Window counts and four-direction proximity are covered by the unit suite. This client visual update requires Vercel only, with no SQL migration.
