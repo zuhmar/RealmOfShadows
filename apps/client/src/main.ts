@@ -30,6 +30,8 @@ import {Client,type Room} from 'colyseus.js';
 import {storyNpc,atStoryNpc,storyRank,nearBuildingWindow,type WindowAnchor,buildingVisuals,insideBuilding,isBuildingFloor,villageDoors,closedVillageDoors,isVillageUpper,buildingsFor,villageBuildings,resolveFishingWater,resourceTarget,fishingCastClear,fishingShores,professionLevel,resourceNodes,craftingStations,craftingStation,craftingPairs,canUseCraftingStation,type CraftSkill,professionRules,compareGear,supplySellPrice,catalogueSellPrice,droppedSellPrice,gearDefinition,gearStats,gearName,gearSlot,rarityDefinitions,type GearSlot,cosmeticLook,readCosmeticLook,type Cosmetics,depotBoxes,atDepot,gridDirections,gridMap,rootsMap,rootsObjects,stairsFor,availableStair,isLowerFloor,depthsMap,depthsObjects,attributeDefinitions,attributeRules,maxHealth,maxMana,type AttributeId,regionSize,monsters,monsterKind,monsterRegion,combatRegion,cavernsMap,cavernsObjects,woodsMap,woodsObjects,WORLD,equipmentTiers,readAppearance,equipmentItems,equipmentSlots,type EquipmentSlot,elderwoodMap,elderwoodObjects,landmarks,characterSprite,regions,portalFor,canTravel,combat as C,items,merchant,rewards,weapons,classes,classRules,skillRequirement,spells,canLearnSpell,isSpell,type RegionId,type Facing} from '@realm/game-data';
 import {toggleVillageDoor,inAttackRange,attackPath,sight,move,occupiedCells,pathfind,CombatSimulation,newFighter,Economy,type EconomySnapshot,type Fighter,type Wolf,type CombatEvent,type Point,type Motion,type Input} from '@realm/shared';
 import './style.css';
+import './hud.css';
+import {hudIcons} from './hud-assets';
 import {animatedMonsters,animatedMonster,installMonsterAnimations,playMonster} from './monster-animations';
 import {characterAssets,characterFrameSize,characterStyle} from './character-assets';
 import {maraAsset} from './mara-assets';
@@ -97,6 +99,7 @@ class Elderwood extends Phaser.Scene {
  this.keys.ONE.on('down',()=>this.cast('bolt'));this.keys.TWO.on('down',()=>this.cast('nova'));this.keys.ESC.on('down',()=>{this.bot.stop();this.selected='';this.cast('stop');});
 
  document.querySelector('#close-portal')!.addEventListener('click',()=>document.querySelector<HTMLDialogElement>('#portal-dialog')!.close());
+ for(const[id,url]of Object.entries(hudIcons))document.querySelector<HTMLImageElement>(`#${id}-hud-icon`)!.src=url;
  document.querySelector<HTMLImageElement>('#bag-icon')!.src=bagIconUrl;
  for(const tab of ['profile','wardrobe','bot','settings'])document.querySelector(`#${tab}-tab`)!.addEventListener('click',()=>{for(const name of ['profile','wardrobe','bot','settings']){document.querySelector<HTMLElement>(`#${name}-content`)!.hidden=name!==tab;document.querySelector(`#${name}-tab`)!.setAttribute('aria-selected',String(name===tab));}});
  const sprint=document.querySelector('#sprint')!;sprint.addEventListener('click',()=>{this.sprinting=!this.sprinting;sprint.setAttribute('aria-pressed',String(this.sprinting));sprint.textContent=`Sprint: ${this.sprinting?'on':'off'}`;});
