@@ -10,10 +10,10 @@ function polygon(c:CanvasRenderingContext2D,points:readonly Point[],fill:string,
 export function paintRecessedStair(c:CanvasRenderingContext2D,x:number,y:number){
  c.save();c.translate(x,y);c.beginPath();c.rect(0,0,32,32);c.clip();
  // The dark opening belongs to the cliff; it is not a freestanding stair icon.
- polygon(c,[[3,0],[25,0],[32,29],[32,32],[9,32],[0,7]],'#222921');
- polygon(c,[[24,0],[28,1],[32,25],[32,31],[29,27],[20,2]],'#5b5948');
+ polygon(c,[[4,0],[28,0],[30,32],[2,32]],'#222921');
+ polygon(c,[[26,0],[28,0],[30,32],[27,32]],'#5b5948');
  for(let i=0;i<6;i++){
-  const sx=2+i*1.35,sy=i*5,w=20;
+  const sx=6-i*.4,sy=i*5,w=20+i*.8;
   polygon(c,[[sx,sy+2.7],[sx+w,sy+2.7],[sx+w+1.3,sy+5],[sx+1.3,sy+5]],'#655c43');
   polygon(c,[[sx+w,sy],[sx+w+1.3,sy+2.7],[sx+w+1.3,sy+5],[sx+w,sy+2.7]],'#a29a75');
   polygon(c,[[sx,sy],[sx+w,sy],[sx+w+1.3,sy+2.7],[sx+1.3,sy+2.7]],i%2?'#ded5a7':'#e8dfb4');
@@ -21,8 +21,8 @@ export function paintRecessedStair(c:CanvasRenderingContext2D,x:number,y:number)
   // Recessed seams and a restrained chip avoid a flat ladder of identical bars.
   c.fillStyle='#b1a77e';if(i===1||i===4)c.fillRect(sx+5+i,sy+1,1.4,.7);
  }
- polygon(c,[[0,0],[3,0],[4,5],[10,29],[10,32],[6,28],[0,8]],'#a09d7c');
- c.strokeStyle='#d0c5a0';c.lineWidth=1;c.beginPath();c.moveTo(.5,1);c.lineTo(7.5,28);c.stroke();
+ polygon(c,[[4,0],[6,0],[4,32],[2,32]],'#a09d7c');
+ c.strokeStyle='#d0c5a0';c.lineWidth=1;c.beginPath();c.moveTo(4.5,1);c.lineTo(2.5,30);c.stroke();
  c.restore();
 }
 /** Native cap and face parts: broad fractured planes rather than horizontal brick courses. */
