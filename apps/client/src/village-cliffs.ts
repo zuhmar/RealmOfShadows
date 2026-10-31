@@ -1,5 +1,5 @@
 import {paintCliffStudy} from './cliff-study';
-import {paintCliffRim,paintCliffTile} from './cliff-tiles';
+import {paintCliffContour,paintCliffTile} from './cliff-tiles';
 import type Phaser from 'phaser';
 import {gridMap,elderwoodTown,elderwoodSize,elderwoodRimStairs,elderwoodStairTile,onElderwoodRim,onElderwoodLand,stairsFor} from '@realm/game-data';
 /** A two-tile rock band assembled from native faces, edges and four corner parts. */
@@ -18,7 +18,8 @@ export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImag
  if(lx>=3&&lx<T.width-3&&ly>=3&&ly<T.height-3&&(lx<5||lx>=T.width-5||ly<5||ly>=T.height-5)){
  const north=ly<5,south=ly>=T.height-5,west=lx<5,east=lx>=T.width-5;
  const section=north?(ly===3?'top':'bottom'):south?(ly===T.height-5?'top':'bottom'):undefined;
- const part=north&&west?'nw':north&&east?'ne':south&&west?'sw':south&&east?'se':section==='top'?'face-top':section==='bottom'?'face-bottom':'face-middle';
+ const cornerWest=west&&lx===3,cornerEast=east&&lx===T.width-4;
+ const part=north&&cornerWest?'nw':north&&cornerEast?'ne':south&&cornerWest?'sw':south&&cornerEast?'se':section==='top'?'face-top':section==='bottom'?'face-bottom':'face-middle';
  paintCliffTile(ctx,x*32,y*32,part,true,x%3,north?'south':south?'north':west?'east':'west',section);}
  }
  paintCliffStudy(ctx,atlas,upperFloor);
@@ -40,6 +41,5 @@ export function drawVillageCliffStairs(scene:Phaser.Scene,region:string,click:(i
 
 /** Exposed cap edges follow the shared collision contour on both floors. */
 export function paintVillageOuterRim(ctx:CanvasRenderingContext2D,x:number,y:number){
- for(const[dx,dy,side]of [[0,-1,'north'],[1,0,'east'],[0,1,'south'],[-1,0,'west']] as const)
-  if(!onElderwoodLand(x+dx,y+dy))paintCliffRim(ctx,x*32,y*32,side,true);
+ if(onElderwoodRim(x,y))paintCliffContour(ctx,x,y,onElderwoodRim,true);
 }

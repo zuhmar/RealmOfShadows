@@ -1,13 +1,12 @@
-import {paintCliffTile,paintCliffRim} from './cliff-tiles';
+import {paintCliffTile,paintCliffContour} from './cliff-tiles';
 import type Phaser from 'phaser';
 import {woodsLedge,woodsCliffs,woodsRidges,ridgeCells,type WoodsRidge,gridMap,stairsFor} from '@realm/game-data';
 /** All upper footprints assemble native tiles; exposed south faces are two rows. */
 function paintPlateau(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,cells:Set<string>,terrain:(x:number,y:number)=>number,stair?:{x:number,y:number}){
  const has=(x:number,y:number)=>cells.has(`${x},${y}`);
- for(const key of cells){const[x,y]=key.split(',').map(Number);if(!has(x,y+1)){paintCliffTile(ctx,x*32,(y+1)*32,'face-top',false,x%3);paintCliffTile(ctx,x*32,(y+2)*32,'face-bottom',false,x%3);}}
+ for(const key of cells){const[x,y]=key.split(',').map(Number);if(!has(x,y+1)){const end=!has(x-1,y)?'sw':!has(x+1,y)?'se':undefined;paintCliffTile(ctx,x*32,(y+1)*32,end??'face-top',false,x%3,'south','top',false);paintCliffTile(ctx,x*32,(y+2)*32,end??'face-bottom',false,x%3,'south','bottom');}}
  for(const key of cells){const[x,y]=key.split(',').map(Number);ctx.drawImage(atlas,terrain(x,y)*36+2,2,32,32,x*32,y*32,32,32);
- for(const[dx,dy,side]of [[0,-1,'north'],[0,1,'south'],[-1,0,'west'],[1,0,'east']] as const)if(!has(x+dx,y+dy))paintCliffRim(ctx,x*32,y*32,side);
- for(const[dx,dy,corner]of [[-1,-1,'nw'],[1,-1,'ne'],[-1,1,'sw'],[1,1,'se']] as const)if(!has(x+dx,y)&&!has(x,y+dy)){ctx.save();ctx.beginPath();ctx.rect(x*32+(dx<0?0:24),y*32+(dy<0?0:24),8,8);ctx.clip();paintCliffTile(ctx,x*32,y*32,corner);ctx.restore();}}
+ paintCliffContour(ctx,x,y,has);}
  if(stair)paintCliffTile(ctx,Math.floor(stair.x)*32,Math.floor(stair.y)*32,'stairs-north');
 }
 export function paintLedge(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,scenic=false,cells=gridMap('woods-upper').cells,upper=false){

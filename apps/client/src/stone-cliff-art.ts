@@ -46,26 +46,26 @@ export function paintRockFace(c:CanvasRenderingContext2D,variant=0,facing='south
 
 const joinedColumns=new Map<string,HTMLCanvasElement>();
 /** Draw a native section of ONE authored 64px face; never stack two self-contained ledges. */
-export function paintJoinedRockSection(c:CanvasRenderingContext2D,variant:number,facing:string,section:'top'|'bottom'|'middle'){
+export function paintJoinedRockSection(c:CanvasRenderingContext2D,variant:number,facing:string,section:'top'|'bottom'|'middle',cap=true){
  const key=`${variant%3}:${facing}`;let column=joinedColumns.get(key);
  if(!column){
   column=document.createElement('canvas');column.width=32;column.height=64;const g=column.getContext('2d')!,q=(variant%3-1)*2;
-  const base=g.createLinearGradient(0,0,0,64);base.addColorStop(0,'#97967f');base.addColorStop(.5,'#797d69');base.addColorStop(1,'#4b5746');g.fillStyle=base;g.fillRect(0,0,32,64);
-  // Long fractured planes cross the cell boundary at y=32 without a shelf or shadow.
-  polygon(g,[[0,0],[12+q,0],[9+q,26],[4,38],[0,35]],'#97977d');
-  polygon(g,[[12+q,0],[24,0],[29,19+q],[25,35],[22,45],[10+q,39],[9+q,26]],['#858775','#96947b','#8a8b72'][variant%3]);
-  polygon(g,[[24,0],[32,0],[32,52],[25,60],[22,45],[25,35],[29,19+q]],'#5a6352');
-  polygon(g,[[0,35],[4,38],[10+q,39],[22,45],[25,60],[13,56],[6,61],[0,57]],'#6b725e');
-  polygon(g,[[0,57],[6,61],[13,56],[25,60],[32,52],[32,64],[0,64]],'#3b4639');
-  g.strokeStyle='#303c32';g.lineWidth=.8;g.beginPath();g.moveTo(12+q,0);g.lineTo(9+q,26);g.lineTo(10+q,39);g.lineTo(22,45);g.lineTo(25,60);g.stroke();
-  g.strokeStyle='#bec0a0';g.lineWidth=.7;g.beginPath();g.moveTo(1,1);g.lineTo(11+q,2);g.lineTo(8+q,22);g.stroke();
-  const shade=g.createLinearGradient(0,0,25,64);shade.addColorStop(0,'#fff1b31c');shade.addColorStop(.5,'#ffffff00');shade.addColorStop(1,'#172d284d');g.fillStyle=shade;g.fillRect(0,0,32,64);
-  g.fillStyle=facing==='west'?'#f6edc72b':facing==='east'?'#102c3445':facing==='north'?'#e9f2da0d':'#14251e18';g.fillRect(0,0,32,64);
+  // Keep the approved rock detail at its original size on both cells.
+  paintRockFace(g,variant,facing);g.save();g.translate(0,32);paintRockFace(g,(variant+1)%3,facing);g.restore();
+  // Interlocking fractures replace the first cell's foot and the second cell's head.
+  // This joins the material without stretching the approved facets into tall columns.
+  polygon(g,[[0,23],[7,26],[14,22],[23,25],[32,23],[32,41],[24,38],[16,43],[7,39],[0,41]],'#777967');
+  polygon(g,[[0,23],[7,26],[14,22],[12+q,34],[5,38],[0,35]],'#97977d');
+  polygon(g,[[14,22],[23,25],[29,23],[27,34],[20,40],[12+q,34]],['#858775','#96947b','#8a8b72'][variant%3]);
+  polygon(g,[[29,23],[32,23],[32,41],[24,38],[20,40],[27,34]],'#5a6352');
+  polygon(g,[[0,35],[5,38],[12+q,34],[20,40],[16,43],[7,39],[0,41]],'#6b725e');
+  g.strokeStyle='#303c32';g.lineWidth=.8;g.beginPath();g.moveTo(14,22);g.lineTo(12+q,34);g.lineTo(20,40);g.stroke();
+  g.strokeStyle='#bec0a0';g.lineWidth=.65;g.beginPath();g.moveTo(1,24);g.lineTo(7,27);g.lineTo(12,24);g.stroke();
   joinedColumns.set(key,column);
  }
  // Cropping native cells preserves the authored rock shapes; no scaling or rotations.
  c.drawImage(column,0,section==='top'?0:section==='bottom'?32:16,32,32,0,0,32,32);
- if(section==='top'){
+ if(section==='top'&&cap){
   polygon(c,[[0,0],[32,0],[32,4],[26,7],[21,4],[15,6],[9,3],[4,5],[0,4]],'#677f46');
   c.strokeStyle='#a5b27b';c.lineWidth=1;c.beginPath();c.moveTo(0,.5);c.lineTo(32,.5);c.stroke();
  }else if(section==='bottom'){
