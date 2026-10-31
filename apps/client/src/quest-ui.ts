@@ -1,6 +1,6 @@
-import {quests,questComplete,questContact,atStoryNpc,merchant,regions,storyPrologue,storyRank,storyKeepsakes,storyItems,type QuestJournal,type ClassId,type QuestDefinition} from '@realm/game-data';
+import {quests,questComplete,questContact,atStoryNpc,merchant,regions,storyPrologue,storyRank,storyKeepsakes,storyItems,type TaskState,type QuestJournal,type ClassId,type QuestDefinition} from '@realm/game-data';
 import {itemSprite} from './item-assets';
-export interface QuestBag{quests?:QuestJournal;level:number;classId:ClassId}
+export interface QuestBag{tasks?:TaskState;quests?:QuestJournal;level:number;classId:ClassId}
 export type QuestAction=(request:{kind:string;item:string})=>void;
 export interface QuestLocation{x:number;y:number;region:string}
 export function canSpeakQuest(q:QuestDefinition,bag:QuestBag,p:QuestLocation){const npc=questContact(q,bag.classId);return atStoryNpc(p,npc.id)||(q.island!=='elderwood'&&p.region==='elderwood'&&Math.hypot(p.x-merchant.x,p.y-merchant.y)<=merchant.range);}

@@ -104,7 +104,8 @@
     "test:neighborhood:integration": "tsx tests/neighborhood.integration.ts",
     "test:story:browser": "node tests/browser-story.cjs",
     "test:story:integration": "tsx tests/story.integration.ts",
-    "art:story-items": "python3 scripts/extract-story-items.py"
+    "art:story-items": "python3 scripts/extract-story-items.py",
+    "test:tasks:browser": "node tests/browser-tasks.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

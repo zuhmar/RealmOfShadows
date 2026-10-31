@@ -1,3 +1,4 @@
+import {JourneyUI} from './journey-ui';
 import {StoryDialog,drawStoryNpcs} from './story-npcs';
 import {HousingUI,drawHousingWorld} from './housing-ui';
 import {outsideVillageCenter,housingVisuals,houseAt,houseFloorIndex,isHousingFloor,playerHouses,houseById,housingRegions,nearHouseDoor,type PublicHouse} from '@realm/game-data';
@@ -41,7 +42,7 @@ class Elderwood extends Phaser.Scene {
  accounts?:AccountUI;switchingAccount=false;accountLoaded=false;connectBusy=false;
  room?:Room; avatar!:Phaser.GameObjects.Container; bodySprite?:Phaser.GameObjects.Sprite;
  local:Motion={...WORLD.spawn,stamina:100}; keys!:Record<string,Phaser.Input.Keyboard.Key>;
- storyDialog?:StoryDialog;pendingStory?:string;housing?:HousingUI;houseWorldKey='';pendingHouse?:{house:string;floor?:number;x?:number;y?:number};
+ journeyUI?:JourneyUI;storyDialog?:StoryDialog;pendingStory?:string;housing?:HousingUI;houseWorldKey='';pendingHouse?:{house:string;floor?:number;x?:number;y?:number};
  doors=new Map<string,boolean>();pendingDoor?:string;
  peers=new Map<string,Phaser.GameObjects.Container>();route:Point[]=[];seq=0;acc=0;online=false;preview=false;touch={x:0,y:0};pendingResource?:string;pendingWorkbench:string|false=false;resourceRouteAt=0;pendingIdentifications=new Set<string>();pendingLoot?:string;lootRouteAt=0;pendingDepot?:string;activeDepot='';pendingStair?:string;pendingInteraction:'portal'|'trader'|undefined;sprinting=false;pending:Input[]=[];facing:Facing='down';walking=false;animationStyle=new Map<string,{scale:number;origin:number}>();
  preload(){for(const a of professionAssets)this.load.image(a.key,a.url);for(const asset of skinAssets)this.load.image(asset.key,asset.url);for(const sheet of generatedSourceSheets)this.load.image(sheet.key,sheet.url);for(const asset of mapObjectTileAssets)this.load.image(asset.key,asset.url);for(const asset of terrainTileAssets)this.load.image(asset.key,asset.url);this.load.image(generatedMonsters.key,generatedMonsters.url);this.load.image(maraAsset.key,maraAsset.url);for(const asset of animatedMonsters)this.load.image(asset.key,asset.url);for(const asset of characterAssets)this.load.image(asset.key,asset.url);if(characterSprite)this.load.spritesheet(characterSprite.key,characterSprite.url,{frameWidth:characterSprite.frameWidth,frameHeight:characterSprite.frameHeight});}
@@ -53,6 +54,7 @@ class Elderwood extends Phaser.Scene {
  if(this.textures.exists(maraAsset.key)){const texture=this.textures.get(maraAsset.key);for(const animation of maraAsset.animations){const frames=animation.frames.map(([x,y,w,h],i)=>{const name=`${animation.key}-${i}`;texture.add(name,0,x,y,w,h)?.setTrim(maraAsset.frameWidth,maraAsset.frameHeight,(maraAsset.frameWidth-w)/2,maraAsset.frameHeight-h,w,h);return {key:maraAsset.key,frame:name};});this.anims.create({key:`mara-${animation.key}`,frames,frameRate:animation.fps,repeat:-1});}}
  document.querySelector('#character-panel')!.addEventListener('click',()=>this.openCharacter());document.querySelector('#close-character')!.addEventListener('click',()=>document.querySelector<HTMLDialogElement>('#character-dialog')!.close());
  this.economy.join('local');this.bag=this.economy.snapshot('local',0);this.housing=new HousingUI(()=>this.bag,r=>{if(this.online)this.room?.send('house',r);else this.housing?.result('Sign in and connect to buy a permanent house.');});
+ this.journeyUI=new JourneyUI(step=>{if(step.contact?.region===this.region)this.approachStoryNpc(step.contact.id);else if(isLowerFloor(this.region)||isRaisedFloor(this.region)||isHousingFloor(this.region))notice('Use the stairs to return to the surface, then take the portal.');else this.approachInteraction('portal')},()=>{this.openInventory(false);document.querySelector<HTMLDetailsElement>('#quest-journal')!.open=true;document.querySelector('#quest-journal')!.scrollIntoView({block:'start'});});
  this.storyDialog=new StoryDialog(()=>this.bag,()=>({...this.local,region:this.region}),r=>this.economyAction(r),()=>this.openClasses());
  installMonsterAnimations(this);
  for(const asset of characterAssets){
@@ -169,6 +171,7 @@ class Elderwood extends Phaser.Scene {
  const bag=this.bag;if(!bag)return;
  const fishing=document.querySelector<HTMLElement>('#fishing-status')!;fishing.hidden=!bag.fishing;if(bag.fishing){const remaining=Math.max(0,Math.ceil(bag.fishing.endsAt-bag.time-1e-6)),label=document.querySelector('#fishing-label')!,text=`Fishing… ${remaining}s · Move to cancel`;if(label.textContent!==text)label.textContent=text;const progress=document.querySelector<HTMLProgressElement>('#fishing-progress')!;progress.max=bag.fishing.endsAt-bag.fishing.startedAt;progress.value=Math.max(0,Math.min(progress.max,bag.time-bag.fishing.startedAt));}
  updateTownServices(this.worldObjects,this.local,this.region);updateProfessionNodes(this.worldObjects,bag,this.local);const available=new Set<CraftSkill>();for(const station of craftingStations)if(canUseCraftingStation({...this.local,region:this.region},station)&&sight(this.local,station,this.region))for(const skill of station.skills)available.add(skill);renderProfessions(bag,available,r=>this.economyAction(r));
+ this.journeyUI?.render(bag,{...this.local,region:this.region},this.worldObjects,r=>this.economyAction(r));
  renderQuests(bag,{...this.local,region:this.region},r=>this.economyAction(r));this.storyDialog?.render();document.querySelector('#character-story-rank')!.textContent=storyRank(bag);
  document.querySelector('#level-label')!.textContent=`Level ${bag.level} · ${bag.classId==='citizen'?'Citizen':classes[bag.classId].name}`;document.querySelector('#gold-label')!.textContent=`${bag.gold} gold`;document.querySelector('#profile-level')!.textContent=`Level ${bag.level} · ${bag.classId==='citizen'?'Citizen':classes[bag.classId].name}`;
  const spellSelect=document.querySelector<HTMLSelectElement>('#spell-select')!;

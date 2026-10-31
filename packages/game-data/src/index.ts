@@ -101,3 +101,6 @@ export * from './building-windows';
 
 export * from './story-characters';
 export * from './story-items';
+
+export * from './tasks';
+export * from './journey-guide';

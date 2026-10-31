@@ -79,8 +79,9 @@ The contact sheet is `assets/generated/previews/story-keepsakes.png`.
 
 ## Progress, compatibility and deployment
 
-The existing 35 adventure quest IDs, objective shapes, counts, gold and EXP
-rewards remain unchanged. Only accepted events count, except current-state class,
+The existing 35 adventure quest IDs, objective shapes, counts and gold rewards
+remain unchanged. The opening Woods EXP rewards now follow the milestones below;
+other island EXP rewards remain unchanged. Only accepted events count, except current-state class,
 training and potion requirements. Successful gathering/fishing/crafting counts;
 failed, cancelled or full-bag actions do not. Server checks contact distance,
 floor/line of sight, prerequisites and one-time rewards. Private journals are
@@ -97,3 +98,51 @@ Supabase with real Colyseus server restart), and `npm run test:story:browser`
 (Vite on port 5298 or TEST_CLIENT_URL; desktop and mobile). The browser test
 covers real NPC clicks, path approach, journal icons, class choice and both
 island contacts. `test:quests:browser` covers the existing Mara workflow.
+
+## Guided opening and repeatable tasks
+
+The collapsible HUD tracker follows Rowan → woodland training → level-5 class
+choice/mentor → woodland boss → Orin. The journal's Track objective selector can
+pin an eligible main or side quest; Automatic resumes the story or active hunt.
+NPC markers: gold ! offers a quest, gold ? has a story reward, muted … means a
+quest is in progress; teal ◆ offers tasks and teal ? has a task reward. Find
+contact routes within the current floor. Cross-island guidance routes to the
+portal; floor changes still use stairs. The journal stays readable anywhere.
+
+Opening rewards are deliberately milestones: Woods main 1 now gives 1,210 EXP
+and Woods main 2 gives 8,120 EXP. Six wolves (210 EXP) plus four spiders (180 EXP)
+and main 1 guarantee level 5 even without side quests. Rowan's 40 EXP, the class
+trial's 100 EXP, the bear's 180 EXP and main 2 bring that route to level 11.
+Gold, monster stats/rewards, side-quest rewards and other islands' quest rewards
+are unchanged. Fresh acceptance of the woodland boss quest requires the class
+trial. Existing accepted/claimed journals remain valid and claimed rewards are
+not paid again. These numbers replace the earlier generic 100/150 Woods EXP;
+previously claimed quests receive no retroactive EXP.
+
+At level 11, with a chosen class and The Woodland Trial claimed, Orin introduces
+monster tasks. This is the Caverns story unlock; portal exploration behavior is
+unchanged. Mara also arranges hunts from Elderwood. The task board is available
+in Orin's conversation and Bag → Monster tasks. One active hunt can target any
+of the eight implemented monsters: wolf, spider, boar, bear, bat, crawler, golem
+or wyrm. Normal hunts offer 10/25/50 kills; boss hunts offer 1/3/5. No future
+monster types are advertised until their encounters exist.
+
+Rewards are a bonus on top of normal kill EXP and loot: 30% of that monster's
+base EXP × hunt size and 50% of its base gold × hunt size, rounded to integers.
+Example: 10 cave bats give a task bonus of 240 EXP and 75 gold. Completed hunts
+can be repeated without a daily limit. Only credited matching kills after
+acceptance on the monster's own island count; upper/lower floors count together.
+Only one task is active, progress caps at its goal, and duplicate kill events
+are ignored by the economy's existing event cursor. Failed/remote/forged claims
+pay nothing. Each accepted hunt has a unique ID so an old claim cannot redeem a
+new hunt. Rewards are claimed once at Orin or Mara. Abandoning requires an
+explicit UI confirmation and gives no reward; a replacement starts from zero.
+
+Tasks are a private profile field (`tasks.active` and `tasks.completed`), cloned
+in snapshots and validated in saved progress. Older saves receive an empty task
+state, preserving all existing items and progress. A server restart integration
+test covers claiming a task, starting a new hunt and restoring it after login.
+No database schema migration is required. Deploy client and server together.
+
+Additional checks: `npm run test:tasks:browser` (Vite on port 5304 or
+TEST_CLIENT_URL) and `npm run test:story:integration`.
