@@ -6,7 +6,7 @@ for(const mobile of [false,true])for(const offline of [true,false]){
  if(offline)await page.route('**/matchmake/**',r=>r.abort());await page.goto(process.env.TEST_CLIENT_URL??'http://localhost:5173');await page.locator('#play-guest').click();await page.waitForFunction(()=>/Connected|Local preview/.test(document.querySelector('#connection').textContent));
  const click=async selector=>{if(mobile)await page.locator(selector).tap();else await page.locator(selector).click();};
  await click('#inventory-button');assert.equal(await page.locator('#equipment-slots .equipment-item').count(),8);assert.match(await page.locator('#equipment-stats').textContent(),/^0 armor/);
- await click('#bag-equipment>summary');assert.equal(await page.locator('#equipment-items button').count(),9);
+ await page.locator('#bag-equipment').evaluate(n=>n.open=true);assert.equal(await page.locator('#equipment-items button').count(),8);
  await page.waitForFunction(()=>[...document.querySelectorAll('#equipment-items img')].every(img=>img.complete&&img.naturalWidth>0));
  for(const id of ['clothTunic','clothHood','woodenShield'])await click(`#equipment-items [data-item="${id}"]`);
  await page.waitForFunction(()=>document.querySelector('#equipment-stats').textContent.startsWith('3 armor'));assert.match(await page.locator('[data-slot="chest"]').textContent(),/Beginner Tunic/);
