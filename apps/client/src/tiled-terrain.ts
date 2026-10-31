@@ -1,3 +1,4 @@
+import {paintCliffStudy} from './cliff-study';
 import {paintVillageCliffs,paintVillageOuterRim,paintCliffStairs} from './village-cliffs';
 import {paintLedge,paintWoodsCliffs,paintRidge} from './stacked-floors';
 import type Phaser from 'phaser';
@@ -15,7 +16,8 @@ export function paintRegion(ctx:CanvasRenderingContext2D,region:RegionId,atlas:C
  paintVillageCliffs(ctx,atlas,true);
  // Show the town below the upper rooms, with walkable floor cells highlighted.
  for(let y=0;y<cells.length;y++)for(let x=0;x<cells[y].length;x++)if(cells[y][x]!==5){ctx.drawImage(atlas,cells[y][x]*36+2,2,32,32,x*32,y*32,32,32);paintVillageOuterRim(ctx,x,y);}
- for(const s of elderwoodRimStairs)paintCliffStairs(ctx,s,true);
+ for(const s of elderwoodRimStairs)if(s.id!=='north')paintCliffStairs(ctx,s,true);
+ paintCliffStudy(ctx,atlas,true);
 }
 export function drawTiledTerrain(scene:Phaser.Scene,region:RegionId){
  if(usesConnectedTerrain(region)){
