@@ -27,7 +27,7 @@ class Elderwood extends Room<State>{
    await this.refreshHouses();const p=this.state.players.get(id),profile=this.economy.profiles.get(id);if(!p||!profile)return;
    if(!this.housingReady){client.send('house-result','Housing saves are unavailable. The server needs the housing database migration.');return;}
    const h=houseById((raw as {house?:unknown})?.house);if(!h)return;const current=this.houses.get(h.id)!;
-   const name=save.identity.displayName||`Adventurer ${save.identity.id.slice(-6)}`;
+   const name=save.characterName||save.identity.displayName||`Adventurer ${save.identity.id.slice(-6)}`;
    const plan=planHousing(profile,p,current,save.identity.id,name,raw);if(typeof plan==='string'){client.send('house-result',plan);return;}
    this.economy.professions.casts.delete(id);this.inputs.delete(id);this.simulation.clear(p);
    this.economy.profiles.set(id,plan.profile);this.economy.serial=Math.max(this.economy.serial,...[...plan.profile.inventory,...plan.profile.depot.supplies].map(s=>s.id));
@@ -63,11 +63,11 @@ class Elderwood extends Room<State>{
  for(const event of this.simulation.events.splice(0))for(const client of this.clients)if(this.state.players.get(client.sessionId)?.region===event.region)client.send('combat-event',event);
  },50);
  }
- async onAuth(_client:Client,options:{accessToken?:unknown}){if(!options?.accessToken)return {guest:true};if(!progressStore)throw Error('Account saves are not configured on the game server.');return progressStore.verify(options.accessToken);}
+ async onAuth(_client:Client,options:{accessToken?:unknown;characterSlot?:unknown;characterName?:unknown}){if(!options?.accessToken)return {guest:true};if(!progressStore)throw Error('Account saves are not configured on the game server.');const slot=options.characterSlot??1;if(!Number.isInteger(slot)||Number(slot)<1||Number(slot)>4)throw Error('Choose one of the four character slots.');const name=options.characterName===undefined?(options.characterSlot===undefined?'Adventurer':''):options.characterName;if(typeof name!=='string'||name.length>24||/[\x00-\x1f<>]/.test(name)||name!==name.trim())throw Error('Use a character name of 1–24 letters or numbers.');const identity=await progressStore.verify(options.accessToken);const rows=await progressStore.roster?.(identity.id) as {slot:number;name?:string}[]|undefined;return {...identity,slot,name:rows?.find(r=>r.slot===slot)?.name??name};}
  async onJoin(client:Client){
  await this.refreshHouses();
  this.economy.join(client.sessionId);const p=new Player();
- try{if(client.auth?.id){const save=new SaveSession(progressStore!,client.auth as Identity);const data=await save.claim(writeProgress(this.economy.profiles.get(client.sessionId)!,0));
+ try{if(client.auth?.id){const save=new SaveSession(progressStore!,client.auth as Identity,client.auth.slot,client.auth.name);const data=await save.claim(writeProgress(this.economy.profiles.get(client.sessionId)!,0));
  this.saves.set(client.sessionId,save);this.economy.profiles.set(client.sessionId,data.profile);this.economy.serial=Math.max(this.economy.serial,...[...data.profile.inventory,...data.profile.depot.supplies].map(s=>s.id));
  applyEquipment(data.profile,p);p.shieldingXp=data.profile.skillXp.shielding;p.hp=maxHealth(p.attributes);p.mana=maxMana(p.attributes);p.meleeXp=data.profile.skillXp.melee;p.distanceXp=data.profile.skillXp.distance;p.magicXp=data.profile.skillXp.magic;
  data.profile.potionReadyAt=this.simulation.time+data.potionRemaining;this.simulation.spellCooldowns.set(client.sessionId,Object.fromEntries(Object.entries(data.cooldowns).map(([id,remaining])=>[id,this.simulation.time+remaining!])));
@@ -75,7 +75,7 @@ class Elderwood extends Room<State>{
  Object.assign(p,freeLanding(p,p.region,this.occupied(p.region)));p.stepX=p.x;p.stepY=p.y;p.appearance=JSON.stringify(this.economy.profiles.get(client.sessionId)!.equipment);p.look=JSON.stringify(cosmeticLook(this.economy.profiles.get(client.sessionId)!.cosmetics,this.economy.profiles.get(client.sessionId)!.classId));this.state.players.set(client.sessionId,p);
  }catch(err){this.economy.leave(client.sessionId);throw err;}
  }
- sendSnapshot(client:Client){if(!this.economy.profiles.has(client.sessionId)||!this.state.players.has(client.sessionId))return;const save=this.saves.get(client.sessionId);client.send('economy-state',{...this.economy.snapshot(client.sessionId,this.simulation.time),houses:[...this.houses.values()].map(h=>publicHouse(h,save?.identity.id)),housingAvailable:this.housingReady,housingBusy:this.housingBusy.has(client.sessionId),account:save?{email:save.identity.email,savedAt:save.savedAt,state:this.saveFailed.has(client.sessionId)?'error':(this.saving.has(client.sessionId)||this.housingBusy.has(client.sessionId))?'saving':'ready'}:null});}
+ sendSnapshot(client:Client){if(!this.economy.profiles.has(client.sessionId)||!this.state.players.has(client.sessionId))return;const save=this.saves.get(client.sessionId);client.send('economy-state',{...this.economy.snapshot(client.sessionId,this.simulation.time),houses:[...this.houses.values()].map(h=>publicHouse(h,save?.identity.id)),housingAvailable:this.housingReady,housingBusy:this.housingBusy.has(client.sessionId),account:save?{email:save.identity.email,characterSlot:save.slot,characterName:save.characterName,savedAt:save.savedAt,state:this.saveFailed.has(client.sessionId)?'error':(this.saving.has(client.sessionId)||this.housingBusy.has(client.sessionId))?'saving':'ready'}:null});}
  async savePlayer(client:Client){const id=client.sessionId,save=this.saves.get(id),profile=this.economy.profiles.get(id);if(!save||!profile||this.saving.has(id)||this.saveFailed.has(id)||this.housingBusy.has(id))return;this.saving.add(id);
  try{await save.save(writeProgress(profile,this.simulation.time,this.simulation.spellCooldowns.get(id)));}
  catch{this.saveFailed.add(id);client.send('save-error','Saving failed. Reconnect before continuing; your last confirmed save is safe.');client.leave(4005);}
@@ -87,6 +87,8 @@ class Elderwood extends Room<State>{
  }
 
 }
-const http=createServer((req,res)=>{res.setHeader('Content-Type','application/json');res.end(JSON.stringify({status:'ok',world:'Elderwood',accountsConfigured:Boolean(progressStore)}));});
+const http=createServer(async(req,res)=>{res.setHeader('Content-Type','application/json');res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Headers','Authorization,Content-Type');res.setHeader('Access-Control-Allow-Methods','GET,OPTIONS');res.setHeader('Cache-Control','no-store');if(req.method==='OPTIONS'){res.writeHead(204);res.end();return;}
+ if(req.url==='/characters'&&req.method==='GET'){if(!progressStore?.roster){res.writeHead(503);res.end(JSON.stringify({error:'Character selection is unavailable. Check server configuration and the character slots migration.'}));return;}let identity:Identity;try{identity=await progressStore.verify(req.headers.authorization?.replace(/^Bearer /,''));}catch{res.writeHead(401);res.end(JSON.stringify({error:'Sign in again to load your characters.'}));return;}try{res.end(JSON.stringify({slots:await progressStore.roster(identity.id)}));}catch{res.writeHead(503);res.end(JSON.stringify({error:'Could not load characters. Check the character slots database migration and retry.'}));}return;}
+ res.end(JSON.stringify({status:'ok',world:'Elderwood',accountsConfigured:Boolean(progressStore)}));});
 const server=new Server({transport:new WebSocketTransport({server:http})});server.define('elderwood',Elderwood);
 await server.listen(Number(process.env.PORT??2567));console.log('Elderwood listening on port',process.env.PORT??2567);
