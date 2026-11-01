@@ -5,6 +5,7 @@ export interface Identity{id:string;email:string;displayName?:string}
 export interface ProgressStore{
  verify(token:unknown):Promise<Identity>;
  claim(userId:string,lease:string,initial:CharacterProgress,slot?:number,name?:string):Promise<CharacterProgress>;
+ useService?(userId:string,lease:string,slot:number,sku:string,progress:CharacterProgress):Promise<string>;
  roster?(userId:string):Promise<unknown[]>;
  houses?():Promise<HouseRecord[]>;
  commitHouse?(userId:string,lease:string,record:HouseRecord,revision:number,progress:CharacterProgress,slot?:number):Promise<{savedAt:string}>;
@@ -19,10 +20,11 @@ export class SupabaseStore implements ProgressStore{
  if(!response.ok){const error=await response.json().catch(()=>({}));if(error?.message?.includes('CHARACTER_EMPTY'))throw Error('This slot is empty. Create a character first.');if(error?.message?.includes('CHARACTER_IN_USE'))throw Error('This character is already connected. Close the other game and wait up to a minute.');if(error?.message?.includes('SAVE_SESSION_EXPIRED'))throw Error('Your save session expired. Reconnect to reload your character.');throw Error(path.startsWith('/auth/')?'Sign-in expired. Please sign in again.':'Save service unavailable. Check the server settings and database migrations.');}
  return response.json();
  }
+ async useService(userId:string,lease:string,slot:number,sku:string,progress:CharacterProgress){return await this.request('/rest/v1/rpc/use_character_service',{p_user_id:userId,p_session_id:lease,p_slot:slot,p_sku:sku,p_progress:progress}) as string;}
  async houses(){return await this.request('/rest/v1/rpc/list_player_houses',{}) as HouseRecord[];}
  async commitHouse(userId:string,lease:string,record:HouseRecord,revision:number,progress:CharacterProgress,slot=1){return await this.request('/rest/v1/rpc/commit_player_house_slot',{p_user_id:userId,p_session_id:lease,p_house_id:record.id,p_revision:revision,p_record:{...record,layoutVersion:2},p_progress:progress,p_slot:slot}) as {savedAt:string};}
  async verify(token:unknown){if(typeof token!=='string'||token.length>8192||!token.length)throw Error('Sign in to load your character.');const user=await this.request('/auth/v1/user',undefined,token);if(typeof user.id!=='string'||typeof user.email!=='string')throw Error('Invalid account.');return {id:user.id,email:user.email,displayName:typeof user.user_metadata?.display_name==='string'?user.user_metadata.display_name.replace(/[\x00-\x1f]/g,'').trim().slice(0,40):undefined};}
- async roster(userId:string){const rows=await this.request('/rest/v1/rpc/list_character_slots',{p_user_id:userId}) as {slot:number;name:string;progress:unknown}[];return Array.from({length:4},(_,i)=>{const row=rows.find(r=>r.slot===i+1);if(!row)return{slot:i+1,occupied:false};const p=readProgress(row.progress).profile;return{slot:i+1,occupied:true,name:row.name,level:p.level,classId:p.classId,skin:cosmeticLook(p.cosmetics,p.classId).skin};});}
+ async roster(userId:string){const rows=await this.request('/rest/v1/rpc/list_character_slots',{p_user_id:userId}) as {slot:number;name:string;progress:unknown}[];return Array.from({length:4},(_,i)=>{const row=rows.find(r=>r.slot===i+1);if(!row)return{slot:i+1,occupied:false};const p=readProgress(row.progress).profile;return{slot:i+1,occupied:true,name:row.name,level:p.level,classId:p.classId,skin:cosmeticLook(p.cosmetics,p.classId,p.sex).skin};});}
  async claim(userId:string,lease:string,initial:CharacterProgress,slot=1,name='Adventurer'){return readProgress(await this.request('/rest/v1/rpc/claim_character_slot',{p_user_id:userId,p_session_id:lease,p_initial_progress:initial,p_slot:slot,p_name:name}));}
  async save(userId:string,lease:string,progress:CharacterProgress,release:boolean,slot=1){return await this.request('/rest/v1/rpc/save_character_slot',{p_user_id:userId,p_session_id:lease,p_progress:readProgress(progress),p_release:release,p_slot:slot}) as string;}
 }
@@ -31,6 +33,11 @@ export class SupabaseStore implements ProgressStore{
 export class SaveSession{
  readonly lease=randomUUID();tail:Promise<unknown>=Promise.resolve();savedAt='';closed=false;failed=false;
  constructor(readonly store:ProgressStore,readonly identity:Identity,readonly slot=1,readonly characterName='Adventurer'){}
+ useService(sku:string,progress:CharacterProgress){
+ if(this.closed||!this.store.useService){this.failed=true;return Promise.reject(Error('Character services are unavailable.'));}
+ const snapshot=readProgress(progress),next=this.tail.then(async()=>{if(this.failed)throw Error('Save transaction failed.');return await this.store.useService!(this.identity.id,this.lease,this.slot,sku,snapshot)}).catch(e=>{this.failed=true;throw e;});
+ this.tail=next;return next.then(at=>{this.savedAt=at;return at});
+ }
  commitHouse(record:HouseRecord,revision:number,progress:CharacterProgress){if(this.closed||!this.store.commitHouse)return Promise.reject(Error('Housing saves are unavailable.'));const snapshot=readProgress(progress),next=this.tail.catch(()=>{}).then(async()=>{if(this.failed)throw Error('Save transaction failed.');try{const result=await this.store.commitHouse!(this.identity.id,this.lease,record,revision,snapshot,this.slot);this.savedAt=result.savedAt;}catch(e){this.failed=true;throw e;}});this.tail=next;return next;}
  async claim(initial:CharacterProgress){return this.store.claim(this.identity.id,this.lease,initial,this.slot,this.characterName);}
  save(progress:CharacterProgress,release=false){if(this.closed)return Promise.reject(Error('Save session closed.'));if(release)this.closed=true;const snapshot=readProgress(progress);const next=this.tail.catch(()=>{}).then(()=>{if(this.failed)throw Error('Save transaction failed.');return this.store.save(this.identity.id,this.lease,snapshot,release,this.slot);});this.tail=next;return next.then(at=>{this.savedAt=at;return at;});}

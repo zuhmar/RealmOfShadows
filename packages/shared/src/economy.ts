@@ -5,7 +5,7 @@ import {newProfessions,type ProfessionXp,questContact,atStoryNpc,storyNpc,record
 import {sight,type Fighter,type Kill} from './combat';
 import {applyEquipment,effectiveAttributes,profileArmor,cloneGear,equippedInstance} from './gear';
 export interface Stack{id:number;item:ItemId;quantity:number}
-export interface Profile{professions:ProfessionXp;tasks:TaskState;quests:QuestJournal;cosmetics:Cosmetics;depot:DepotContents;gear:GearInstance[];equippedGear:GearLoadout;attributes:Attributes;equipment:Equipment;ownedEquipment:EquipmentId[];learnedSpells:SpellId[];classId:ClassId;weapon:WeaponId;ownedWeapons:WeaponId[];skills:Record<SkillId,number>;skillXp:Record<SkillId,number>;gold:number;xp:number;level:number;inventory:Stack[];potionReadyAt:number}
+export interface Profile{sex:'male'|'female';professions:ProfessionXp;tasks:TaskState;quests:QuestJournal;cosmetics:Cosmetics;depot:DepotContents;gear:GearInstance[];equippedGear:GearLoadout;attributes:Attributes;equipment:Equipment;ownedEquipment:EquipmentId[];learnedSpells:SpellId[];classId:ClassId;weapon:WeaponId;ownedWeapons:WeaponId[];skills:Record<SkillId,number>;skillXp:Record<SkillId,number>;gold:number;xp:number;level:number;inventory:Stack[];potionReadyAt:number}
 export interface Drop{id:string;owner:string;region?:RegionId;x:number;y:number;gold:number;pelts:number;shards?:number;expires:number;gear?:GearInstance}
 export interface EconomySnapshot extends Profile{shopEnabled?:boolean;cosmeticOwned?:string[];houses?:import('@realm/game-data').PublicHouse[];housingAvailable?:boolean;housingBusy?:boolean;fishing:FishingCast|null;nodeReadyAt:Record<string,number>;effectiveAttributes:Attributes;usedSlots:number;gearCapacity:number;weaponAttack:number;attributePoints:number;armor:number;account?:{characterSlot?:number;characterName?:string;email:string;savedAt:string;state:'ready'|'saving'|'error'}|null;drops:Drop[];capacity:number;nextXp:number;levelXp:number;time:number}
 export class Economy{
@@ -13,7 +13,7 @@ export class Economy{
  automaticLoot=false;collected=new Set<string>();private lootRetry=new Map<string,number>();
  professions=new ProfessionSystem();
  profiles=new Map<string,Profile>();drops=new Map<string,Drop>();lastKill=0;serial=0;
- join(id:string){if(!this.profiles.has(id))this.profiles.set(id,{professions:newProfessions(),tasks:emptyTasks(),quests:{},cosmetics:defaultCosmetics(),depot:emptyDepot(),gear:[],equippedGear:emptyGearLoadout(),attributes:newAttributes(),equipment:emptyEquipment(),ownedEquipment:[...starterEquipment],learnedSpells:[],classId:'citizen',weapon:'wand',ownedWeapons:[...classRules.starterWeapons],skills:{melee:1,distance:1,magic:1,shielding:1},skillXp:{melee:0,distance:0,magic:0,shielding:0},gold:0,xp:0,level:1,inventory:[],potionReadyAt:0});}
+ join(id:string){if(!this.profiles.has(id))this.profiles.set(id,{sex:'male',professions:newProfessions(),tasks:emptyTasks(),quests:{},cosmetics:defaultCosmetics(),depot:emptyDepot(),gear:[],equippedGear:emptyGearLoadout(),attributes:newAttributes(),equipment:emptyEquipment(),ownedEquipment:[...starterEquipment],learnedSpells:[],classId:'citizen',weapon:'wand',ownedWeapons:[...classRules.starterWeapons],skills:{melee:1,distance:1,magic:1,shielding:1},skillXp:{melee:0,distance:0,magic:0,shielding:0},gold:0,xp:0,level:1,inventory:[],potionReadyAt:0});}
  sync(id:string,p:Fighter){const profile=this.profiles.get(id);if(!profile)return;profile.skillXp={melee:p.meleeXp,distance:p.distanceXp,magic:p.magicXp,shielding:p.shieldingXp};profile.skills={melee:skillLevel(p.meleeXp),distance:skillLevel(p.distanceXp),magic:skillLevel(p.magicXp),shielding:skillLevel(p.shieldingXp)};recordQuestFacts(profile);}
  leave(id:string){this.professions.leave(id);this.profiles.delete(id);this.collected.delete(id);for(const [key,d] of this.drops)if(d.owner===id)this.drops.delete(key);}
  process(kills:Kill[],players:Map<string,Fighter>|{get(id:string):Fighter|undefined},time:number){
@@ -72,7 +72,7 @@ export class Economy{
  if(!progress||progress.claimed||!questComplete(q,progress))return 'Complete the quest objectives before claiming.';
  progress.claimed=true;profile.gold=Math.min(Number.MAX_SAFE_INTEGER,profile.gold+q.gold);profile.xp=Math.min(totalXp(rewards.levelCap),profile.xp+q.xp);profile.level=levelForXp(profile.xp);return `Quest complete: ${q.name}. +${q.gold} gold · +${q.xp} EXP.`;
  }
- if(kind==='cosmetics'){const next=migrateCosmetics((request as {cosmetics?:unknown}).cosmetics);if(!validCosmetics(next))return 'Choose a valid outfit, wings and aura.';profile.cosmetics={...next};return 'Appearance updated.';}
+ if(kind==='cosmetics'){const next=migrateCosmetics((request as {cosmetics?:unknown}).cosmetics);if(!validCosmetics(next))return 'Choose a valid outfit, wings and aura.';profile.cosmetics={...next};if(profile.cosmetics.skin!=='auto'){const theme=profile.cosmetics.skin.replace(/-female$/,'');profile.cosmetics.skin=(profile.sex==='female'?`${theme}-female`:theme) as Cosmetics['skin'];}return 'Appearance updated.';}
  if(kind==='depot-deposit'||kind==='depot-withdraw')return transferDepot(profile,p,request as {kind:unknown},this.add.bind(this));
  if(kind==='attribute'){
  if(!isAttribute(attribute))return 'Choose a valid attribute.';

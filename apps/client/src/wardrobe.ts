@@ -16,9 +16,9 @@ export function setupWardrobe(change:(cosmetics:Cosmetics)=>void){
 }
 export function renderWardrobe(bag:EconomySnapshot){
  const migrated=migrateCosmetics(bag.cosmetics),cosmetics=validCosmetics(migrated)?migrated:defaultCosmetics();
- const owned=[...earnedCosmetics(bag),...(bag.cosmeticOwned??[])];const key=JSON.stringify([bag.classId,cosmetics,owned]);if(previous===key)return;previous=key;
- for(const field of ['skin','wings','aura'] as const){for(const option of Array.from(document.querySelector<HTMLSelectElement>(`#cosmetic-${field}`)!.options)){const test={skin:'auto',wings:'none',aura:'none',[field]:option.value} as Cosmetics;option.disabled=cosmeticKeys(test).some(id=>!owned.includes(id));}}
+ const filter=document.querySelector<HTMLSelectElement>('#outfit-variant-filter')!;filter.value=bag.sex;filter.disabled=true;const owned=[...earnedCosmetics(bag),...(bag.cosmeticOwned??[])];const key=JSON.stringify([bag.classId,cosmetics,owned,bag.sex]);if(previous===key)return;previous=key;
+ for(const field of ['skin','wings','aura'] as const){for(const option of Array.from(document.querySelector<HTMLSelectElement>(`#cosmetic-${field}`)!.options)){const test={skin:'auto',wings:'none',aura:'none',[field]:option.value} as Cosmetics;option.hidden=field==='skin'&&option.value!=='auto'&&skinDefinitions[option.value as keyof typeof skinDefinitions].variant!==bag.sex;option.disabled=option.hidden||cosmeticKeys(test).some(id=>!owned.includes(id));}}
  for(const field of ['skin','wings','aura'] as const)document.querySelector<HTMLSelectElement>(`#cosmetic-${field}`)!.value=cosmetics[field];
- for(const card of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-outfit]'))){card.setAttribute('aria-pressed',String(card.dataset.outfit===cosmetics.skin));card.disabled=cosmeticKeys({skin:card.dataset.outfit as Cosmetics['skin'],wings:'none',aura:'none'}).some(id=>!owned.includes(id));}
+ for(const card of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-outfit]'))){card.setAttribute('aria-pressed',String(card.dataset.outfit===cosmetics.skin));card.hidden=card.dataset.variant!==bag.sex;card.disabled=card.hidden||cosmeticKeys({skin:card.dataset.outfit as Cosmetics['skin'],wings:'none',aura:'none'}).some(id=>!owned.includes(id));}
  document.querySelector('#wardrobe-status')!.textContent=cosmetics.skin==='auto'?'Automatic follows your class. Choose any outfit for a look of your own.':`${skinDefinitions[cosmetics.skin].description} Unlocked for this character.`;
 }

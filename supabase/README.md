@@ -103,3 +103,8 @@ against a dedicated game server.
 ## Player housing
 
 Run `migrations/202610300001_player_housing.sql` after both existing save migrations if not already applied, then run `migrations/202610300002_expand_cliff_neighborhoods.sql` to expand to twenty global houses (five per side) and migrate existing displays while preserving ownership. Then redeploy Render and Vercel together. Atomic ownership/item transfers remain protected, and old-layout house writes are refused during deployment. Existing environment variables are sufficient. See [player housing](../docs/player-housing.md) for prices, controls, tests and deployment checks. The production migration must be run in your Supabase SQL Editor; it has not been applied from this workspace.
+
+For required male/female creation and the three $7.50 service tokens, run
+`migrations/202611010001_character_services.sql` after the cosmetic shop migration,
+then deploy Render and Vercel. See [character services](../docs/character-services.md).
+This production migration has not been applied from this workspace.

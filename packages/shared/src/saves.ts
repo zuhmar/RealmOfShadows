@@ -14,6 +14,8 @@ export function readProgress(value:unknown):CharacterProgress{
  if(!validTasks(p.tasks)||((p.tasks.active||p.tasks.completed>0)&&!tasksUnlocked({...p,level:levelForXp(p.xp)})))throw Error('Invalid saved monster tasks.');
  if(p.cosmetics===undefined)p.cosmetics=defaultCosmetics();
  const cosmetics=migrateCosmetics(p.cosmetics);if(!validCosmetics(cosmetics))throw Error('Invalid saved cosmetics.');p.cosmetics=cosmetics;
+ if(p.sex===undefined)p.sex=p.cosmetics.skin.endsWith('-female')?'female':'male';
+ if(p.sex!=='male'&&p.sex!=='female')throw Error('Invalid saved sex.');
  // Older saves receive an empty private Depot without changing bag ownership.
  if(p.depot===undefined)p.depot=emptyDepot();
  const d=p.depot;
