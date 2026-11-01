@@ -7,6 +7,7 @@ import {woodsCliffs,woodsSize,woodsRidges,ridgeCells,woodsExpansionSpawns} from 
 import {woodsLedge} from './elevation';
 import {baseCraftingStations as craftingStations} from './town-services';
 import {baseVillageBuildings as villageBuildings,isVillageUpper} from './village-buildings';
+import {cavernsGridEncounters} from './caverns-grid-spawns';
 import {woodsGridEncounters} from './woods-grid-spawns';
 import {baseDepotBoxes as depotBoxes} from './depot';
 import overrides from './grid-overrides.json';
@@ -164,6 +165,14 @@ export function gridMap(region:string,authored=false):GridMap{
   }
   const route:readonly (readonly[number,number])[]=lower?[[24,31],[24,24],[9,24],[9,8],[37,8],[37,23],[24,23]]:[[32,40],[32,31],[12,31],[12,11],[32,11],[32,31],[50,31],[50,10]];
   path(route,cave?2:1);if(lower)path([[24,31],[24,8]],cave?2:1);if(!lower)path([[32,11],[32,22],[50,22],[50,31]],2);
+  // One clear Wyrm entrance; its outer gallery and approach remain separate encounters.
+  if(region==='caverns'){
+   rect(41,16,17,1,5);rect(49,16,3,1,2);
+   // Quiet side recesses and solid outcrops break up the chamber grid.
+   rect(25,16,5,5,0);path([[32,19],[28,19]],2);
+   rect(22,37,4,6,0);path([[27,40],[24,40]],2);
+   rect(10,10,2,2,5);rect(52,32,2,2,5);
+  }
   // Irregular chamber shoulders spare marked paths and monster spawn rings.
   const spawnSites=spawns(region as RegionId);
   for(const [x,y,w,h]of rooms)for(let xx=x;xx<x+w;xx++)for(const yy of [y,y+h-1]){
@@ -225,6 +234,7 @@ type GridMonster='wolf'|'spider'|'boar'|'bear'|'bat'|'crawler'|'golem'|'wyrm';
 export function authoredGridSpawns(region:RegionId):{id:string;kind:GridMonster;region:RegionId;x:number;y:number}[]{
  if(region.startsWith('elderwood'))return [];
  if(region==='woods-upper')return [...[[38.5,4.5],[41.5,4.5],[38.5,6.5]].map(([x,y],i)=>({id:`ledge-wolf-${i+1}`,kind:'wolf' as const,region,x,y})),...woodsRidges.flatMap(r=>r.monsters?[[r.parts[0].x+2.5,r.parts[0].y+2.5],[r.parts[0].x+7.5,r.parts[0].y+3.5],[r.parts[1].x+3.5,r.parts[1].y+3.5]].map(([x,y],i)=>({id:`ridge-${r.id}-${i+1}`,kind:r.monsters,region,x,y})):[])];
+ if(region==='caverns')return (Object.entries(cavernsGridEncounters) as [keyof typeof cavernsGridEncounters,readonly (readonly[number,number])[]][]).flatMap(([kind,points])=>points.map(([x,y],i)=>({id:`${kind}-${i+1}`,kind,region,x:x+.5,y:y+.5})));
  if(region==='woods')return [...woodsExpansionSpawns.map(s=>({...s,region})),...(Object.entries(woodsGridEncounters) as [keyof typeof woodsGridEncounters,typeof woodsGridEncounters[keyof typeof woodsGridEncounters]][]).flatMap(([kind,area])=>[...area.habitat,...area.approach].map(([x,y],i)=>({id:`${kind}-${i+1}`,kind,region,x:x+.5,y:y+.5})))];
  const woods=region.startsWith('woods'),lower=region.endsWith('-depths');
  const groups:[GridMonster,number,number,number][]=woods?(lower?[['wolf',5,23,6],['spider',7,5,6],['boar',33,20,6]]:[['wolf',8,6,9],['spider',8,33,9],['boar',52,6,9],['bear',55,35,1]]):(lower?[['bat',5,23,6],['crawler',7,5,6],['golem',33,20,5]]:[['bat',7,7,9],['crawler',7,28,9],['golem',45,27,9],['wyrm',48,8,1]]);

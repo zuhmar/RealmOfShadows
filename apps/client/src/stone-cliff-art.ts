@@ -47,30 +47,31 @@ export function paintRockFace(c:CanvasRenderingContext2D,variant=0,facing='south
 const rockFields=new Map<string,HTMLCanvasElement>();
 const noise=(x:number,y:number)=>{let n=Math.imul(x+271,374761393)^Math.imul(y+117,668265263);n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967295;};
 /** A shared fracture field crosses native cell seams, with the approved stone palette and scale. */
-export function paintJoinedRockSection(c:CanvasRenderingContext2D,variant:number,facing:string,section:'top'|'bottom'|'middle',cap=true){
- let field=rockFields.get(facing);
+export function paintJoinedRockSection(c:CanvasRenderingContext2D,variant:number,facing:string,section:'top'|'bottom'|'middle',cap=true,palette?:Readonly<Record<string,string>>){
+ const ink=(color:string)=>palette?.[color]??color,key=facing+(palette?JSON.stringify(palette):'');
+ let field=rockFields.get(key);
  if(!field){
   field=document.createElement('canvas');field.width=384;field.height=64;const g=field.getContext('2d')!;
-  g.fillStyle='#777967';g.fillRect(0,0,384,64);
+  g.fillStyle=ink('#777967');g.fillRect(0,0,384,64);
   const point=(col:number,row:number):Point=>[col*22+(row%2)*9+(noise(col,row)-.5)*12,row*18-10+(noise(col+99,row)-.5)*12];
   for(let row=0;row<5;row++)for(let col=-2;col<19;col++){
    const a=point(col,row),b=point(col+1,row),d=point(col,row+1),e=point(col+1,row+1),n=noise(col+17,row+21);
    const between=(p:Point,q:Point,t:number):Point=>[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t];
    const tl=between(a,b,.1),tr=between(a,b,.85),right=between(b,e,.5),foot=between(e,d,.22),left=between(d,a,.6);
-   polygon(g,[a,b,e,d],'#535f4e');
-   polygon(g,[tl,tr,right,foot,left],['#92937b','#858b72','#97977d','#818a70'][Math.floor(n*4)]);
-   polygon(g,[tr,b,e,foot,right],n>.6?'#5a6352':'#68715c');
-   polygon(g,[left,foot,e,d],n>.3?'#6b725e':'#77806a');
-   polygon(g,[a,tl,left,d],n>.45?'#899077':'#7f896e');
-   g.strokeStyle='#354333a6';g.lineWidth=.7;g.beginPath();g.moveTo(...a);g.lineTo(...d);g.lineTo(...e);g.stroke();
-   g.strokeStyle='#bec0a04a';g.lineWidth=.65;g.beginPath();g.moveTo(a[0]+1,a[1]+1);g.lineTo(b[0]-2,b[1]+1);g.stroke();
+   polygon(g,[a,b,e,d],ink('#535f4e'));
+   polygon(g,[tl,tr,right,foot,left],[ink('#92937b'),ink('#858b72'),ink('#97977d'),ink('#818a70')][Math.floor(n*4)]);
+   polygon(g,[tr,b,e,foot,right],n>.6?ink('#5a6352'):ink('#68715c'));
+   polygon(g,[left,foot,e,d],n>.3?ink('#6b725e'):ink('#77806a'));
+   polygon(g,[a,tl,left,d],n>.45?ink('#899077'):ink('#7f896e'));
+   g.strokeStyle=ink('#354333a6');g.lineWidth=.7;g.beginPath();g.moveTo(...a);g.lineTo(...d);g.lineTo(...e);g.stroke();
+   g.strokeStyle=ink('#bec0a04a');g.lineWidth=.65;g.beginPath();g.moveTo(a[0]+1,a[1]+1);g.lineTo(b[0]-2,b[1]+1);g.stroke();
   }
-  const shade=g.createLinearGradient(0,0,0,64);shade.addColorStop(0,'#e3dbaf18');shade.addColorStop(.5,'#172d2810');shade.addColorStop(1,'#172d2855');g.fillStyle=shade;g.fillRect(0,0,384,64);
-  g.fillStyle=facing==='west'?'#f6edc72b':facing==='east'?'#102c3445':facing==='north'?'#e9f2da0d':'#14251e18';g.fillRect(0,0,384,64);rockFields.set(facing,field);
+  const shade=g.createLinearGradient(0,0,0,64);shade.addColorStop(0,ink('#e3dbaf18'));shade.addColorStop(.5,ink('#172d2810'));shade.addColorStop(1,ink('#172d2855'));g.fillStyle=shade;g.fillRect(0,0,384,64);
+  g.fillStyle=facing==='west'?ink('#f6edc72b'):facing==='east'?ink('#102c3445'):facing==='north'?ink('#e9f2da0d'):ink('#14251e18');g.fillRect(0,0,384,64);rockFields.set(key,field);
  }
  const v=((variant%12)+12)%12;
  c.drawImage(field,v*32,section==='top'?0:section==='bottom'?32:16,32,32,0,0,32,32);
  if(section==='top'&&cap){
-  polygon(c,[[0,0],[32,0],[32,3],[26,4],[21,2],[15,4],[9,2],[4,4],[0,3]],'#647b45');
- }else if(section==='bottom'){c.fillStyle='#152c2522';c.fillRect(0,30,32,2);}
+  polygon(c,[[0,0],[32,0],[32,3],[26,4],[21,2],[15,4],[9,2],[4,4],[0,3]],ink('#647b45'));
+ }else if(section==='bottom'){c.fillStyle=ink('#152c2522');c.fillRect(0,30,32,2);}
 }
