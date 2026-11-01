@@ -14,8 +14,9 @@ spawns, the bridge, portals and stairs. Depth 2 retains its existing encounters.
 
 Both floors use the approved cliff fracture geometry with a violet palette,
 continuous joins, directional shading and small embedded violet/cyan crystals.
-Thick north walls have joined two-cell faces; narrow barriers keep their artwork
-inside the available rock. Every part is a native 32×32 cell. Faces, bevels and
+A visible purple rock floor caps the cliff mass, with one vertical face along
+its edge instead of stacked faces. Narrow barriers keep their artwork inside the
+available rock. Every part is a native 32×32 cell. Faces, bevels and
 crystals are clipped to solid cells, preserving walkable floor, water and paths.
 The same renderer serves gameplay and map-editor previews. Elderwood and Woods
 keep the existing natural cliff palette.

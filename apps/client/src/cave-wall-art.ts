@@ -18,7 +18,7 @@ function crystal(c:CanvasRenderingContext2D,x:number,y:number,height:number,teal
  c.strokeStyle=light;c.lineWidth=.6;c.beginPath();c.moveTo(x,y-height+1);c.lineTo(x+2,y-height+4);c.stroke();
 }
 /** All faces, bevels and crystals stay inside blocked native 32px cells. */
-export function paintCavernWalls(ctx:CanvasRenderingContext2D,cells:number[][]){
+export function paintCavernWalls(ctx:CanvasRenderingContext2D,cells:number[][],atlas?:CanvasImageSource){
 
  const solid=(x:number,y:number)=>cells[y]?.[x]===5;
  const face=(x:number,y:number,facing:string,section:'top'|'bottom'|'middle',cap=false)=>{
@@ -29,21 +29,25 @@ export function paintCavernWalls(ctx:CanvasRenderingContext2D,cells:number[][]){
   }
   ctx.save();ctx.beginPath();ctx.rect(x*32,y*32,32,32);ctx.clip();ctx.drawImage(tile,x*32,y*32);ctx.restore();
  };
- // Dim rock crowns are a continuous mass, without a repeated block outline.
+ // A visible horizontal rock floor crowns the whole cliff mass.
+ // Keep it distinct from the darker vertical faces below its edge.
  for(let y=0;y<cells.length;y++)for(let x=0;x<cells[y].length;x++)if(solid(x,y)){
-  ctx.fillStyle='#252035';ctx.fillRect(x*32,y*32,32,32);
-  if((x*19+y*31)%13===0){ctx.strokeStyle='#372a4655';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(x*32+9,y*32+1);ctx.lineTo(x*32+15,y*32+12);ctx.lineTo(x*32+11,y*32+31);ctx.stroke();}
+  ctx.save();ctx.translate(x*32,y*32);ctx.beginPath();ctx.rect(0,0,32,32);ctx.clip();
+  if(atlas){ctx.drawImage(atlas,2,2,32,32,0,0,32,32);ctx.fillStyle='#b89edba6';ctx.fillRect(0,0,32,32);}
+  else{ctx.fillStyle='#8b78a6';ctx.fillRect(0,0,32,32);}
+  ctx.restore();
  }
- // Thick north walls get a joined two-cell face, exactly like the existing cliffs.
+ // A single vertical edge sits below the top floor, never a stack of faces.
  for(let y=0;y<cells.length;y++)for(let x=0;x<cells[y].length;x++){
   const e=caveWallEdges(cells,x,y);if(!e)continue;
-  if(e.south){if(solid(x,y-1)){face(x,y-1,'south','top',true);face(x,y,'south','bottom');}else face(x,y,'south','middle');}
-  else if(e.north)face(x,y,'north','top',true);
+  if(e.south)face(x,y,'south','bottom');
+  else if(e.north){/* The foreground edge exposes its horizontal top floor. */}
   else if(e.west)face(x,y,'west','middle');else if(e.east)face(x,y,'east','middle');
  }
  for(let y=0;y<cells.length;y++)for(let x=0;x<cells[y].length;x++){
   const edges=caveWallEdges(cells,x,y);if(!edges)continue;
   ctx.save();ctx.translate(x*32,y*32);ctx.beginPath();ctx.rect(0,0,32,32);ctx.clip();
+  if(edges.south){polygon(ctx,[[0,0],[32,0],[32,3],[25,5],[17,3],[9,5],[0,3]],'#9681ad');}
   ctx.strokeStyle='#d1b3ea66';ctx.lineWidth=1;ctx.beginPath();if(edges.north){ctx.moveTo(0,.5);ctx.lineTo(32,.5)}if(edges.west){ctx.moveTo(.5,0);ctx.lineTo(.5,32)}ctx.stroke();
   ctx.strokeStyle='#1a102e';ctx.lineWidth=1.4;ctx.beginPath();if(edges.south){ctx.moveTo(0,31);ctx.lineTo(32,31)}if(edges.east){ctx.moveTo(31,0);ctx.lineTo(31,32)}ctx.stroke();
   if(Object.values(edges).some(Boolean)&&(x*19+y*31)%5===0){crystal(ctx,12,25,12,(x+y)%2===0);crystal(ctx,19,27,8,(x+y)%2!==0);}
