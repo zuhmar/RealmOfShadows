@@ -31,6 +31,7 @@ import {storyNpc,atStoryNpc,storyRank,nearBuildingWindow,type WindowAnchor,build
 import {toggleVillageDoor,inAttackRange,attackPath,sight,move,occupiedCells,pathfind,CombatSimulation,newFighter,Economy,type EconomySnapshot,type Fighter,type Wolf,type CombatEvent,type Point,type Motion,type Input} from '@realm/shared';
 import './style.css';
 import './hud.css';
+import './entry.css';
 import {renderSkillProgress} from './skill-progress';
 import {renderWayfarer} from './wayfarer';
 import {hudIcons} from './hud-assets';

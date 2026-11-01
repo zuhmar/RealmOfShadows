@@ -72,6 +72,7 @@
     "test:avatar-idle:browser": "node tests/browser-avatar-idle.cjs",
     "test:combat-feedback:browser": "node tests/browser-combat-feedback.cjs",
     "test:quests:browser": "node tests/browser-quests.cjs",
+    "test:entry-screens:browser": "node tests/browser-entry-screens.cjs",
     "test:character-services:browser": "node tests/browser-character-services.cjs",
     "test:character-services:integration": "tsx tests/character-services.integration.ts",
     "test:gathering-art:browser": "node tests/browser-gathering-art.cjs",

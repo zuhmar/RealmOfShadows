@@ -1,8 +1,9 @@
 # Four characters per account
 
 After signing in, or continuing a restored sign-in, players choose one of four
-character slots. Existing saves occupy slot 1 as Adventurer. Empty slots offer a
-name field and Create character; creation starts a level-1 Citizen using the
+character slots on a dedicated screen. Existing saves occupy slot 1 as Adventurer.
+Empty slots open a separate creation screen with name, required male/female choice,
+and an outfit preview. Creation starts a level-1 Citizen using the
 existing starter loadout. Class choice still unlocks at level 5. There is no
 character deletion or automatic reset. Guest play stays temporary and does not
 use persistent slots.
@@ -46,7 +47,8 @@ It does not return save JSON, inventories or tokens. Empty slots are represented
 explicitly. Roster and save RPCs are service-role-only; clients cannot choose a
 user ID to access another account. Responses are not cached.
 
-The game join includes `characterSlot` and optional `characterName`. The server
+The game join includes `characterSlot`, optional `characterName`, and a required
+`characterSex` for new characters. The server
 validates the slot/name, verifies the token, and claims the selected row. SQL
 also enforces slot bounds, uniqueness and lease ownership. Repeated creation
 requests do not replace existing progress. Legacy joins omitting a slot remain

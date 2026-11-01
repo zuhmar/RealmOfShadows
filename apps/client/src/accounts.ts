@@ -29,7 +29,7 @@ export interface AccountUI{
 export function setupAccounts(start:(mode:PlayMode)=>Promise<void>,leave:()=>Promise<void>):AccountUI{
  const dialog=document.querySelector<HTMLDialogElement>('#login-dialog')!,form=document.querySelector<HTMLFormElement>('#account-form')!,feedback=document.querySelector<HTMLElement>('#account-feedback')!,signout=document.querySelector<HTMLButtonElement>('#sign-out')!,guest=document.querySelector<HTMLButtonElement>('#play-guest')!,retry=document.querySelector<HTMLButtonElement>('#retry-login')!;
  let current:Session|null=null,busy=false,connecting=false,selected:PlayMode|null=null,character:{slot:number;name?:string;sex?:'male'|'female'}|undefined;
- const characters=new CharacterSelect(async(slot,name,sex)=>{character={slot,name,sex};selected='account';characters.close();show();await start('account');},()=>{characters.close();selected=null;character=undefined;show();render();});
+ const characters=new CharacterSelect(async(slot,name,sex)=>{character={slot,name,sex};selected='account';await start('account');},()=>{characters.close();selected=null;character=undefined;show();render();});
  dialog.dataset.accountsUnavailable=String(!supabase);
  const message=(text:string)=>feedback.textContent=text||(!supabase?configurationMessage:'');
  const render=()=>{
