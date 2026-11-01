@@ -20,9 +20,12 @@ export const woodsRidges=[
 ] as const;
 export type WoodsRidge=typeof woodsRidges[number];
 export function ridgeCells(ridge:WoodsRidge){const cells=new Set<string>();for(const p of ridge.parts)for(let y=p.y;y<p.y+p.h;y++)for(let x=p.x;x<p.x+p.w;x++)cells.add(`${x},${y}`);return cells;}
-/** Additional surface encounters along the new trails. */
+/** Small hunting pockets separated by quiet stretches on the exploration loops.
+ * IDs stay stable; three existing boars now guard the bear's outer approach.
+ * The arena entrance and the quiet overlook remain free of spawn points. */
+export const bearApproachGuards=[[37,43],[46,44],[52,43]] as const;
 export const woodsExpansionSpawns=[
- ...[[69,23],[78,24],[87,24],[88,32],[77,34],[70,38]].map(([x,y],i)=>({id:`east-wolf-${i+1}`,kind:'wolf' as const,x:x+.5,y:y+.5})),
- ...[[13,51],[13,59],[13,65],[25,65],[39,66],[49,61]].map(([x,y],i)=>({id:`south-spider-${i+1}`,kind:'spider' as const,x:x+.5,y:y+.5})),
- ...[[63,46],[75,44],[86,46],[89,55],[87,64],[56,64]].map(([x,y],i)=>({id:`wild-boar-${i+1}`,kind:'boar' as const,x:x+.5,y:y+.5})),
+ ...[[68,24],[72,24],[84,24],[88,27],[77,34],[70,38]].map(([x,y],i)=>({id:`east-wolf-${i+1}`,kind:'wolf' as const,x:x+.5,y:y+.5})),
+ ...[[13,49],[14,53],[13,62],[17,65],[39,66],[49,61]].map(([x,y],i)=>({id:`south-spider-${i+1}`,kind:'spider' as const,x:x+.5,y:y+.5})),
+ ...[...bearApproachGuards,[75,44],[80,45],[87,64]].map(([x,y],i)=>({id:`wild-boar-${i+1}`,kind:'boar' as const,x:x+.5,y:y+.5})),
 ];

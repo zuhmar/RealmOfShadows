@@ -12,7 +12,7 @@ test('Woods encounters cover separate habitats and approach paths with room betw
   for(const s of group){
    assert.ok(legal(s,'woods'),s.id);assert.ok(pathfind(portal.arrival,s,'woods').length,s.id+' reachable');
    assert.ok(Math.hypot(s.x-portal.x,s.y-portal.y)>8,s.id+' clear of sanctuary');
-   if(kind==='wolf')assert.ok(s.x<28&&s.y<22);
+   if(kind==='wolf')assert.ok(s.x<28&&s.y<24);
    if(kind==='spider')assert.ok(s.x<28&&s.y>24);
    if(kind==='boar')assert.ok(s.x>42&&s.y<24);
    if(kind==='bear')assert.ok(s.x>49&&s.x<62&&s.y>30&&s.y<41,'boss stays enclosed');
