@@ -17,6 +17,14 @@ function crystal(c:CanvasRenderingContext2D,x:number,y:number,height:number,teal
  polygon(c,[[x,y-height],[x,y],[x-2,y],[x-3,y-height+4]],light);polygon(c,[[x,y-height],[x+3,y-height+4],[x+2,y],[x,y]],dark);
  c.strokeStyle=light;c.lineWidth=.6;c.beginPath();c.moveTo(x,y-height+1);c.lineTo(x+2,y-height+4);c.stroke();
 }
+/** A broken stone lip keeps the upper floor edge readable when its face is hidden. */
+function paintTopRim(c:CanvasRenderingContext2D,side:'north'|'east'|'west'){
+ const at=(t:number,d:number):readonly[number,number]=>side==='north'?[t,d]:side==='west'?[d,t]:[32-d,t];
+ const line=[[1,5],[6,4],[13,6],[20,4],[26,5],[31,5]] as const;
+ polygon(c,[at(0,0),at(32,0),...[...line].reverse().map(([t,d])=>at(t,d))],'#534064');
+ c.strokeStyle='#c1a5d4';c.lineWidth=1;c.beginPath();line.forEach(([t,d],i)=>{const p=at(t,d);i?c.lineTo(...p):c.moveTo(...p)});c.stroke();
+ c.strokeStyle='#291d3d';c.lineWidth=1.4;c.beginPath();c.moveTo(...at(1,1.4));c.lineTo(...at(31,1.4));c.stroke();
+}
 /** All faces, bevels and crystals stay inside blocked native 32px cells. */
 export function paintCavernWalls(ctx:CanvasRenderingContext2D,cells:number[][],atlas?:CanvasImageSource){
 
@@ -47,6 +55,7 @@ export function paintCavernWalls(ctx:CanvasRenderingContext2D,cells:number[][],a
  for(let y=0;y<cells.length;y++)for(let x=0;x<cells[y].length;x++){
   const edges=caveWallEdges(cells,x,y);if(!edges)continue;
   ctx.save();ctx.translate(x*32,y*32);ctx.beginPath();ctx.rect(0,0,32,32);ctx.clip();
+  if(edges.north){paintTopRim(ctx,'north');if(edges.west)paintTopRim(ctx,'west');if(edges.east)paintTopRim(ctx,'east');}
   if(edges.south){polygon(ctx,[[0,0],[32,0],[32,3],[25,5],[17,3],[9,5],[0,3]],'#9681ad');}
   ctx.strokeStyle='#d1b3ea66';ctx.lineWidth=1;ctx.beginPath();if(edges.north){ctx.moveTo(0,.5);ctx.lineTo(32,.5)}if(edges.west){ctx.moveTo(.5,0);ctx.lineTo(.5,32)}ctx.stroke();
   ctx.strokeStyle='#1a102e';ctx.lineWidth=1.4;ctx.beginPath();if(edges.south){ctx.moveTo(0,31);ctx.lineTo(32,31)}if(edges.east){ctx.moveTo(31,0);ctx.lineTo(31,32)}ctx.stroke();
