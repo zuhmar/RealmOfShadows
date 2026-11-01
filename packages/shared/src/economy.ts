@@ -64,7 +64,7 @@ export class Economy{
  const progress=profile.quests[q.id];
  if(kind==='quest-accept'){
  if(progress)return 'Quest already accepted.';
- if(q.storyRequires?.some(id=>!profile.quests[id]?.claimed))return 'Complete the previous story chapter before beginning this one.';
+ if(q.storyRequires?.some(id=>!profile.quests[id]?.claimed))return q.type==='side'?'Complete and claim the previous side quest before beginning this one.':'Complete the previous story chapter before beginning this one.';
  if(q.classRequired&&profile.classId==='citizen')return 'Choose Knight, Archer, Mage or Rogue before continuing your class journey.';
  profile.quests[q.id]={progress:q.objectives.map(()=>0),claimed:false};recordQuestFacts(profile);return `Quest accepted: ${q.name}.`;
  }

@@ -15,7 +15,7 @@ export function questCard(q:QuestDefinition,bag:QuestBag,position:QuestLocation,
  else{
   const button=document.createElement('button');button.type='button';button.dataset.questAction=p?'claim':'accept';
   const locked=!!q.requires&&!journal[q.requires]?.claimed,chapterLocked=!p&&q.storyRequires?.some(id=>!journal[id]?.claimed),classLocked=!p&&q.classRequired&&bag.classId==='citizen',talk=!!p&&!done&&q.objectives.some(o=>o.event==='talk'&&o.target===npc.id)&&atStoryNpc(position,npc.id);
-  button.textContent=!q.playable?'Coming with this island':locked||chapterLocked?'Finish the previous story chapter':bag.level<q.level?`Requires level ${q.level}`:classLocked?'Choose your class first':!near?`Visit ${npc.name}${q.island==='elderwood'?'':' or Mara'}`:talk?'Continue conversation':p?done?'Claim reward':'In progress':'Accept quest';
+  button.textContent=!q.playable?'Coming with this island':locked||chapterLocked?q.type==='side'?'Finish the previous side quest':'Finish the previous story chapter':bag.level<q.level?`Requires level ${q.level}`:classLocked?'Choose your class first':!near?`Visit ${npc.name}${q.island==='elderwood'?'':' or Mara'}`:talk?'Continue conversation':p?done?'Claim reward':'In progress':'Accept quest';
   button.disabled=!q.playable||!!locked||!!chapterLocked||bag.level<q.level||!!classLocked||!near||!!p&&!done&&!talk;
   button.addEventListener('click',()=>action({kind:talk?'quest-talk':p?'quest-claim':'quest-accept',item:talk?npc.id:q.id}));card.append(button);
  }

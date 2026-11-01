@@ -36,6 +36,43 @@ export const quests:QuestDefinition[]=[
   ];
  }),
 ];
+// Keep the previous goals solely to migrate already-saved journals safely.
+const legacyQuestGoals=new Map(quests.map(q=>[q.id,q.objectives.map(o=>o.count)]));
+const countedMonster=(id:string,count:number)=>count===1?names[id]:names[id].endsWith('Wolf')?names[id].replace(/Wolf$/,'Wolves'):/ch$/.test(names[id])?names[id]+'es':names[id]+'s';
+for(const [index,[island,name,,first,second]] of islands.entries()){
+ const find=(suffix:string)=>quests.find(q=>q.id===`${island}-${suffix}`)!;
+ const opener=find('main-1'),trial=find('main-2'),hunt=find('side-1'),identify=find('side-2'),supplies=find('side-3');
+ opener.objectives[0].count=6+index*4;opener.objectives[1].count=4+index*2;
+ for(const o of opener.objectives)o.label=`Defeat ${o.count} ${countedMonster(o.target,o.count)}`;
+ const guard=island==='woods'?'boar':second,guards=3+index*5;
+ trial.objectives.push({event:'kill',target:guard,count:guards,label:`Defeat ${guards} ${countedMonster(guard,guards)} on the boss approach`});
+ trial.description+=` Clear ${guards} ${countedMonster(guard,guards)} along the approach as well as the boss. Both objectives count after accepting this trial.`;
+ trial.accept=trial.description;
+ hunt.objectives[0].count=5+index*3;hunt.objectives[0].label=`Defeat ${hunt.objectives[0].count} ${countedMonster(hunt.objectives[0].target,hunt.objectives[0].count)}`;
+ identify.storyRequires=[hunt.id];identify.objectives[0].count=2+index;
+ identify.objectives[0].label=`Identify ${2+index} ${identify.objectives[0].target} items`;
+ identify.description=`After securing the road, identify ${2+index} ${identify.objectives[0].target} equipment pieces found in ${name}. Keep every item you identify.`;
+ supplies.storyRequires=[identify.id];supplies.objectives[0].count=16+index*8;
+ supplies.objectives[0].label=`Collect ${16+index*8} monster loot bundles`;
+ supplies.description=`After examining your equipment, undertake a longer expedition in ${name}. Collect ${16+index*8} monster loot bundles after accepting. Keep all recovered supplies.`;
+ identify.gold=35*(index+1);identify.xp=100*(index+1);supplies.gold=50*(index+1);supplies.xp=140*(index+1);
+ if(index){opener.gold+=10*index;opener.xp=Math.round(opener.xp*(1+index*.25));trial.gold+=20*index;trial.xp=Math.round(trial.xp*(1+index*.35));}
+}
+const townGather=quests.find(q=>q.id==='elderwood-side-2')!,townCraft=quests.find(q=>q.id==='elderwood-side-3')!;
+townGather.storyRequires=['elderwood-side-1'];townCraft.storyRequires=[townGather.id];
+townCraft.objectives[0].count=2;townCraft.objectives[0].label='Craft two recipes';townCraft.description='After practicing gathering, craft any recipe twice. Visit the Crafting Hall or public workbench. Keep everything you make.';townCraft.gold=30;townCraft.xp=80;
+/** Claimed legacy quests stay completed; active quests keep credited work, with zero added for new goals. */
+export function migrateQuestJournal(value:unknown):unknown{
+ if(!value||typeof value!=='object'||Array.isArray(value))return value;
+ const journal=structuredClone(value) as QuestJournal;
+ for(const [id,p] of Object.entries(journal)){
+  const old=legacyQuestGoals.get(id),q=quests.find(q=>q.id===id);
+  if(!old||!q||!p||typeof p!=='object'||Array.isArray(p)||Object.keys(p).sort().join(',')!=='claimed,progress'||typeof p.claimed!=='boolean'||!Array.isArray(p.progress)||p.progress.length!==old.length||p.progress.some((v,i)=>!Number.isSafeInteger(v)||v<0||v>old[i]))continue;
+  if(p.claimed){if(p.progress.every((v,i)=>v===old[i]))p.progress=q.objectives.map(o=>o.count);}
+  else if(q.objectives.length>old.length)p.progress.push(...q.objectives.slice(old.length).map(()=>0));
+ }
+ return journal;
+}
 export const questById=(id:unknown)=>typeof id==='string'?quests.find(q=>q.id===id):undefined;
 export const questComplete=(q:QuestDefinition,p:QuestProgress)=>q.objectives.every((o,i)=>p.progress[i]>=o.count);
 export const questContact=(q:QuestDefinition,classId:ClassId)=>storyNpc(q.npc==='class-mentor'?classPath(classId)?.mentor??'rowan':q.npc)!;
