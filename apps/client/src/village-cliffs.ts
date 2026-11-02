@@ -2,9 +2,11 @@ import {paintCliffStudy} from './cliff-study';
 import {paintCliffContour,paintCliffTile} from './cliff-tiles';
 import type Phaser from 'phaser';
 import {gridMap,elderwoodTown,elderwoodSize,elderwoodRimStairs,elderwoodStairTile,onElderwoodRim,onElderwoodLand,onElderwoodLowland,elderwoodCliffDistance,stairsFor} from '@realm/game-data';
-/** Outdoor upper surfaces, including the short paved recesses through the cliff band. */
+export {villageCliffFace} from './village-cliff-facing';
+import {villageCliffFace} from './village-cliff-facing';
+/** Outdoor upper surfaces, including hidden rear/side slopes and paved stair recesses. */
 export function villageCliffSurface(x:number,y:number,cells=gridMap('elderwood-upper').cells){
- return onElderwoodRim(x,y)||onElderwoodLand(x,y)&&!onElderwoodLowland(x,y)&&cells[y]?.[x]===2;
+ return onElderwoodRim(x,y)||onElderwoodLand(x,y)&&!onElderwoodLowland(x,y)&&(cells[y]?.[x]===2||elderwoodCliffDistance(x,y)<=2&&!villageCliffFace(x,y));
 }
 /** Rounded contact profiles remain inside each native tile; stone scale is unchanged. */
 function paintVillageFace(c:CanvasRenderingContext2D,atlas:CanvasImageSource,x:number,y:number,facing:'north'|'south'|'east'|'west',section:'top'|'bottom',foot:boolean,water=false){
@@ -26,11 +28,10 @@ export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImag
    else if(onElderwoodLand(x,y-2))paintVillageFace(ctx,atlas,x,y,'south','bottom',true,true);
    continue;
   }
-  if(villageCliffSurface(x,y,upper)){ctx.drawImage(atlas,upper[y][x]*36+2,2,32,32,x*32,y*32,32,32);paintVillageOuterRim(ctx,x,y);continue;}
+  if(villageCliffSurface(x,y,upper)){ctx.drawImage(atlas,(upper[y][x]===2?2:0)*36+2,2,32,32,x*32,y*32,32,32);paintVillageOuterRim(ctx,x,y);continue;}
   const distance=elderwoodCliffDistance(x,y);if(!distance||distance>2)continue;
-  let best=Infinity,dx=0,dy=0;for(let yy=-2;yy<=2;yy++)for(let xx=-2;xx<=2;xx++){const score=Math.max(Math.abs(xx),Math.abs(yy))*10+Math.abs(xx)+Math.abs(yy);if(score<best&&onElderwoodLowland(x+xx,y+yy)){best=score;dx=xx;dy=yy;}}
-  const facing=Math.abs(dx)>Math.abs(dy)?dx>0?'east':'west':dy>0?'south':'north',section=facing==='north'?distance===1?'top':'bottom':distance===2?'top':'bottom';
-  paintVillageFace(ctx,atlas,x,y,facing,section,distance===1);
+  const section=villageCliffFace(x,y);
+  if(section)paintVillageFace(ctx,atlas,x,y,'south',section,section==='bottom');
  }
  paintCliffStudy(ctx,atlas,upperFloor);
 }
