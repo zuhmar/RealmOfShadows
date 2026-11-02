@@ -8,7 +8,7 @@ import {BotUI} from './bot-ui';
 import {JourneyUI} from './journey-ui';
 import {StoryDialog,drawStoryNpcs} from './story-npcs';
 import {HousingUI,drawHousingWorld} from './housing-ui';
-import {outsideVillageCenter,housingVisuals,houseAt,houseFloorIndex,isHousingFloor,playerHouses,houseById,housingRegions,nearHouseDoor,type PublicHouse} from '@realm/game-data';
+import {outsideVillageCenter,housingVisuals,houseAt,houseFloorIndex,isHousingFloor,playerHouses,houseById,houseBaseRegion,housingRegions,nearHouseDoor,type PublicHouse} from '@realm/game-data';
 import {drawVillageCliffStairs} from './village-cliffs';
 import {drawVillagePortal} from './village-portal';
 import {drawRaisedFloor} from './stacked-floors';
@@ -412,7 +412,7 @@ class Elderwood extends Phaser.Scene {
  this.avatar.setPosition(this.local.x*64,this.local.y*64);this.cameras.main.centerOn(this.avatar.x,this.avatar.y);notice(isLowerFloor(region)?`${regions[region].name}. Click the stairs to return to the upper floor.`:`Arrived in ${regions[region].name}.`);
  }
  tree(x:number,y:number){this.add.image(x,y,'elderwood-oak').setOrigin(.5,1).setDisplaySize(112,112).setDepth(y);}
- occupied(){const peers:any[]=[];this.room?.state?.players?.forEach((p:any,id:string)=>{if(id!==this.room?.sessionId)peers.push(p);});const result=occupiedCells(this.preview?[...this.sim.wolves.values()]:[...(this.room?.state?.wolves?.values()??[]),...peers],this.region);for(const cell of closedVillageDoors(this.doors,this.region))result.add(cell);if(this.region===housingRegions[0])for(const h of playerHouses)if(!this.bag?.houses?.find(s=>s.id===h.id)?.owned)result.add(`${Math.floor(h.door.x)},${Math.floor(h.door.y)}`);return result;}
+ occupied(){const peers:any[]=[];this.room?.state?.players?.forEach((p:any,id:string)=>{if(id!==this.room?.sessionId)peers.push(p);});const result=occupiedCells(this.preview?[...this.sim.wolves.values()]:[...(this.room?.state?.wolves?.values()??[]),...peers],this.region);for(const cell of closedVillageDoors(this.doors,this.region))result.add(cell);for(const h of playerHouses)if(this.region===houseBaseRegion(h)&&!this.bag?.houses?.find(s=>s.id===h.id)?.owned)result.add(`${Math.floor(h.door.x)},${Math.floor(h.door.y)}`);return result;}
  makeAvatar(color:number,label:string,player=true){const shadow=this.add.graphics();shadow.fillStyle(0x102823,.3);shadow.fillEllipse(0,0,30,13);const text=this.add.text(0,-94,label,{fontFamily:'sans-serif',fontSize:'12px',color:'#fff5d7',backgroundColor:'#203b36'}).setOrigin(.5);if(player){const skin=new SkinAvatar(this);skin.pose({skin:'citizen',wings:'none',aura:'none'},'down',false,0);return this.add.container(0,0,[shadow,skin,text]).setData('skinAvatar',skin).setData('sprite',skin.sprite);}const sprite=this.add.sprite(0,0,'citizen-down','frame-0').setOrigin(.5,1).setScale(characterStyle.scale);sprite.play('idle-down');return this.add.container(0,0,[shadow,sprite,text]).setData('sprite',sprite);}
  enterWorld(){this.entryReady=true;this.input.keyboard!.enabled=true;this.input.keyboard!.resetKeys();this.accounts?.entered();}
  startPreview(message:string){this.doors.clear();this.enterWorld();this.online=false;this.preview=true;this.pending=[];document.querySelector('#connection')!.textContent='Local preview · No multiplayer';notice(message);}

@@ -1,5 +1,5 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
-import {gridMap,gridCrossesWall,playerHouses,elderwoodRimStairs,elderwoodStairTile,neighborhoodPlaces} from '@realm/game-data';
+import {gridMap,gridCrossesWall,cliffPlayerHouses as playerHouses,elderwoodRimStairs,elderwoodStairTile,neighborhoodPlaces} from '@realm/game-data';
 import {legal,pathfind} from '@realm/shared';
 test('compact housing lanes connect all twenty doors and the new public spaces without crossing grass',()=>{
  const region='elderwood-upper',m=gridMap(region),start=elderwoodStairTile(elderwoodRimStairs[0]),seen=new Set<string>(),queue=[[Math.floor(start.x),Math.floor(start.y)]];

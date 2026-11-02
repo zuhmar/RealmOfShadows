@@ -1,33 +1,36 @@
 import {paintCliffStudy} from './cliff-study';
 import {paintCliffContour,paintCliffTile} from './cliff-tiles';
 import type Phaser from 'phaser';
-import {gridMap,elderwoodTown,elderwoodSize,elderwoodRimStairs,elderwoodStairTile,onElderwoodRim,onElderwoodLand,stairsFor} from '@realm/game-data';
+import {gridMap,elderwoodTown,elderwoodSize,elderwoodRimStairs,elderwoodStairTile,onElderwoodRim,onElderwoodLand,onElderwoodLowland,elderwoodCliffDistance,stairsFor} from '@realm/game-data';
 /** Outdoor upper surfaces, including the short paved recesses through the cliff band. */
 export function villageCliffSurface(x:number,y:number,cells=gridMap('elderwood-upper').cells){
- if(onElderwoodRim(x,y))return true;
- const lx=x-elderwoodTown.x,ly=y-elderwoodTown.y;
- const band=lx>=3&&lx<elderwoodTown.width-3&&ly>=3&&ly<elderwoodTown.height-3&&(lx<5||lx>=elderwoodTown.width-5||ly<5||ly>=elderwoodTown.height-5);
- return band&&cells[y]?.[x]===2;
+ return onElderwoodRim(x,y)||onElderwoodLand(x,y)&&!onElderwoodLowland(x,y)&&cells[y]?.[x]===2;
 }
-/** A two-tile rock band assembled from native faces, edges and four corner parts. */
+/** Rounded contact profiles remain inside each native tile; stone scale is unchanged. */
+function paintVillageFace(c:CanvasRenderingContext2D,atlas:CanvasImageSource,x:number,y:number,facing:'north'|'south'|'east'|'west',section:'top'|'bottom',foot:boolean,water=false){
+ c.save();c.translate(x*32,y*32);
+ if(water){c.fillStyle='#172e35';c.fillRect(0,0,32,32);}else c.drawImage(atlas,2,2,32,32,0,0,32,32);
+ const at=(t:number,d:number):[number,number]=>facing==='south'?[t,d]:facing==='north'?[t,32-d]:facing==='east'?[d,t]:[32-d,t];
+ c.save();if(foot){c.beginPath();c.moveTo(...at(0,0));c.lineTo(...at(32,0));c.lineTo(...at(32,27));c.quadraticCurveTo(...at(28,32),...at(23,29));c.lineTo(...at(20,30));c.quadraticCurveTo(...at(15,32),...at(11,29));c.lineTo(...at(8,30));c.quadraticCurveTo(...at(3,31),...at(0,27));c.closePath();c.clip();}
+ paintCliffTile(c,0,0,section==='top'?'face-top':'face-bottom',true,x+y*3,facing,section,false);c.restore();
+ if(foot){c.strokeStyle='#263c3199';c.lineWidth=1.3;c.beginPath();c.moveTo(...at(0,27));c.quadraticCurveTo(...at(3,31),...at(8,30));c.lineTo(...at(11,29));c.quadraticCurveTo(...at(15,32),...at(20,30));c.lineTo(...at(23,29));c.quadraticCurveTo(...at(28,32),...at(32,27));c.stroke();}
+ c.restore();
+}
+/** The cliff and collision contours share the same scalloped village footprint. */
 export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,upperFloor=false){
- const{width:W,height:H}=elderwoodSize;const T=elderwoodTown,upper=gridMap('elderwood-upper').cells;
+ const{width:W,height:H}=elderwoodSize,upper=gridMap('elderwood-upper').cells;
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
- if(!onElderwoodLand(x,y)){
-  ctx.fillStyle='#172e35';ctx.fillRect(x*32,y*32,32,32);
-  // Two native face rows descend from each exposed southern ledge, including inlet corners.
-  if(onElderwoodLand(x,y-1))paintCliffTile(ctx,x*32,y*32,'face-top',true,x,'south','top',false);
-  else if(onElderwoodLand(x,y-2))paintCliffTile(ctx,x*32,y*32,'face-bottom',true,x,'south','bottom',false);
-  continue;
- }
- if(villageCliffSurface(x,y,upper)){ctx.drawImage(atlas,upper[y][x]*36+2,2,32,32,x*32,y*32,32,32);paintVillageOuterRim(ctx,x,y);continue;}
- const lx=x-T.x,ly=y-T.y;
- if(lx>=3&&lx<T.width-3&&ly>=3&&ly<T.height-3&&(lx<5||lx>=T.width-5||ly<5||ly>=T.height-5)){
- const north=ly<5,south=ly>=T.height-5,west=lx<5,east=lx>=T.width-5;
- const section=north?(ly===3?'top':'bottom'):south?(ly===T.height-5?'top':'bottom'):undefined;
- const cornerWest=west&&lx===3,cornerEast=east&&lx===T.width-4;
- const part=north&&cornerWest?'nw':north&&cornerEast?'ne':south&&cornerWest?'sw':south&&cornerEast?'se':section==='top'?'face-top':section==='bottom'?'face-bottom':'face-middle';
- paintCliffTile(ctx,x*32,y*32,part,true,x,north?'south':south?'north':west?'east':'west',section,false);}
+  if(!onElderwoodLand(x,y)){
+   ctx.fillStyle='#172e35';ctx.fillRect(x*32,y*32,32,32);
+   if(onElderwoodLand(x,y-1))paintVillageFace(ctx,atlas,x,y,'south','top',false,true);
+   else if(onElderwoodLand(x,y-2))paintVillageFace(ctx,atlas,x,y,'south','bottom',true,true);
+   continue;
+  }
+  if(villageCliffSurface(x,y,upper)){ctx.drawImage(atlas,upper[y][x]*36+2,2,32,32,x*32,y*32,32,32);paintVillageOuterRim(ctx,x,y);continue;}
+  const distance=elderwoodCliffDistance(x,y);if(!distance||distance>2)continue;
+  let best=Infinity,dx=0,dy=0;for(let yy=-2;yy<=2;yy++)for(let xx=-2;xx<=2;xx++){const score=Math.max(Math.abs(xx),Math.abs(yy))*10+Math.abs(xx)+Math.abs(yy);if(score<best&&onElderwoodLowland(x+xx,y+yy)){best=score;dx=xx;dy=yy;}}
+  const facing=Math.abs(dx)>Math.abs(dy)?dx>0?'east':'west':dy>0?'south':'north',section=facing==='north'?distance===1?'top':'bottom':distance===2?'top':'bottom';
+  paintVillageFace(ctx,atlas,x,y,facing,section,distance===1);
  }
  paintCliffStudy(ctx,atlas,upperFloor);
 }

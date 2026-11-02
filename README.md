@@ -4,6 +4,8 @@ A multiplayer fantasy RPG with accounts, saved progression, equipment, island tr
 
 Players can form four-player [parties with shared rewards and world/party chat](docs/parties-and-chat.md) through the Party button in the persistent chat panel below the dock.
 
+Elderwood has [thirty player homes, a shared Class Hall and reshaped cliffs](docs/elderwood-residential-update.md).
+
 The village [Depot](docs/depot.md) is a visible walk-in tiled building with private, saved item storage.
 
 Players use [reference-based outfits with wearable wings and auras](docs/skins-and-cosmetics.md), chosen in the profile’s Wardrobe.

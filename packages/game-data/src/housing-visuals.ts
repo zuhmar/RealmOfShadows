@@ -1,13 +1,13 @@
 import {selectWindowPanels,type WindowAnchor,type WindowSide} from './building-windows';
 import {onElderwoodRim,elderwoodTown} from './elderwood-layout';
-import {houseCells,houseFloorIndex,playerHouses} from './housing';
+import {houseCells,houseFloorIndex,houseFloor,playerHouses} from './housing';
 import {mapObject} from './island-layout';
 import type {BuildingVisual} from './building-visuals';
 /** One-cell panels follow the exact union boundary, including recessed wings. */
 export function housingVisuals(region:string,roofs=true):BuildingVisual[]{
  const floor=houseFloorIndex(region);if(floor<0)return[];const out:BuildingVisual[]=[],height=1.25,pad=.1875;
  const put=(key:string,x:number,y:number,w:number,h:number,footY:number,id:string,upper=false,roof=false,windowAt?:WindowAnchor)=>out.push({...mapObject(key,x*48,y*48,w*48,h*48),footY:footY*48,houseFor:id,houseWallSide:key.startsWith('house-wall-')?key.split('-')[2]:undefined,houseUpper:upper,houseRoof:roof,...(windowAt?{windowAt}:{})});
- for(const h of playerHouses){
+ for(const h of playerHouses){if(houseFloor(h,region)!==floor)continue;
   for(let level=floor;level<h.floors.length;level++){
    if(level>floor&&!roofs)break;const cells=houseCells(h,level),above=houseCells(h,level+1),lift=(level-floor)*height,upper=level>floor;
    const candidates:Record<WindowSide,string[]>={n:[],s:[],w:[],e:[]};

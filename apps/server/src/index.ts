@@ -3,7 +3,7 @@ import type {SocialState} from '@realm/shared';
 import {CosmeticStore} from './cosmetic-store';
 import {SupabaseStore} from './persistence';
 import {earnedCosmetics,ownsCosmetics,accessibleCosmetics,migrateCosmetics,validCosmetics} from '@realm/game-data';
-import {playerHouses,emptyHouse,houseById,housingRegions,type HouseRecord} from '@realm/game-data';
+import {playerHouses,emptyHouse,houseById,houseBaseRegion,housingRegions,type HouseRecord} from '@realm/game-data';
 import {planCharacterService,planHousing,publicHouse} from '@realm/shared';
 import {createServer} from 'node:http';
 import {progressStore,SaveSession,type Identity} from './persistence';
@@ -26,7 +26,7 @@ class Elderwood extends Room<State>{
  houses=new Map<string,HouseRecord>(playerHouses.map(h=>[h.id,emptyHouse(h.id)]));housingReady=false;housingLoading?:Promise<void>;housingBusy=new Map<string,Promise<void>>();
  socialReceived=new Map<string,number>();socialSyncReceived=new Map<string,number>();
  houseReceived=new Map<string,number>();doorReceived=new Map<string,number>();
- occupied(region:RegionId,except?:Fighter){const cells=occupiedCells([...this.state.players.values(),...this.simulation.wolves.values()],region,except);for(const cell of closedVillageDoors(this.state.doors,region))cells.add(cell);if(region===housingRegions[0])for(const h of playerHouses)if(!this.houses.get(h.id)?.ownerId)cells.add(`${Math.floor(h.door.x)},${Math.floor(h.door.y)}`);return cells;}
+ occupied(region:RegionId,except?:Fighter){const cells=occupiedCells([...this.state.players.values(),...this.simulation.wolves.values()],region,except);for(const cell of closedVillageDoors(this.state.doors,region))cells.add(cell);for(const h of playerHouses)if(region===houseBaseRegion(h)&&!this.houses.get(h.id)?.ownerId)cells.add(`${Math.floor(h.door.x)},${Math.floor(h.door.y)}`);return cells;}
  async refreshHouses(){if(this.housingLoading)return this.housingLoading;if(!progressStore?.houses)return;this.housingLoading=(async()=>{try{const rows=await progressStore.houses!();for(const h of rows)if(houseById(h.id)){const old=this.houses.get(h.id);if(!old||h.revision>=old.revision)this.houses.set(h.id,h);}this.housingReady=playerHouses.every(h=>rows.some(r=>r.id===h.id));}catch{this.housingReady=false;}finally{this.housingLoading=undefined;}})();return this.housingLoading;}
  async houseAction(client:Client,raw:unknown){
   const id=client.sessionId;if(this.housingBusy.has(id)||this.saveFailed.has(id))return;

@@ -1,4 +1,4 @@
-import {playerHouses,houseCells} from './housing';
+import {cliffPlayerHouses as playerHouses,houseCells} from './housing';
 import {fenceMask} from './fences';
 import {mapObject,type IslandObject} from './island-layout';
 export interface GardenPlot{x:number;y:number;w:number;h:number;gate:{x:number;y:number};kind:'yard'|'court'}
@@ -6,8 +6,8 @@ export interface GardenPlot{x:number;y:number;w:number;h:number;gate:{x:number;y
 export const neighborhoodGardens:GardenPlot[]=[
  {x:35,y:25,w:10,h:4,gate:{x:39,y:25},kind:'court'},
  {x:58,y:70,w:10,h:6,gate:{x:58,y:73},kind:'court'},
- {x:24,y:38,w:5,h:8,gate:{x:24,y:42},kind:'court'},
- {x:76,y:54,w:4,h:8,gate:{x:79,y:58},kind:'court'},
+ {x:24,y:23,w:5,h:5,gate:{x:24,y:26},kind:'court'},
+ {x:76,y:74,w:4,h:4,gate:{x:79,y:76},kind:'court'},
  ...playerHouses.flatMap((h,i)=>i%3===1?[]:[{x:h.floors[0][0].x+9,y:h.floors[0][0].y+3,w:i%2?3:4,h:4,gate:{x:h.floors[0][0].x+10,y:h.floors[0][0].y+6},kind:'yard' as const}]),
 ];
 export function dressNeighborhood(cells:number[][],objects:IslandObject[],blocked:Set<string>){
@@ -32,5 +32,5 @@ export function dressNeighborhood(cells:number[][],objects:IslandObject[],blocke
  for(const[x,y]of [[30,35],[30,56],[35,30],[65,30],[73,38],[73,59],[38,65],[66,65]])if(free(x,y))prop('woods-boulder',x,y);
  for(const h of playerHouses){const x=Math.floor(h.door.x),y=Math.floor(h.door.y)+1;for(const dx of [-2,2])if(free(x+dx,y))prop('woods-flowers',x+dx,y);}
  // Courtyard approaches follow small bends rather than cutting through the housing drives.
- for(const points of [[[39,22],[39,24],[39,25]],[[52,73],[57,73],[58,73]],[[22,42],[24,42]],[[79,58],[82,58]]])for(let i=1;i<points.length;i++){let[x,y]=points[i-1];const[tx,ty]=points[i];while(x!==tx||y!==ty){if(!fences.has(`${x},${y}`)&&!homes.has(`${x},${y}`)&&!blocked.has(`${x},${y}`))cells[y][x]=2;x+=Math.sign(tx-x);y+=Math.sign(ty-y);}}
+ for(const points of [[[39,22],[39,24],[39,25]],[[52,73],[57,73],[58,73]],[[22,21],[22,26],[24,26]],[[85,76],[82,76],[79,76]]])for(let i=1;i<points.length;i++){let[x,y]=points[i-1];const[tx,ty]=points[i];while(x!==tx||y!==ty){if(!fences.has(`${x},${y}`)&&!homes.has(`${x},${y}`)&&!blocked.has(`${x},${y}`))cells[y][x]=2;x+=Math.sign(tx-x);y+=Math.sign(ty-y);}}
 }

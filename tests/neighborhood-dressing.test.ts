@@ -1,5 +1,5 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
-import {gridMap,buildingVisuals,connectedFenceVisuals,fenceMask,fenceDirections,neighborhoodGardens,playerHouses,elderwoodRimStairs,houseCells} from '@realm/game-data';import {pathfind,legal} from '@realm/shared';
+import {gridMap,buildingVisuals,connectedFenceVisuals,fenceMask,fenceDirections,neighborhoodGardens,cliffPlayerHouses as playerHouses,elderwoodRimStairs,houseCells} from '@realm/game-data';import {pathfind,legal} from '@realm/shared';
 test('every fence part connects reciprocally at native cell size, including the original garden',()=>{
  for(const region of ['elderwood','elderwood-upper']){const map=gridMap(region),parts=connectedFenceVisuals(map.objects),cells=new Set(parts.map(p=>`${p.x/48},${p.y/48}`));assert.ok(parts.length>12);
  for(const p of parts){const x=p.x/48,y=p.y/48,mask=Number(p.key.split('-').at(-1));assert.equal(mask,fenceMask(cells,x,y));assert.equal(p.w,48);assert.equal(p.h,48);assert.ok(map.blocked.has(`${x},${y}`));for(const[dx,dy,bit]of fenceDirections)assert.equal(!!(mask&bit),cells.has(`${x+dx},${y+dy}`));const png=readFileSync(new URL(`../assets/world/objects/${p.key}.png`,import.meta.url));assert.equal(png.readUInt32BE(16),32);assert.equal(png.readUInt32BE(20),32);}

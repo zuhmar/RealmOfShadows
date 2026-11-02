@@ -1,10 +1,10 @@
-import {playerHouses,houseCells} from './housing';
+import {cliffPlayerHouses as playerHouses,houseCells} from './housing';
 import {mapObject,type IslandObject} from './island-layout';
 export const neighborhoodPlaces=[
  {name:'North Well Court',x:55,y:25,w:7,h:4,entry:{x:57,y:24},approach:{x:57,y:22}},
- {name:'West Flower Walk',x:24,y:52,w:5,h:5,entry:{x:23,y:54},approach:{x:22,y:54}},
- {name:'South Picnic Green',x:40,y:69,w:7,h:4,entry:{x:43,y:73},approach:{x:51,y:73}},
- {name:'East Orchard',x:76,y:34,w:4,h:8,entry:{x:80,y:38},approach:{x:82,y:38}},
+ {name:'West Flower Walk',x:24,y:23,w:5,h:5,entry:{x:23,y:26},approach:{x:22,y:21}},
+ {name:'South Picnic Green',x:40,y:69,w:7,h:4,entry:{x:43,y:73},approach:{x:52,y:73}},
+ {name:'East Orchard',x:76,y:74,w:4,h:4,entry:{x:80,y:76},approach:{x:85,y:76}},
 ] as const;
 /** Purposeful public spaces and loose planting, with all formal routes reserved. */
 export function refineNeighborhood(cells:number[][],objects:IslandObject[],blocked:Set<string>){
@@ -29,9 +29,9 @@ export function refineNeighborhood(cells:number[][],objects:IslandObject[],block
  // Public well, quiet seats and a picnic table use the existing directional prop art.
  for(const[key,x,y,name]of [
   ['furn-well-down',58,26,'North Well Court'],['furn-bench-down',56,25,'Well court bench'],
-  ['furn-bench-right',24,53,'Flower walk bench'],['furn-planter-down',27,52,'Flower walk planter'],
+  ['furn-bench-right',27,24,'Flower walk bench'],['furn-planter-down',27,23,'Flower walk planter'],
   ['furn-table-down',42,70,'Picnic table'],['furn-bench-down',44,69,'Picnic bench'],
-  ['furn-bench-left',79,40,'Orchard bench'],
+  ['furn-bench-left',79,75,'Orchard bench'],
  ] as const){if(!homes.has(`${x},${y}`)&&!blocked.has(`${x},${y}`)&&!visual.has(`${x},${y}`)&&(cells[y]?.[x]===0||cells[y]?.[x]===2))prop(key,x,y,1,1,true,name);}
  const trees=[
   [14,16],[18,17],[34,14],[38,16],[51,15],[56,16],[69,15],[74,16],[86,16],

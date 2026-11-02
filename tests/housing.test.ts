@@ -1,5 +1,5 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {existsSync} from 'node:fs';
-import {elderwoodTown,playerHouses,houseCells,housingRegions,houseDisplayTiles,emptyHouse,houseStairs,housingVisuals,elderwoodRimStairs,gridMap,gridCrossesWall,type HouseRecord} from '@realm/game-data';
+import {elderwoodTown,cliffPlayerHouses as playerHouses,houseCells,housingRegions,houseDisplayTiles,emptyHouse,houseStairs,housingVisuals,elderwoodRimStairs,gridMap,gridCrossesWall,type HouseRecord} from '@realm/game-data';
 import {Economy,planHousing,publicHouse,pathfind,legal,newFighter} from '@realm/shared';
 const profile=()=>{const e=new Economy();e.join('p');const p=e.profiles.get('p')!;p.gold=4000;p.inventory=[{id:1,item:'potion',quantity:2}];return p;};
 test('twenty irregular cliff houses have connected floors, one door and reachable entrances',()=>{

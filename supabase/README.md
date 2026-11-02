@@ -108,3 +108,8 @@ For required male/female creation and the three $7.50 service tokens, run
 `migrations/202611010001_character_services.sql` after the cosmetic shop migration,
 then deploy Render and Vercel. See [character services](../docs/character-services.md).
 This production migration has not been applied from this workspace.
+
+For the ten new main-floor Elderwood homes, run
+`migrations/202611020001_ground_houses.sql` after the existing housing and character-slot migrations,
+then deploy Render and Vercel together. The migration is idempotent and preserves all current
+owners and displays. See [Elderwood residential update](../docs/elderwood-residential-update.md).

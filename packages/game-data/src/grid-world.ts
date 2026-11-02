@@ -1,7 +1,7 @@
 import {refineNeighborhood} from './neighborhood-life';
 import {dressNeighborhood} from './neighborhood-dressing';
-import {housingRegions,houseFloorIndex,playerHouses,houseCells} from './housing';
-import {elderwoodTown,elderwoodSize,elderwoodRimStairs,elderwoodStairTile,onElderwoodRim,onElderwoodLand} from './elderwood-layout';
+import {housingRegions,houseFloorIndex,houseFloor,cliffPlayerHouses,groundPlayerHouses,playerHouses,houseCells} from './housing';
+import {elderwoodTown,elderwoodSize,elderwoodRimStairs,elderwoodStairTile,onElderwoodRim,onElderwoodLand,onElderwoodLowland} from './elderwood-layout';
 import {validateGridEdits,applyPropEdits,type GridEdits} from './grid-editing';
 import {woodsCliffs,woodsSize,woodsRidges,ridgeCells,woodsExpansionSpawns} from './woods-cliffs';
 import {woodsLedge} from './elevation';
@@ -84,7 +84,7 @@ export function gridMap(region:string,authored=false):GridMap{
   for(const station of craftingStations)if('npc'in station){blocked.add(`${Math.floor(station.npc.x)},${Math.floor(station.npc.y)}`);objects.push(mapObject(station.bench.key,station.bench.x*48,station.bench.y*48,96,96));for(const [x,y]of station.bench.cells)blocked.add(`${x},${y}`);}
   prop('village-counter',bank.x+1,bank.y,2,2,2,1);prop('village-table',hall.x+1,hall.y,2,2,2,1);
   prop('elderwood-portal',24,26,1,1);
-  for(const [x,y]of [[12,6],[28,6],[6,14],[40,14],[6,25],[39,26],[15,30],[28,30]])prop('elderwood-oak',x,y,3,3,1,1,1);
+  for(const [x,y]of [[12,6],[28,6],[6,14],[40,14],[6,25],[35,24],[15,30],[28,30]])prop('elderwood-oak',x,y,3,3,1,1,1);
   for(const [x,y]of [[16,12],[31,12],[16,25],[31,25],[13,33],[33,33]])prop('elderwood-lamp',x,y,1,2,1,1);
   prop('town-well',12,16,2,2,2,1);prop('elderwood-bench',18,19,2,1,2,1);
   prop('elderwood-planter',18,23,1,1,1,1);prop('elderwood-planter',29,23,1,1,1,1);
@@ -198,22 +198,30 @@ export function gridMap(region:string,authored=false):GridMap{
   for(const o of objects){o.x+=elderwoodTown.x*48;o.y+=elderwoodTown.y*48;o.footY+=elderwoodTown.y*48;if(o.footprint){o.footprint.x+=elderwoodTown.x;o.footprint.y+=elderwoodTown.y;}}
   const rawBlocked=[...blocked];blocked.clear();for(const k of rawBlocked){const[x,y]=k.split(',').map(Number);blocked.add(`${x+elderwoodTown.x},${y+elderwoodTown.y}`);}
   const rawEdges=[...edges];edges.clear();for(const k of rawEdges){const[type,xy]=k.split(':'),[x,y]=xy.split(',').map(Number);edges.add(`${type}:${x+elderwoodTown.x},${y+elderwoodTown.y}`);}
+  if(region==='elderwood'){
+   for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if(onElderwoodLowland(x,y)&&cells[y][x]===5)rect(x,y,1,1,0);
+   const lane=(x1:number,y1:number,x2:number,y2:number)=>{let x=x1,y=y1;if(cells[y][x]!==3&&cells[y][x]!==4)rect(x,y,1,1,2);while(x!==x2||y!==y2){x+=Math.sign(x2-x);y+=Math.sign(y2-y);if(cells[y][x]!==3&&cells[y][x]!==4)rect(x,y,1,1,2);}};
+   lane(30,33,30,69);lane(72,33,72,69);lane(20,48,44,48);lane(60,48,82,48);lane(30,40,40,40);lane(68,40,72,40);lane(30,60,41,60);lane(68,63,72,63);lane(52,31,52,34);lane(52,61,52,65);
+   for(const h of groundPlayerHouses){lane(Math.floor(h.door.x),Math.floor(h.door.y)+1,h.side==='west'?30:72,Math.floor(h.door.y)+1);prop('woods-flowers',Math.floor(h.door.x)-2,Math.floor(h.door.y)+1,1,1);}
+  }
   if(region==='elderwood-upper'){
+   for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(!onElderwoodRim(x,y)&&cells[y][x]!==4)rect(x,y,1,1,5);
    for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++)if(onElderwoodRim(x,y))rect(x,y,1,1,0);
    // One-cell-wide stair recesses join the upper walk to the physical stair tile.
    for(const s of elderwoodRimStairs){const p=elderwoodStairTile(s);let x=Math.floor(s.top.x),y=Math.floor(s.top.y);const tx=Math.floor(p.x),ty=Math.floor(p.y);rect(x,y,1,1,2);while(x!==tx||y!==ty){x+=Math.sign(tx-x);y+=Math.sign(ty-y);rect(x,y,1,1,2);}}
    // Two-cell promenades and single-cell side lanes keep the housing streets compact.
    const lane=(points:readonly (readonly [number,number])[],width=1)=>{for(let i=1;i<points.length;i++){let[x,y]=points[i-1];const[tx,ty]=points[i];rect(x,y,width,width,2);while(x!==tx||y!==ty){x+=Math.sign(tx-x);y+=Math.sign(ty-y);rect(x,y,width,width,2);}}};
-   lane([[21,21],[82,21],[82,90],[21,90],[21,21]],2);
+   lane([[17,21],[85,21],[85,90],[17,90],[17,21]],1);
    lane([[5,21],[84,21]],2);lane([[5,90],[84,90]],2);
-   path([[52,30],[52,21]],2);path([[30,48],[21,48]],2);path([[73,48],[82,48]],2);path([[52,65],[52,90]],2);
-   for(const[i,h]of playerHouses.entries()){const x=Math.floor(h.door.x),y=Math.floor(h.door.y)+1,bend=i%2?2:-2;if(h.side==='north')lane([[x,y],[x,18],[x+bend,18],[x+bend,21]]);else if(h.side==='south')lane([[x,y],[x,88],[x+bend,88],[x+bend,90]]);else{const driveX=h.side==='west'?18:85,frontY=Math.max(y,...h.floors[0].map(r=>r.y+r.h));lane([[x,y],[x,frontY],[driveX,frontY],[driveX,frontY+(i%2?1:-1)],[h.side==='west'?21:82,frontY+(i%2?1:-1)]]);}}
+   for(const x of [21,39,57,75])lane([[x-3,90],[x-3,82],[x+3,82],[x+3,90]]);
+   lane([[52,28],[52,21]]);lane([[17,48],[17,21]]);lane([[85,48],[85,90]]);lane([[52,68],[52,90]]);
+   for(const[i,h]of cliffPlayerHouses.entries()){const x=Math.floor(h.door.x),y=Math.floor(h.door.y)+1,bend=i%2?2:-2;if(h.side==='north')lane([[x,y],[x,18],[x+bend,18],[x+bend,21]]);else if(h.side==='south')lane([[x,y],[x,88],[x+bend,88],[x+bend,90]]);else{const driveX=h.side==='west'?18:85,frontY=Math.max(y,...h.floors[0].map(r=>r.y+r.h));lane([[x,y],[x,frontY],[driveX,frontY],[driveX,frontY+(i%2?1:-1)],[h.side==='west'?17:85,frontY+(i%2?1:-1)]]);}}
   }
  }
  const homeFloor=houseFloorIndex(region);
  if(homeFloor>=0){
   // Housing sits on the existing expanded plateau; no terraces intrude into town.
-  for(const h of playerHouses){const floorCells=houseCells(h,homeFloor);for(const key of floorCells){const[x,y]=key.split(',').map(Number);rect(x,y,1,1,4);
+  for(const h of playerHouses){if(houseFloor(h,region)!==homeFloor)continue;const floorCells=houseCells(h,homeFloor);for(const key of floorCells){const[x,y]=key.split(',').map(Number);rect(x,y,1,1,4);
    for(const[dx,dy]of [[0,-1],[0,1],[-1,0],[1,0]])if(!floorCells.has(`${x+dx},${y+dy}`)){
     const door=homeFloor===0&&dy===1&&x===Math.floor(h.door.x)&&y===Math.floor(h.door.y);if(!door)edges.add(dx?`v:${x+(dx>0?1:0)},${y}`:`h:${x},${y+(dy>0?1:0)}`);
    }
