@@ -1,0 +1,290 @@
+[
+  {
+    "key": "elderwood-prop-chest-down",
+    "family": "chest",
+    "facing": "down",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 46,
+      "y": 53,
+      "w": 223,
+      "h": 224
+    },
+    "scale": 0.37446808510638296,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-chest-left",
+    "family": "chest",
+    "facing": "left",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 375,
+      "y": 42,
+      "w": 192,
+      "h": 235
+    },
+    "scale": 0.37446808510638296,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-chest-right",
+    "family": "chest",
+    "facing": "right",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 685,
+      "y": 43,
+      "w": 190,
+      "h": 235
+    },
+    "scale": 0.37446808510638296,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-chest-up",
+    "family": "chest",
+    "facing": "up",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 986,
+      "y": 53,
+      "w": 223,
+      "h": 225
+    },
+    "scale": 0.37446808510638296,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-bed-down",
+    "family": "bed",
+    "facing": "down",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 49,
+      "y": 338,
+      "w": 216,
+      "h": 273
+    },
+    "scale": 0.32234432234432236,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-bed-left",
+    "family": "bed",
+    "facing": "left",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 338,
+      "y": 344,
+      "w": 268,
+      "h": 243
+    },
+    "scale": 0.32234432234432236,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-bed-right",
+    "family": "bed",
+    "facing": "right",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 648,
+      "y": 344,
+      "w": 268,
+      "h": 243
+    },
+    "scale": 0.32234432234432236,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-bed-up",
+    "family": "bed",
+    "facing": "up",
+    "sourceFile": "masters/bed-up.png",
+    "source": {
+      "x": 202,
+      "y": 125,
+      "w": 789,
+      "h": 1052
+    },
+    "scale": 0.08365019011406843,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-bench-down",
+    "family": "bench",
+    "facing": "down",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 37,
+      "y": 674,
+      "w": 240,
+      "h": 216
+    },
+    "scale": 0.36666666666666664,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-bench-left",
+    "family": "bench",
+    "facing": "left",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 377,
+      "y": 652,
+      "w": 176,
+      "h": 240
+    },
+    "scale": 0.36666666666666664,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-bench-right",
+    "family": "bench",
+    "facing": "right",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 701,
+      "y": 652,
+      "w": 177,
+      "h": 240
+    },
+    "scale": 0.36666666666666664,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-bench-up",
+    "family": "bench",
+    "facing": "up",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 978,
+      "y": 676,
+      "w": 239,
+      "h": 213
+    },
+    "scale": 0.36666666666666664,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-tools-down",
+    "family": "tools",
+    "facing": "down",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 35,
+      "y": 957,
+      "w": 242,
+      "h": 260
+    },
+    "scale": 0.3188405797101449,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-tools-left",
+    "family": "tools",
+    "facing": "left",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 418,
+      "y": 942,
+      "w": 113,
+      "h": 275
+    },
+    "scale": 0.3188405797101449,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-tools-right",
+    "family": "tools",
+    "facing": "right",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 723,
+      "y": 942,
+      "w": 114,
+      "h": 276
+    },
+    "scale": 0.3188405797101449,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-tools-up",
+    "family": "tools",
+    "facing": "up",
+    "sourceFile": "masters/directional-props.png",
+    "source": {
+      "x": 977,
+      "y": 957,
+      "w": 242,
+      "h": 260
+    },
+    "scale": 0.3188405797101449,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  }
+]

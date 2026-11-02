@@ -125,7 +125,8 @@
     "test:inventory-wayfarer:browser": "node tests/browser-inventory-wayfarer.cjs",
     "art:wayfarer": "python3 scripts/encode-wayfarer-art.py",
     "test:tracker-icon:browser": "node tests/browser-tracker-icon.cjs",
-    "art:depot-view": "node scripts/build-depot-view.cjs"
+    "art:depot-view": "node scripts/build-depot-view.cjs",
+    "art:elderwood-props": "node scripts/prepare-elderwood-props.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

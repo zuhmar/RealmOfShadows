@@ -1,3 +1,4 @@
+import {elderwoodPropTexture} from './elderwood-prop-art';
 import {architectureView,projectedWall} from './architecture-view';
 import {selectWindowPanels,type WindowAnchor} from './building-windows';
 import {connectedFenceVisuals,isMapFence} from './fences';
@@ -27,7 +28,7 @@ export function buildingVisuals(region:string,objects:readonly IslandObject[],ro
  for(const object of objects){
   if(isMapFence(object.key))continue;
   if(buildings.length&&(/^(depot|village)-wall-/.test(object.key)||object.key==='town-window'))continue;
-  const pieces=modularFurniture(object);if(pieces){
+  const pieces=region.startsWith('elderwood')&&/^furn-bench-/.test(object.key)?undefined:modularFurniture(object);if(pieces){
    result.push(...pieces.map(p=>region.startsWith('elderwood')?{...p,key:p.key.replace('map-furniture-','house-depot-furniture-').replace(/^counter-connected-/,'house-depot-counter-connected-')}:p));continue;}
   const copy:BuildingVisual={...object};
   const native=(nativeSizes as Record<string,readonly number[]>)[object.key];
@@ -37,10 +38,11 @@ export function buildingVisuals(region:string,objects:readonly IslandObject[],ro
    const center=object.footprint?(object.footprint.x+object.footprint.width/2)*48:object.x+object.w/2;
    copy.x=center-w/2;copy.y=object.y+object.h-h;copy.w=w;copy.h=h;
   }
-  if(object.key==='furn-tools-down')copy.y-=48;
+  if(object.key==='furn-tools-down'&&!region.startsWith('elderwood'))copy.y-=48;
   const sign=buildings.find(b=>object.key===(b.id==='depot'?'depot-sign':b.id==='workshop'?'crafting-hall-sign':`village-sign-${b.id}`));
   if(sign){copy.x=(sign.x+(sign.width-3)/2)*48;copy.y=(sign.y+sign.height-1.9)*48;copy.w=3*48;copy.h=.9*48;copy.footY=(sign.y+sign.height+.12)*48;copy.signFor=sign.id;copy.x-=1.9*(depotView.storyShift/townView.wallHeight)*48;}
   if(isBuildingFloor(copy.key))copy.footY=-480;
+  const texture=elderwoodPropTexture(copy.key,region);if(texture!==copy.key){copy.sourceKey=object.key;copy.key=texture;}
   result.push(copy);
  }
  for(const b of buildings){

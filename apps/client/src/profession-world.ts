@@ -23,7 +23,7 @@ export function drawProfessionNodes(scene:Phaser.Scene,region:string,gather:(id:
  }
  scene.add.graphics().setDepth(2).setData('fishingCastRegion',region);
  if(region==='elderwood'){
- const x=craftingBench.x*64,y=craftingBench.y*64;scene.add.image(x,y,'depot-box').setDisplaySize(74,74).setOrigin(.5,1).setDepth(y);scene.add.text(x,y-80,'Crafting workbench',{fontSize:'12px',color:'#ffe1a8',backgroundColor:'#183b32'}).setOrigin(.5).setDepth(y+1);const zone=scene.add.zone(x,y-32,150,118).setData('workbench',true).setDepth(y+2).setInteractive({useHandCursor:true});zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===scene.game.canvas&&!p.rightButtonDown())workbench()});
+ const x=craftingBench.x*64,y=craftingBench.y*64;const table=scene.add.image(x,y,'house-depot-furniture-table-single').setDisplaySize(80,80).setOrigin(.5,1),tools=scene.add.image(-3,-49,'counter-tools-woodworking-down').setDisplaySize(46,46).setOrigin(.5,1);table.setPosition(0,0);scene.add.container(x,y,[table,tools]).setDepth(y).setData('publicWorkbenchArt',true);scene.add.text(x,y-80,'Crafting workbench',{fontSize:'12px',color:'#ffe1a8',backgroundColor:'#183b32'}).setOrigin(.5).setDepth(y+1);const zone=scene.add.zone(x,y-32,150,118).setData('workbench',true).setDepth(y+2).setInteractive({useHandCursor:true});zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===scene.game.canvas&&!p.rightButtonDown())workbench()});
  }
 }
 export function updateProfessionNodes(objects:Phaser.GameObjects.GameObject[],bag:{nodeReadyAt?:Record<string,number>;professions?:ProfessionXp;time:number;fishing?:{region:string;x:number;y:number;startedAt:number;endsAt:number}|null},actor?:{x:number;y:number}){

@@ -16,7 +16,7 @@ test('placed furniture has four purpose-drawn directional views with stable nati
 test('elevated furniture keeps uniform scale and its floor anchor, and wall runs leave doors open',()=>{
  for(const region of ['elderwood','elderwood-upper']){
   const map=gridMap(region),visuals=buildingVisuals(region,map.objects);
-  for(const object of map.objects.filter(o=>o.key.startsWith('furn-')&&!modularFurniture(o))){const visual=visuals.find(v=>v.key===object.key&&v.footY===object.footY&&Math.abs((v.x+v.w/2)-(object.x+object.w/2))<1e-6)!;assert.ok(visual,object.key);assert.equal(visual.w,visual.h,object.key+' cannot stretch one axis');if(object.key!=='furn-tools-down')assert.ok(Math.abs(visual.y+visual.h-object.y-object.h)<1e-6,object.key+' stays planted');}
+  for(const object of map.objects.filter(o=>o.key.startsWith('furn-')&&!modularFurniture(o))){const visual=visuals.find(v=>(v.key===object.key||v.sourceKey===object.key)&&v.footY===object.footY&&Math.abs((v.x+v.w/2)-(object.x+object.w/2))<1e-6)!;assert.ok(visual,object.key);assert.equal(visual.w,visual.h,object.key+' cannot stretch one axis');if(object.key!=='furn-tools-down')assert.ok(Math.abs(visual.y+visual.h-object.y-object.h)<1e-6,object.key+' stays planted');}
  }
  const visuals=buildingVisuals('elderwood',gridMap('elderwood').objects);
  for(const b of villageBuildings)for(let x=b.x+1;x<b.x+b.width-1;x++)for(const side of ['n','s']){const center=(x+.5)*48,count=visuals.filter(v=>v.wallFor===b.id&&!v.upperFor&&v.wallSide===side&&/^house-(depot-)?wall-/.test(v.key)&&center>v.x&&center<v.x+v.w).length;assert.equal(count,side==='s'&&x>=b.x+b.door&&x<b.x+b.door+b.doorWidth?0:1,b.id+' wall coverage');}

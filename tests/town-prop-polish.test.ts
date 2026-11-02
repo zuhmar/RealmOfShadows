@@ -25,7 +25,7 @@ test('all unoccupied floor cells in every Elderwood room remain connected',()=>{
 });
 test('side-facing furniture retains directional art and trees use a centered trunk footprint',()=>{
  for(const region of ['elderwood','elderwood-upper']){const map=gridMap(region),visuals=buildingVisuals(region,map.objects,false);
- for(const object of map.objects.filter(o=>/^furn-.*-(left|right|up)$/.test(o.key))){const visual=visuals.find(o=>o.key===object.key&&o.footY===object.footY);assert.ok(visual,object.key);assert.equal(visual.w,visual.h);}
+ for(const object of map.objects.filter(o=>/^furn-.*-(left|right|up)$/.test(o.key))){const visual=visuals.find(o=>(o.key===object.key||o.sourceKey===object.key)&&o.footY===object.footY);assert.ok(visual,object.key);assert.equal(visual.w,visual.h);}
  for(const object of map.objects.filter(o=>o.key==='elderwood-oak')){assert.equal(object.w,object.h);assert.equal(object.footprint!.x,object.x/48+1);assert.equal(object.footprint!.width,1);}
  }
  const map=gridMap('elderwood');for(const s of craftingStations)if('bench'in s)for(const [x,y]of s.bench.cells)assert.ok(map.blocked.has(`${x},${y}`),'corner counters preserved');
@@ -35,7 +35,7 @@ test('square prop frames keep original artwork scale and ground alignment across
  for(const region of ['elderwood','elderwood-upper','woods','woods-upper','caverns','swamp','woods-depths','caverns-depths']){
  const map=gridMap(region),visuals=buildingVisuals(region,map.objects,false);
  for(const object of map.objects){if(/sign|wall|floor|window|craft-bench|furn-tools/.test(object.key))continue;
- const visual=visuals.find(v=>v.key===object.key&&v.footY===object.footY);if(!visual)continue;
+ const visual=visuals.find(v=>(v.key===object.key||v.sourceKey===object.key)&&v.footY===object.footY);if(!visual)continue;
  const png=readFileSync(new URL(`../assets/world/objects/${object.key}.png`,import.meta.url));
  assert.equal(visual.w,visual.h,object.key+' square runtime canvas');
  const width=png.readUInt32BE(16),height=png.readUInt32BE(20),expected=Math.max(width,height)*Math.min(object.w/width,object.h/height);
