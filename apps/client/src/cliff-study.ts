@@ -4,19 +4,20 @@
 import {elderwoodRimStairs,elderwoodStairTile} from '@realm/game-data';
 const stair=elderwoodRimStairs.find(s=>s.id==='north')!;
 export const cliffStudy={x:Math.floor(stair.x)-3,y:Math.floor(stair.y)-2,width:7,height:3,stairX:Math.floor(stair.x),stairY:Math.floor(stair.y)-1};
-import {paintRecessedStair} from './stone-cliff-art';
+import {paintRecessedStair,paintDescendingStair} from './stone-cliff-art';
 export {paintRecessedStair} from './stone-cliff-art';
-/** Native cap and face parts: broad fractured planes rather than horizontal brick courses. */
-export function paintCliffStudy(c:CanvasRenderingContext2D,atlas:CanvasImageSource,_upper=false){
- for(const s of elderwoodRimStairs){
-  const p=elderwoodStairTile(s),angle=({north:0,south:Math.PI,east:Math.PI/2,west:-Math.PI/2} as Record<string,number>)[s.id];
-  // Rotations keep each native cell the same size, and aim the flight toward its island side.
-  c.save();c.translate(p.x*32,p.y*32);c.rotate(angle);c.translate(-112,-48);paintEntrance(c,atlas);c.restore();
+/** Both floor sprites share the physical transition cell, with no rotated neighboring terrain. */
+const stairSprites=new Map<string,HTMLCanvasElement>();
+export function paintVillageStair(c:CanvasRenderingContext2D,s:typeof elderwoodRimStairs[number],upper=false){
+ const p=elderwoodStairTile(s),key=`${s.id}:${upper}`;let sprite=stairSprites.get(key);
+ if(!sprite){
+  sprite=document.createElement('canvas');sprite.width=sprite.height=32;const g=sprite.getContext('2d')!;
+  const angle=({north:0,south:Math.PI,east:Math.PI/2,west:-Math.PI/2} as const)[s.id];g.translate(16,16);g.rotate(angle);
+  if(upper)paintDescendingStair(g,-16,-16);else paintRecessedStair(g,-16,-16);
+  stairSprites.set(key,sprite);
  }
+ c.drawImage(sprite,Math.floor(p.x)*32,Math.floor(p.y)*32);
 }
-function paintEntrance(c:CanvasRenderingContext2D,atlas:CanvasImageSource){
- const sx=96,sy=32;
- c.drawImage(atlas,2*36+2,2,32,32,sx,sy-32,32,32);
- c.fillStyle='#9daeb4';c.fillRect(sx+2,sy-5,23,5);c.fillStyle='#d8e1e3';c.fillRect(sx+2,sy-5,23,1);
- paintRecessedStair(c,sx,sy);
+export function paintCliffStudy(c:CanvasRenderingContext2D,_atlas:CanvasImageSource,upper=false){
+ for(const s of elderwoodRimStairs)paintVillageStair(c,s,upper);
 }

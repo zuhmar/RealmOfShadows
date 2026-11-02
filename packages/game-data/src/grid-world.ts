@@ -233,6 +233,8 @@ export function gridMap(region:string,authored=false):GridMap{
  if(override.cells)for(let y=0;y<height;y++)cells[y]=[...override.cells[y]];
  if(override.props||override.removedProps)applyPropEdits(objects,blocked,override);
  for(let x=0;x<width;x++){cells[0][x]=5;cells[height-1][x]=5;}for(let y=0;y<height;y++){cells[y][0]=5;cells[y][width-1]=5;}
+ // Ocean remains water after shoreline dressing and blocked border construction.
+ if(region==='elderwood'||region==='elderwood-upper')for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(!onElderwoodLand(x,y))cells[y][x]=3;
  const propBlocked=new Set(blocked);
  for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(cells[y][x]===3||cells[y][x]===5)blocked.add(`${x},${y}`);
  const result={width,height,cells,objects,blocked,propBlocked,edges};cache.set(cacheKey,result);return result;

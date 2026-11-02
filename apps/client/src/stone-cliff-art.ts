@@ -75,3 +75,21 @@ export function paintJoinedRockSection(c:CanvasRenderingContext2D,variant:number
   polygon(c,[[0,0],[32,0],[32,3],[26,4],[21,2],[15,4],[9,2],[4,4],[0,3]],ink('#647b45'));
  }else if(section==='bottom'){c.fillStyle=ink('#152c2522');c.fillRect(0,30,32,2);}
 }
+
+/** A separate upper-floor stairwell, with treads descending into a shadowed opening. */
+export function paintDescendingStair(c:CanvasRenderingContext2D,x:number,y:number){
+ c.save();c.translate(x,y);c.beginPath();c.rect(0,0,32,32);c.clip();
+ polygon(c,[[2,1],[30,1],[30,31],[2,31]],'#202d2b');
+ const shades=['#b7c4c7','#9aaeb4','#7c939b','#617b85','#455f6b','#2c424d'];
+ for(let i=0;i<6;i++){
+  const sy=3+i*4.3,inset=4+i*.4,w=24-i*.8;
+  polygon(c,[[inset,sy],[inset+w,sy],[inset+w,sy+2.8],[inset,sy+2.8]],shades[i]);
+  polygon(c,[[inset,sy+2.8],[inset+w,sy+2.8],[inset+w,sy+4.3],[inset,sy+4.3]],i<3?'#536c75':'#243a44');
+  c.strokeStyle=i<2?'#d1dddc':'#8ba1a455';c.lineWidth=.6;c.beginPath();c.moveTo(inset,sy+.3);c.lineTo(inset+w,sy+.3);c.stroke();
+ }
+ polygon(c,[[0,0],[4,0],[4,28],[0,32]],'#889b9e');
+ polygon(c,[[28,0],[32,0],[32,32],[28,28]],'#536a72');
+ polygon(c,[[0,0],[32,0],[28,3],[4,3]],'#d0d9d7');
+ polygon(c,[[0,32],[4,28],[28,28],[32,32]],'#33474e');
+ c.restore();
+}

@@ -4,7 +4,7 @@ import {paintVillageCliffs,paintVillageOuterRim} from './village-cliffs';
 import {paintLedge,paintWoodsCliffs,paintRidge} from './stacked-floors';
 import type Phaser from 'phaser';
 import {paintConnectedTerrain,usesConnectedTerrain} from './connected-terrain';
-import {houseFloorIndex,gridMap,woodsRidges,islandForRegion,type RegionId} from '@realm/game-data';
+import {onElderwoodLand,houseFloorIndex,gridMap,woodsRidges,islandForRegion,type RegionId} from '@realm/game-data';
 const files=import.meta.glob('../../../assets/world/terrain/*/atlas.png',{eager:true,query:'?url',import:'default'}) as Record<string,string>;
 export const terrainTileAssets=Object.entries(files).map(([path,url])=>({key:`terrain-${path.split('/').at(-2)}-32`,url}));
 export const terrainTileAsset=terrainTileAssets.find(a=>a.key==='terrain-elderwood-32')!;
@@ -16,7 +16,7 @@ export function paintRegion(ctx:CanvasRenderingContext2D,region:RegionId,atlas:C
  paintConnectedTerrain(ctx,gridMap('elderwood').cells,atlas);ctx.fillStyle='#10222bd9';ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);
  paintVillageCliffs(ctx,atlas,true);
  // Show the town below the upper rooms, with walkable floor cells highlighted.
- for(let y=0;y<cells.length;y++)for(let x=0;x<cells[y].length;x++)if(cells[y][x]!==5){ctx.drawImage(atlas,cells[y][x]*36+2,2,32,32,x*32,y*32,32,32);paintVillageOuterRim(ctx,x,y);}
+ for(let y=0;y<cells.length;y++)for(let x=0;x<cells[y].length;x++)if(cells[y][x]!==5&&onElderwoodLand(x,y)){ctx.drawImage(atlas,cells[y][x]*36+2,2,32,32,x*32,y*32,32,32);paintVillageOuterRim(ctx,x,y);}
  paintCliffStudy(ctx,atlas,true);
 }
 export function drawTiledTerrain(scene:Phaser.Scene,region:RegionId){
@@ -26,6 +26,13 @@ export function drawTiledTerrain(scene:Phaser.Scene,region:RegionId){
   const texture=scene.textures.createCanvas(key,grid.width*32,grid.height*32)!;
   paintRegion(texture.getContext(),region,scene.textures.get(terrainKey(region)).getSourceImage() as HTMLImageElement);texture.refresh();
   const ground=scene.add.image(0,0,key).setOrigin(0).setScale(2).setDepth(-20).setData('terrainRegion',region);
+  if(region==='elderwood'||region==='elderwood-upper'){
+   // Continue the ocean beyond the map bounds so zooming out never reveals a green backdrop.
+   const oceanKey=`${region}-ocean`,oceanTexture=scene.textures.createCanvas(oceanKey,32,32)!;
+   oceanTexture.getContext().drawImage(scene.textures.get(terrainKey(region)).getSourceImage() as HTMLImageElement,3*36+2,2,32,32,0,0,32,32);oceanTexture.refresh();
+   const ocean=scene.add.tileSprite(-2048,-2048,grid.width*64+4096,grid.height*64+4096,oceanKey).setOrigin(0).setTileScale(2).setDepth(-21).setData('terrainRegion',region);
+   return ()=>{ground.destroy();ocean.destroy();scene.textures.remove(key);scene.textures.remove(oceanKey);};
+  }
   return ()=>{ground.destroy();scene.textures.remove(key);};
  }
  const grid=gridMap(region),map=scene.make.tilemap({tileWidth:32,tileHeight:32,width:grid.width,height:grid.height});

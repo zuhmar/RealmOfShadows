@@ -4,11 +4,18 @@ The approved north entrance has been extended to all four Elderwood cliff entran
 
 - A grass cap overhangs a joined vertical rock face with broad fractured planes, shaded recesses and a contact shadow.
 - The stone landing reaches the head of a recessed flight. Its grey stone side cheeks, six treads, risers and dark opening all fit inside one native 32×32 cell.
-- The north flight, both 64×64 gameplay click zones, the upper arrival and the descent trigger are centered at (52.5, 32.5). Clicking from below approaches the existing ground transition at (52.5, 33.5). A one-cell-wide upper stair recess connects the flight to the cliff walk at (52.5, 30.5). The other three entrances use the same shared geometry rule.
+- The north flight, both 64×64 gameplay click zones, the upper arrival and the descent trigger are centered at (52.5, 30.5). Clicking from below approaches the ground transition at (52.5, 31.5). A one-cell-wide upper stair recess connects the flight to the cliff walk at (52.5, 28.5). The other three entrances use the same shared geometry rule.
 - Upper-floor collision includes four short stair recesses; the ground village, houses, fences, items and saves are preserved.
 
 The stair and landing are drawn by `apps/client/src/cliff-study.ts`; surrounding rock uses the same shared fracture field and contour renderer as every other cliff. The former seven-cell scenery patch has been removed. `npm run test:cliff-study:browser` checks the one-cell footprint and real approach, climb and descent using mouse and touch, and exports native and gameplay screenshots to `/tmp/cliff-study-*`.
 
 Deploy Render and Vercel together because the shared upper-floor collision and stair destinations changed. No database migration is needed.
 
-Landing rendering uses the same upper-surface material in both ground and upper views, including paved recesses through the cliff band. Grass/earth contours are skipped on stone walkways and follow the actual surface around openings. `npm run test:stair-landings:browser` compares every stair recess across both floor renders and checks that no grass edge overlays any paved cliff-walk tile. This visual-only correction needs Vercel, with no Render or SQL update.
+Landing rendering uses the same upper-surface material in both ground and upper views, including paved recesses through the cliff band. Grass/earth contours are skipped on stone walkways and follow the actual surface around openings. `npm run test:stair-landings:browser` compares the paved landings across both floor renders and verifies distinct ascending and descending stair sprites and checks that no grass edge overlays any paved cliff-walk tile. This visual-only correction needs Vercel, with no Render or SQL update.
+
+
+## Fixed-camera cliffs and floor-specific stairs
+
+Elderwood now shows full rock faces only on drops projecting south, with rim caps on rear and side edges. The four stair openings retain their original shared physical transition coordinates. Each is exactly one native 32×32 cell, rotated toward its entrance. From the lower village the stone treads rise toward the upper plateau; from above a separate bordered stairwell shows treads fading down into shadow. Neighboring paving is no longer rotated with the flight.
+
+The sea uses the island water tiles outside the complete land silhouette on both outdoor floors. Those cells are blocked water in shared map data; a repeating ocean backdrop continues past the canvas bounds in gameplay. Deploy Vercel and Render together for this water-material update. No database migration is required.

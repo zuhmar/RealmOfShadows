@@ -1,4 +1,4 @@
-import {paintCliffStudy} from './cliff-study';
+import {paintVillageStair,paintCliffStudy} from './cliff-study';
 import {paintCliffContour,paintCliffTile} from './cliff-tiles';
 import type Phaser from 'phaser';
 import {gridMap,elderwoodTown,elderwoodSize,elderwoodRimStairs,elderwoodStairTile,onElderwoodRim,onElderwoodLand,onElderwoodLowland,elderwoodCliffDistance,stairsFor} from '@realm/game-data';
@@ -11,7 +11,7 @@ export function villageCliffSurface(x:number,y:number,cells=gridMap('elderwood-u
 /** Rounded contact profiles remain inside each native tile; stone scale is unchanged. */
 function paintVillageFace(c:CanvasRenderingContext2D,atlas:CanvasImageSource,x:number,y:number,facing:'north'|'south'|'east'|'west',section:'top'|'bottom',foot:boolean,water=false){
  c.save();c.translate(x*32,y*32);
- if(water){c.fillStyle='#172e35';c.fillRect(0,0,32,32);}else c.drawImage(atlas,2,2,32,32,0,0,32,32);
+ c.drawImage(atlas,(water?3:0)*36+2,2,32,32,0,0,32,32);
  const at=(t:number,d:number):[number,number]=>facing==='south'?[t,d]:facing==='north'?[t,32-d]:facing==='east'?[d,t]:[32-d,t];
  c.save();if(foot){c.beginPath();c.moveTo(...at(0,0));c.lineTo(...at(32,0));c.lineTo(...at(32,27));c.quadraticCurveTo(...at(28,32),...at(23,29));c.lineTo(...at(20,30));c.quadraticCurveTo(...at(15,32),...at(11,29));c.lineTo(...at(8,30));c.quadraticCurveTo(...at(3,31),...at(0,27));c.closePath();c.clip();}
  paintCliffTile(c,0,0,section==='top'?'face-top':'face-bottom',true,x+y*3,facing,section,false);c.restore();
@@ -23,7 +23,7 @@ export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImag
  const{width:W,height:H}=elderwoodSize,upper=gridMap('elderwood-upper').cells;
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
   if(!onElderwoodLand(x,y)){
-   ctx.fillStyle='#172e35';ctx.fillRect(x*32,y*32,32,32);
+   ctx.drawImage(atlas,3*36+2,2,32,32,x*32,y*32,32,32);
    if(onElderwoodLand(x,y-1))paintVillageFace(ctx,atlas,x,y,'south','top',false,true);
    else if(onElderwoodLand(x,y-2))paintVillageFace(ctx,atlas,x,y,'south','bottom',true,true);
    continue;
@@ -36,9 +36,8 @@ export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImag
  paintCliffStudy(ctx,atlas,upperFloor);
 }
 /** One complete flight occupies exactly the clickable transition cell. */
-export function paintCliffStairs(ctx:CanvasRenderingContext2D,s:typeof elderwoodRimStairs[number],_upper=false){
- const p=elderwoodStairTile(s);
- paintCliffTile(ctx,Math.floor(p.x)*32,Math.floor(p.y)*32,`stairs-${s.id}`,true);
+export function paintCliffStairs(ctx:CanvasRenderingContext2D,s:typeof elderwoodRimStairs[number],upper=false){
+ paintVillageStair(ctx,s,upper);
 }
 export function drawVillageCliffStairs(scene:Phaser.Scene,region:string,click:(id:string)=>void){
  if(region!=='elderwood'&&region!=='elderwood-upper')return;
