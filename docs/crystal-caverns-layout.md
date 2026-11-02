@@ -12,8 +12,11 @@ the central route and a quiet western landing recess add exploration space.
 Two solid rock outcrops interrupt the broad rooms while preserving routes to all
 spawns, the bridge, portals and stairs. Depth 2 retains its existing encounters.
 
-Both floors use the approved cliff fracture geometry with a violet palette,
-continuous joins, directional shading and small embedded violet/cyan crystals.
+Both floors use broad rounded rock forms with a muted violet palette, continuous
+joins, directional shading and small embedded violet/cyan crystals. Side faces are
+12 native pixels wide against a 24-pixel front face, preserving perspective while
+avoiding thin strips. Cliff tops use a darker tint over the existing stone texture;
+the shared rim has softer contrast. Rock fields wrap seamlessly across native tiles.
 A visible purple rock floor caps the cliff mass, with one vertical face along
 its edge instead of stacked faces. The top floor and visible faces share one footprint. Closed, connected contours
 outline that footprint with a uniform inset rim, including hidden-face edges,
@@ -28,7 +31,7 @@ collision and authored spawn positions changed. Existing characters and quest
 progress load normally.
 
 Validation:
-- `npm test`: 230 tests, including reachability, encounter pockets, sanctuary
+- `npm test`: reachability, encounter pockets, sanctuary
   clearance, entrance topology and wall-edge masks on both floors.
 - `npm run build`.
 - `TEST_CLIENT_URL=http://localhost:5366 node tests/browser-caverns-layout.cjs`:

@@ -24,7 +24,7 @@ test('cliff tops share closed outlines across every side, inward turn and isolat
  const shapes=[[[5]],[[5,5],[5,5]],[[5,5,5],[5,0,5],[5,5,5]],[[5,0],[0,5]],gridMap('caverns').cells,gridMap('caverns-depths').cells];
  for(const cells of shapes){let area=0;for(let y=0;y<cells.length;y++)for(let x=0;x<cells[y].length;x++){const r=caveCliffTopRect(cells,x,y);if(r){assert.ok(r.right>r.left&&r.bottom>r.top);area+=(r.right-r.left)*(r.bottom-r.top);}}
   let outlinedArea=0;const contours=caveCliffContours(cells);assert.ok(contours.length>0);
-  for(const loop of contours){assert.deepEqual(loop[0],loop.at(-1));for(let i=1;i<loop.length;i++){const a=loop[i-1],b=loop[i];assert.equal(Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1]),8);outlinedArea+=(a[0]*b[1]-b[0]*a[1])/2;}}
+  for(const loop of contours){assert.deepEqual(loop[0],loop.at(-1));for(let i=1;i<loop.length;i++){const a=loop[i-1],b=loop[i];assert.equal(Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1]),4);outlinedArea+=(a[0]*b[1]-b[0]*a[1])/2;}}
   assert.equal(outlinedArea,area,'closed joins cover the exact top plane, including holes');
  }
 });
