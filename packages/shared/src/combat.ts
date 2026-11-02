@@ -1,4 +1,4 @@
-import {WORLD,gridCrossesWall,gridCell,gridKey,gridDirections,newAttributes,attributeDamage,maxHealth,maxMana,shieldBlock,type Attributes,combat as C,monsters,monsterAggressive,monsterKind,allMonsterSpawns,combatRegion,monsterRegion,type MonsterKind,PORTAL,portalFor,weapons,weaponDamage,skillRules,spells,isSpell,canLearnSpell,skillLevel,type SpellAccess,type SpellId,type WeaponId,type SkillId,type RegionId,type Facing} from '@realm/game-data';
+import {WORLD,stairsFor,gridCrossesWall,gridCell,gridKey,gridDirections,newAttributes,attributeDamage,maxHealth,maxMana,shieldBlock,type Attributes,combat as C,monsters,monsterAggressive,monsterKind,allMonsterSpawns,combatRegion,monsterRegion,type MonsterKind,PORTAL,portalFor,weapons,weaponDamage,skillRules,spells,isSpell,canLearnSpell,skillLevel,type SpellAccess,type SpellId,type WeaponId,type SkillId,type RegionId,type Facing} from '@realm/game-data';
 import {legal,pathfind,move,occupiedCells,freeLanding,type Point} from './index';
 export interface Fighter extends Point{stepX?:number;stepY?:number;attributes:Attributes;weaponBonus:number;shieldArmor:number;shieldingXp:number;armor:number;weapon:WeaponId;meleeXp:number;distanceXp:number;magicXp:number;region:RegionId;hp:number;mana:number;deadUntil:number;shotAt:number;spellAt:number;target:string;auto:boolean}
 // Retain the existing Wolf/wolves API and wire collection for compatibility;
@@ -20,12 +20,13 @@ export function sight(a:Point & {region?:RegionId},b:Point & {region?:RegionId},
 export class CombatSimulation{
  enemyShots:{region:RegionId;radius:number;x:number;y:number;toX:number;toY:number;remaining:number;damage:number}[]=[];
  private actors=new Map<string,Fighter>();
+ private wandering=new Map<string,{nextAt:number;turn:number;goal?:Point}>();
  spellCooldowns=new Map<string,Partial<Record<SpellId,number>>>();
  kills:Kill[]=[];time=0;serial=0;wolves=new Map<string,Wolf>();projectiles=new Map<string,Projectile>();events:CombatEvent[]=[];
  constructor(){for(const s of allMonsterSpawns)this.wolves.set(s.id,{...s,hp:monsters[s.kind].hp,mode:'idle',facing:'down',target:'',attackAt:0,respawnAt:0,spawnX:s.x,spawnY:s.y,windupUntil:0,aimX:s.x,aimY:s.y});}
  safe(p:Point & {region?:RegionId}){if(p.region==='woods-upper')return false;return distance(p,portalFor(p.region??'woods'))<C.portalSafeRadius;}
  clear(p:Fighter){p.target='';p.auto=false;}
- damage(w:Wolf,amount:number,attacker?:string){const stats=monsters[monsterKind(w.kind)];if(w.hp<=0||w.mode==='return')return;w.hp=Math.max(0,w.hp-amount);if(w.hp>0&&attacker){w.target=attacker;if(w.mode==='idle')w.mode='chase';}this.events.push({kind:'hit',region:monsterRegion(w),x:w.x,y:w.y,damage:amount});if(!w.hp){if(attacker)this.kills.push({id:++this.serial,owner:attacker,region:monsterRegion(w),kind:w.kind,x:w.x,y:w.y});w.mode='dead';w.target='';w.windupUntil=0;w.respawnAt=this.time+stats.respawn;this.events.push({kind:'death',region:monsterRegion(w),x:w.x,y:w.y});}}
+ damage(w:Wolf,amount:number,attacker?:string){const stats=monsters[monsterKind(w.kind)];if(w.hp<=0||w.mode==='return')return;w.hp=Math.max(0,w.hp-amount);if(w.hp>0&&attacker){w.target=attacker;if(w.mode==='idle'||w.mode==='wander')w.mode='chase';}this.events.push({kind:'hit',region:monsterRegion(w),x:w.x,y:w.y,damage:amount});if(!w.hp){if(attacker)this.kills.push({id:++this.serial,owner:attacker,region:monsterRegion(w),kind:w.kind,x:w.x,y:w.y});this.wandering.delete(w.id);w.mode='dead';w.target='';w.windupUntil=0;w.respawnAt=this.time+stats.respawn;this.events.push({kind:'death',region:monsterRegion(w),x:w.x,y:w.y});}}
  action(id:string,p:Fighter,kind:unknown,target:unknown):boolean{
  if(kind==='stop'){this.clear(p);return true;}
  if(p.hp<=0||!combatRegion(p.region))return false;
@@ -64,6 +65,7 @@ export class CombatSimulation{
  if(w.mode==='return'){if(distance(w,spawn)<.15){w.x=spawn.x;w.y=spawn.y;w.hp=stats.hp;w.mode='idle';}else this.step(w,spawn,dt);continue;}
  if(!victim&&monsterAggressive(monsterKind(w.kind))){let best:number=stats.detect;for(const [id,p] of actors){const d=distance(w,p);if(p.hp>0&&p.region===monsterRegion(w)&&!this.safe(p)&&d<best&&sight(w,p)){best=d;w.target=id;victim=p;}}}
  if(victim){
+ this.wandering.delete(w.id);
  const pattern=attack(w.kind),range=pattern.range;
  if(w.windupUntil){
   w.mode='windup';
@@ -95,7 +97,7 @@ export class CombatSimulation{
   }
  }else{w.mode='chase';this.step(w,victim,dt);}
  }
- else{w.mode='idle';}
+ else{this.wander(w,dt);}
  }
  for(const shot of this.enemyShots)shot.remaining-=dt;
  for(const shot of this.enemyShots.filter(s=>s.remaining<=0)){for(const actor of actors.values())if(actor.hp>0&&actor.region===shot.region&&!this.safe(actor)&&distance(actor,{x:shot.toX,y:shot.toY})<=shot.radius&&sight(shot,actor,shot.region))this.strike(actor,shot.damage,false);}
@@ -105,6 +107,25 @@ export class CombatSimulation{
  strike(actor:Fighter,power:number,physical=true){if(actor.hp<=0)return;const incoming=Math.max(1,power-actor.armor),blocked=physical?shieldBlock(incoming,actor.shieldArmor,actor.shieldingXp):0,damage=incoming-blocked;
  if(blocked>0){actor.shieldingXp=Math.min(skillRules.factor*(skillRules.cap-1)**2,actor.shieldingXp+skillRules.hitXp);this.events.push({kind:'block',region:actor.region,x:actor.x,y:actor.y,damage:blocked});}
  actor.hp=Math.max(0,actor.hp-damage);this.events.push({kind:'hit',region:actor.region,x:actor.x,y:actor.y,damage});if(!actor.hp){actor.deadUntil=this.time+C.playerRespawn;this.clear(actor);}}
+
+ /** Short, slow, server-authoritative strolls; combat always takes priority. */
+ private wander(w:Wolf,dt:number){
+  const region=monsterRegion(w),radius=monsters[w.kind].boss?1:2;
+  const seed=[...w.id].reduce((n,c)=>(Math.imul(n,31)+c.charCodeAt(0))>>>0,17);
+  let state=this.wandering.get(w.id);if(!state){state={nextAt:this.time+3+(seed%40)/10,turn:0};this.wandering.set(w.id,state);}
+  if(state.goal){
+   if(distance(w,state.goal)<.01||(this.atCenter(w)&&occupiedCells([...this.actors.values(),...this.wolves.values()],region,w).has(gridKey(state.goal)))){state.goal=undefined;state.nextAt=this.time+2+((seed+state.turn*17)%31)/10;w.mode='idle';return;}
+   w.mode='wander';this.step(w,state.goal,dt*.4);return;
+  }
+  w.mode='idle';if(this.time<state.nextAt)return;
+  const occupied=occupiedCells([...this.actors.values(),...this.wolves.values()],region,w),start=(seed+state.turn++*5)%gridDirections.length;
+  for(let i=0;i<gridDirections.length;i++){
+   const [dx,dy]=gridDirections[(start+i)%gridDirections.length],goal={x:w.x+dx,y:w.y+dy};
+   if(distance(goal,{x:w.spawnX,y:w.spawnY})>radius+.01||occupied.has(gridKey(goal))||!legal(goal,region)||!sight(w,goal,region)||!sight({x:w.spawnX,y:w.spawnY},goal,region)||this.safe({...goal,region})||distance(goal,portalFor(region))<C.portalSafeRadius+2||stairsFor(region).some(s=>distance(goal,s)<1.5)||pathfind(w,goal,region,occupied).length!==1)continue;
+   state.goal=goal;w.mode='wander';this.step(w,goal,dt*.4);return;
+  }
+  state.nextAt=this.time+2;
+ }
 
  atCenter(w:Wolf){return Math.abs(w.x-(Math.floor(w.x)+.5))<.00001&&Math.abs(w.y-(Math.floor(w.y)+.5))<.00001;}
  step(w:Wolf,to:Point,dt:number){

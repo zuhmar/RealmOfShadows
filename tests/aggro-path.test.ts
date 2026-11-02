@@ -7,7 +7,7 @@ test('normal monsters ignore passersby, retaliate against their attacker and res
  for(const kind of ['wolf','spider'] as const){const sim=new CombatSimulation(),w=[...sim.wolves.values()].find(w=>w.kind===kind)!;sim.wolves.clear();sim.wolves.set(w.id,w);const p:ReturnType<typeof newFighter>={...newFighter(),region:'woods' as const,x:w.x+.5,y:w.y};
  for(let i=0;i<20;i++)sim.tick(.05,[['p',p]]);assert.equal(p.hp,100);assert.equal(w.mode,'idle');assert.equal(w.target,'');
  sim.damage(w,1,'p');for(let i=0;i<20;i++)sim.tick(.05,[['p',p]]);assert.equal(w.target,'p');assert.ok(p.hp<100);
- p.region='elderwood';for(let i=0;i<100;i++)sim.tick(.05,[['p',p]]);assert.equal(w.target,'');assert.equal(w.mode,'idle');}
+ p.region='elderwood';for(let i=0;i<100;i++)sim.tick(.05,[['p',p]]);assert.equal(w.target,'');assert.ok(['idle','wander'].includes(w.mode));}
 });
 test('high level boars and the boss acquire nearby players without being hit',()=>{
  for(const kind of ['boar','bear'] as const){const sim=new CombatSimulation(),w=[...sim.wolves.values()].find(w=>w.kind===kind)!;const p:ReturnType<typeof newFighter>={...newFighter(),region:'woods' as const,x:w.x+.5,y:w.y};sim.tick(.05,[['p',p]]);assert.equal(w.target,'p');assert.equal(w.mode,'windup');}
