@@ -7,20 +7,34 @@ import {buildingsFor,type villageBuildings,isBuildingFloor} from './village-buil
 import {mapObject,type IslandObject} from './island-layout';
 /** Shared elevated view: grid axes stay square; vertical faces are foreshortened. */
 export const townView={wallHeight:1.25,roofOverhang:.1875,wallThickness:.1875} as const;
-export const townDoorTexture=(width:number,open:boolean)=>`house-door-${width}-${open?'open':'closed'}`;
+export const townDoorTexture=(width:number,open:boolean,depot=false)=>`house-${depot?'depot-':''}door-${width}-${open?'open':'closed'}`;
+export const depotView={storyShift:.25,frontGutter:.25} as const;
 /** Door panels share the shell coordinate system and sort below mounted signs. */
-export function townDoorVisual(door:{x:number;y:number;width:number},open:boolean):IslandObject{
- return {...mapObject(townDoorTexture(door.width,open),(door.x-door.width/2)*48,(door.y+.5-townView.wallHeight)*48,door.width*48,townView.wallHeight*48),footY:(door.y+.5+1/32)*48};
+export function townDoorVisual(door:{id?:string;x:number;y:number;width:number},open:boolean):IslandObject{
+ const depot=door.id?.endsWith('/depot')??false,gutter=depot?depotView.frontGutter:0;
+ return {...mapObject(townDoorTexture(door.width,open,depot),(door.x-door.width/2-gutter)*48,(door.y+.5-townView.wallHeight)*48,(door.width+gutter)*48,townView.wallHeight*48),footY:(door.y+.5+1/32)*48};
 }
 export interface BuildingVisual extends IslandObject{windowAt?:WindowAnchor;houseFor?:string;houseWallSide?:string;houseDoor?:string;houseUpper?:boolean;houseRoof?:boolean;roofFor?:string;wallFor?:string;wallSide?:string;signFor?:string;upperFor?:string;sourceKey?:string;roofPart?:'tile'|'ridge'|'chimney'}
 export function insideBuilding(p:{x:number;y:number},b:typeof villageBuildings[number]){return p.x>b.x&&p.x<b.x+b.width&&p.y>b.y&&p.y<b.y+b.height;}
 export function buildingVisuals(region:string,objects:readonly IslandObject[],roofs=true):BuildingVisual[]{
  const buildings=buildingsFor(region),result:BuildingVisual[]=[],height=townView.wallHeight;
- const put=(key:string,x:number,y:number,w:number,h:number,footY:number,meta:Partial<BuildingVisual>={})=>result.push({...mapObject(key,x*48,y*48,w*48,h*48),footY:footY*48,...meta});
+ const put=(key:string,x:number,y:number,w:number,h:number,footY:number,meta:Partial<BuildingVisual>={})=>{
+  if(meta.wallFor==='depot'){
+   const level=meta.upperFor?1:0;
+   if(key.startsWith('house-wall-e')){x-=(level+1)*depotView.storyShift;w+=depotView.frontGutter;h+=townView.wallHeight;}
+   else if(key.startsWith('house-wall-w'))x-=(level+1)*depotView.storyShift;
+   else{x-=(level+1)*depotView.storyShift;w+=depotView.frontGutter;}
+   key=key.replace('house-wall-','house-depot-wall-');if((key==='house-depot-wall-e'||key==='house-depot-wall-w')&&h<(key.endsWith('-e')?2.25:1))key+='-short';
+  }
+  if(meta.roofFor==='depot')x-=(region==='elderwood'?2:1)*depotView.storyShift;
+  result.push({...mapObject(key,x*48,y*48,w*48,h*48),footY:footY*48,...meta});
+ };
  for(const object of objects){
   if(isMapFence(object.key))continue;
   if(buildings.length&&(/^(depot|village)-wall-/.test(object.key)||object.key==='town-window'))continue;
-  const pieces=modularFurniture(object);if(pieces){result.push(...pieces);continue;}
+  const pieces=modularFurniture(object);if(pieces){const depot=buildings.find(b=>b.id==='depot'),cx=(object.x+object.w/2)/48,cy=object.footY/48;
+   const nearby=depot&&cx>=depot.x-2&&cx<=depot.x+depot.width+2&&cy>=depot.y-2&&cy<=depot.y+depot.height+3;
+   result.push(...pieces.map(p=>nearby?{...p,key:p.key.replace('map-furniture-','house-depot-furniture-')}:p));continue;}
   const copy:BuildingVisual={...object};
   const native=(nativeSizes as Record<string,readonly number[]>)[object.key];
   if(native&&!isBuildingFloor(object.key)){
@@ -31,7 +45,7 @@ export function buildingVisuals(region:string,objects:readonly IslandObject[],ro
   }
   if(object.key==='furn-tools-down')copy.y-=48;
   const sign=buildings.find(b=>object.key===(b.id==='depot'?'depot-sign':b.id==='workshop'?'crafting-hall-sign':`village-sign-${b.id}`));
-  if(sign){copy.x=(sign.x+(sign.width-3)/2)*48;copy.y=(sign.y+sign.height-1.9)*48;copy.w=3*48;copy.h=.9*48;copy.footY=(sign.y+sign.height+.12)*48;copy.signFor=sign.id;}
+  if(sign){copy.x=(sign.x+(sign.width-3)/2)*48;copy.y=(sign.y+sign.height-1.9)*48;copy.w=3*48;copy.h=.9*48;copy.footY=(sign.y+sign.height+.12)*48;copy.signFor=sign.id;if(sign.id==='depot')copy.x-=1.9*(depotView.storyShift/townView.wallHeight)*48;}
   if(isBuildingFloor(copy.key))copy.footY=-480;
   result.push(copy);
  }

@@ -15,3 +15,7 @@ Run `node scripts/build-town-walls.cjs`, `node scripts/build-town-roofs.cjs`, `n
 ## Verify
 
 `tests/browser-map-perspective.cjs` measures lighting on actual cliff, roof, wall, counter and furniture textures, including exposed versus connected counter ends. `tests/browser-house-joins.cjs` checks roof/wall/door joins on desktop/mobile. `tests/browser-elderwood-renewal.cjs` checks ground housing, upper floors and mentor interactions. Production deployment only needs Vercel; there are no collision, server or SQL changes.
+
+## Depot geometry benchmark
+
+The central Depot now has actual oblique wall/door geometry and a roof offset that follows each story's rise. Its eastern wall is a full visible side plane, and nearby modular furniture has purpose-drawn parallelogram tops and side faces. This is a scoped visual benchmark; the other building geometries retain the shared lighting pass above. See `assets/world/architecture/depot-view/README.md` and regenerate with `npm run art:depot-view` after changing base wall materials.

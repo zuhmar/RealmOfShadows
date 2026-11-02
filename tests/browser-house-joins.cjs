@@ -15,7 +15,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
     for(const id of new Set(visuals.filter(v=>v.roofFor).map(v=>v.roofFor))){
      const b=villageBuildings.find(b=>b.id===id),parts=visuals.filter(v=>v.roofFor===id);
      const wall=visuals.find(v=>v.wallFor===id&&v.wallSide==='sw'&&!!v.upperFor===(region==='elderwood'&&(id==='depot'||id==='hall')));
-     const tiles=parts.filter(v=>v.roofPart==='tile'),left=b.x*48-townView.roofOverhang*48,top=Math.min(...tiles.map(v=>v.y));
+     const tiles=parts.filter(v=>v.roofPart==='tile'),left=Math.min(...parts.filter(v=>v.roofPart==='tile').map(v=>v.x)),top=Math.min(...tiles.map(v=>v.y));
      const c=document.createElement('canvas');c.width=b.width*64+24;c.height=b.height*64+24;const ctx=c.getContext('2d',{willReadFrequently:true});
      for(const part of parts)ctx.drawImage(s.textures.get(part.key).getSourceImage(),(part.x-left)*4/3,(part.y-top)*4/3,part.w*4/3,part.h*4/3);
      const im={w:c.width,h:c.height,p:ctx.getImageData(0,0,c.width,c.height).data};

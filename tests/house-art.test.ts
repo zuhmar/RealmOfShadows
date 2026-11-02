@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync,readFileSync} from 'node:fs';
-import {buildingVisuals,gridMap,insideBuilding,villageBuildings,townView,townDoorTexture,modularFurniture} from '@realm/game-data';
+import {buildingVisuals,gridMap,insideBuilding,villageBuildings,townView,townDoorTexture,modularFurniture,depotView} from '@realm/game-data';
 test('full house shells add roofs and upright walls without replacing collision footprints',()=>{
  const grid=gridMap('elderwood'),before=[...grid.blocked],edges=[...grid.edges],objects=buildingVisuals('elderwood',grid.objects);
  assert.equal(new Set(objects.filter(o=>o.roofFor).map(o=>o.roofFor)).size,5);assert.ok(!objects.some(o=>/^(depot|village)-wall-/.test(o.key)));
@@ -19,7 +19,7 @@ test('elevated furniture keeps uniform scale and its floor anchor, and wall runs
   for(const object of map.objects.filter(o=>o.key.startsWith('furn-')&&!modularFurniture(o))){const visual=visuals.find(v=>v.key===object.key&&v.footY===object.footY&&Math.abs((v.x+v.w/2)-(object.x+object.w/2))<1e-6)!;assert.ok(visual,object.key);assert.equal(visual.w,visual.h,object.key+' cannot stretch one axis');if(object.key!=='furn-tools-down')assert.ok(Math.abs(visual.y+visual.h-object.y-object.h)<1e-6,object.key+' stays planted');}
  }
  const visuals=buildingVisuals('elderwood',gridMap('elderwood').objects);
- for(const b of villageBuildings)for(let x=b.x+1;x<b.x+b.width-1;x++)for(const side of ['n','s']){const center=(x+.5)*48,count=visuals.filter(v=>v.wallFor===b.id&&!v.upperFor&&v.wallSide===side&&v.key.startsWith('house-wall-')&&center>v.x&&center<v.x+v.w).length;assert.equal(count,side==='s'&&x>=b.x+b.door&&x<b.x+b.door+b.doorWidth?0:1,b.id+' wall coverage');}
+ for(const b of villageBuildings)for(let x=b.x+1;x<b.x+b.width-1;x++)for(const side of ['n','s']){const center=(x+.5)*48,count=visuals.filter(v=>v.wallFor===b.id&&!v.upperFor&&v.wallSide===side&&/^house-(depot-)?wall-/.test(v.key)&&center>v.x&&center<v.x+v.w).length;assert.equal(count,side==='s'&&x>=b.x+b.door&&x<b.x+b.door+b.doorWidth?0:1,b.id+' wall coverage');}
 });
 
 test('wall caps meet flush and upper-story shells support the Depot and Hall roofs',()=>{
@@ -36,7 +36,7 @@ test('wall caps meet flush and upper-story shells support the Depot and Hall roo
    assert.ok(Math.abs(sides[0].y-nw.y-townView.wallThickness*48)<1e-6);
    assert.ok(Math.abs(sides.at(-1)!.y+sides.at(-1)!.h-sw.y)<1e-6);
    for(let i=1;i<sides.length;i++)assert.ok(Math.abs(sides[i-1].y+sides[i-1].h-sides[i].y)<1e-6);
-   for(const v of shell.filter(v=>v.key.startsWith('house-wall-')&&!['e','w'].includes(v.wallSide!))){
+   for(const v of shell.filter(v=>/^house-(depot-)?wall-/.test(v.key)&&!['e','w'].includes(v.wallSide!))){
     const native=readFileSync(new URL(`../assets/world/objects/${v.key}.png`,import.meta.url));
     assert.equal(v.w/native.readUInt32BE(16),v.h/native.readUInt32BE(20),'wall artwork uses equal X/Y scale');
    }
@@ -70,7 +70,7 @@ test('modular roof cores cover every building cell once without stretching its c
    const stories=region==='elderwood'&&(b.id==='depot'||b.id==='hall')?2:1,top=b.y-stories*townView.wallHeight;
    assert.equal(roof.filter(o=>o.roofPart==='ridge').length,b.width);assert.equal(roof.filter(o=>o.roofPart==='chimney').length,1);
    for(let y=0;y<b.height;y++)for(let x=0;x<b.width;x++){
-    const matches=roof.filter(o=>o.roofPart==='tile'&&Math.abs(o.x-(b.x+x-townView.roofOverhang)*48)<1e-6&&Math.abs(o.y-(top+y-townView.roofOverhang)*48)<1e-6);
+    const matches=roof.filter(o=>o.roofPart==='tile'&&Math.abs(o.x-(b.x+x-townView.roofOverhang-(b.id==='depot'?stories*depotView.storyShift:0))*48)<1e-6&&Math.abs(o.y-(top+y-townView.roofOverhang)*48)<1e-6);
     assert.equal(matches.length,1,b.id+' cell '+x+','+y);
     const tile=matches[0],png=readFileSync(new URL(`../assets/world/objects/${tile.key}.png`,import.meta.url));
     assert.equal(png.readUInt32BE(16),88);assert.equal(png.readUInt32BE(20),88);assert.equal(tile.w,66);assert.equal(tile.h,66);
