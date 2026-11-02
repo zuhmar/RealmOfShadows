@@ -16,8 +16,8 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   }
   const c=document.createElement('canvas');c.width=3072;c.height=2304;const ctx=c.getContext('2d'),atlas=document.createElement('canvas');atlas.width=1024;atlas.height=32;
   const woods=[];let last;const draw=ctx.drawImage.bind(ctx);ctx.drawImage=(...a)=>{last={x:a[1],y:a[2],width:a[0].width,height:a[0].height,args:a.length};draw(...a)};
-  for(const r of woodsRidges)for(const upper of [false,true]){paintRidge(ctx,atlas,r,undefined,upper);woods.push({last,expected:{x:Math.floor(r.stair.x)*32,y:Math.floor(r.stair.y+(upper?0:3))*32}});}
-  for(const upper of [false,true]){paintLedge(ctx,atlas,false,undefined,upper);woods.push({last,expected:{x:96,y:upper?64:192}});}
+  for(const r of woodsRidges)for(const upper of [false,true]){paintRidge(ctx,atlas,r,undefined,upper);woods.push({last,expected:{x:Math.floor(r.stair.x)*32,y:Math.floor(r.stair.y+(upper?0:1))*32}});}
+  for(const upper of [false,true]){paintLedge(ctx,atlas,false,undefined,upper);woods.push({last,expected:{x:96,y:upper?96:128}});}
   return {tiles,flights,woods,sheet:sheet.toDataURL().split(',')[1]};
  });
  for(const t of result.tiles){assert.ok(t.transparent>20,t.side+' has a staircase silhouette');assert.ok(t.light>100,t.side+' has broad bright treads');assert.ok(t.dark>80,t.side+' has dark risers and a solid side face');}

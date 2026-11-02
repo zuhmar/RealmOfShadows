@@ -4,7 +4,7 @@ Elderwood shows tall rock faces only on drops projecting south, with rim caps an
 
 ## Directional native tiles
 
-`apps/client/src/cliff-stair-art.ts` paints north, south, east and west views with fixed screen lighting, broad treads, dark risers and fractured stone cheeks. Each sprite is exactly 32×32. Bottom, middle and top sections join into a continuous lower flight. Shared Woods stair tiles use this artwork without changing their travel geometry.
+`apps/client/src/cliff-stair-art.ts` paints north, south, east and west views with fixed screen lighting, broad treads, dark risers and fractured stone cheeks. Each sprite is exactly 32×32. Bottom, middle and top sections join into a continuous lower flight. Whispering Woods ridge and ledge flights also assemble native stair sections across their entire approach-to-landing distance. Their down openings use the authored upper transition coordinates.
 
 `apps/client/src/cliff-stair-layout.ts` repeats native cells along the authored approach-to-plateau distance. Current Elderwood flights have three sections. Taller authored climbs gain middle sections; sprites are never stretched to cover extra height. Every section is clickable and approaches the existing lower transition.
 
@@ -22,3 +22,5 @@ The ocean material change requires both Render and Vercel deployments. Subsequen
 - `tests/browser-single-cell-stairs.cjs`: native sprite footprints, every lower section and fixed upper openings, Woods stair positions.
 - `tests/browser-stair-landing-visuals.cjs`: distinct upper/lower sprites, matching surrounding paving and no earth borders over stone.
 - `tests/browser-cliff-study.cjs`: actual click approach, ascent and descent on desktop/mobile; exports native and gameplay screenshots under `/tmp/cliff-study-*`.
+
+Flight lengths are checked for one through six cells in all four directions. Woods ridge render textures include the lower approach tile, so taller flights are not clipped at the image boundary. Existing floor connections and collision stay unchanged.
