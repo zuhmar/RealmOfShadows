@@ -1,4 +1,5 @@
-import {paintRecessedStair,paintRockFace,paintJoinedRockSection,polygon} from './stone-cliff-art';
+import {cliffStairSprite} from './cliff-stair-art';
+import {paintRockFace,paintJoinedRockSection,polygon} from './stone-cliff-art';
 /** Fixed native 32×32 cliff parts. Larger cliffs repeat parts, never resize artwork. */
 export const CLIFF_TILE_SIZE=32;
 export type CliffPart='face-top'|'face-bottom'|'face-middle'|'north'|'south'|'east'|'west'|'nw'|'ne'|'sw'|'se'|'stairs-north'|'stairs-south'|'stairs-east'|'stairs-west';
@@ -9,7 +10,7 @@ export function paintCliffTile(ctx:CanvasRenderingContext2D,x:number,y:number,pa
  if(!tile){
   tile=document.createElement('canvas');tile.width=tile.height=32;const c=tile.getContext('2d')!;
   if(part.startsWith('stairs-')){
-   c.translate(16,16);c.rotate(({north:0,south:Math.PI,east:Math.PI/2,west:-Math.PI/2} as Record<string,number>)[part.slice(7)]);c.translate(-16,-16);paintRecessedStair(c,0,0);
+   c.drawImage(cliffStairSprite(part.slice(7) as CliffFacing,'single'),0,0);
   }else{
    const band=section??(part==='face-top'?'top':part==='face-bottom'?'bottom':part==='face-middle'?'middle':undefined);
    if(band)paintJoinedRockSection(c,variant,facing,band,cap);else paintRockFace(c,variant,facing);

@@ -1,23 +1,24 @@
-# Elderwood north entrance study
+# Elderwood cliff stairs
 
-The approved north entrance has been extended to all four Elderwood cliff entrances. Shared cliff tiles in Elderwood and Whispering Woods use the same fractured rock planes.
+Elderwood shows tall rock faces only on drops projecting south, with rim caps and corner joints on rear and side edges. Stairs share the fractured cliff's olive-grey stone palette.
 
-- A grass cap overhangs a joined vertical rock face with broad fractured planes, shaded recesses and a contact shadow.
-- The stone landing reaches the head of a recessed flight. Its grey stone side cheeks, six treads, risers and dark opening all fit inside one native 32×32 cell.
-- The north upper opening, upper arrival and descent trigger are centered at (52.5, 30.5). The lower flight and its 64×64 click zone sit one cell before it, at the ground transition (52.5, 31.5). A one-cell-wide upper stair recess connects the flight to the cliff walk at (52.5, 28.5). The other three entrances use the same shared geometry rule.
-- Upper-floor collision includes four short stair recesses; the ground village, houses, fences, items and saves are preserved.
+## Directional native tiles
 
-The stair and landing are drawn by `apps/client/src/cliff-study.ts`; surrounding rock uses the same shared fracture field and contour renderer as every other cliff. The former seven-cell scenery patch has been removed. `npm run test:cliff-study:browser` checks the one-cell footprint and real approach, climb and descent using mouse and touch, and exports native and gameplay screenshots to `/tmp/cliff-study-*`.
+`apps/client/src/cliff-stair-art.ts` paints north, south, east and west views with fixed screen lighting, broad treads, dark risers and fractured stone cheeks. Each sprite is exactly 32×32. Bottom, middle and top sections join into a continuous lower flight. Shared Woods stair tiles use this artwork without changing their travel geometry.
 
-Deploy Render and Vercel together because the shared upper-floor collision and stair destinations changed. No database migration is needed.
+`apps/client/src/cliff-stair-layout.ts` repeats native cells along the authored approach-to-plateau distance. Current Elderwood flights have three sections. Taller authored climbs gain middle sections; sprites are never stretched to cover extra height. Every section is clickable and approaches the existing lower transition.
 
-Landing rendering uses the same upper-surface material in both ground and upper views, including paved recesses through the cliff band. Grass/earth contours are skipped on stone walkways and follow the actual surface around openings. `npm run test:stair-landings:browser` compares the paved landings across both floor renders and verifies distinct ascending and descending stair sprites and checks that no grass edge overlays any paved cliff-walk tile. This visual-only correction needs Vercel, with no Render or SQL update.
+The upper down-stair sprite stays on `elderwoodStairTile(s)`, one cell beyond the lower approach. It is a distinct recessed opening with treads darkening into the stairwell. Upper arrivals and descent rules remain unchanged. For the north entrance: lower approach (52.5, 31.5), upper down opening/arrival (52.5, 30.5), upper plateau (52.5, 28.5).
 
+## Ocean and collision
 
-## Fixed-camera cliffs and floor-specific stairs
+Water tiles follow the complete island silhouette on both outdoor floors, remain blocked in shared map data and continue past the terrain canvas as a repeating backdrop. Stair artwork does not change collision, floor connections, housing or saved positions.
 
-Elderwood now shows full rock faces only on drops projecting south, with rim caps on rear and side edges. The four upper stair openings retain their original physical transition coordinates. Each is exactly one native 32×32 cell, rotated toward its entrance. From the lower village the stone treads rise toward the upper plateau; from above a separate bordered stairwell shows treads fading down into shadow. Neighboring paving is no longer rotated with the flight.
+The ocean material change requires both Render and Vercel deployments. Subsequent stair artwork changes require only Vercel. No database migration is needed.
 
-The sea uses the island water tiles outside the complete land silhouette on both outdoor floors. Those cells are blocked water in shared map data; a repeating ocean backdrop continues past the canvas bounds in gameplay. Deploy Vercel and Render together for this water-material update. No database migration is required.
+## Validation
 
-The lower ascending sprite and click zone now sit on the lower approach cell (`s.x`, `s.y`), one cell before the upper opening. Upper down sprites, arrival positions, return positions and transition rules are unchanged. Both sprites share the same axis and native one-cell footprint.
+- `tests/cliff-stair-layout.test.ts`: four cardinal flights, contiguous native cells, existing down opening and longer climbs.
+- `tests/browser-single-cell-stairs.cjs`: native sprite footprints, every lower section and fixed upper openings, Woods stair positions.
+- `tests/browser-stair-landing-visuals.cjs`: distinct upper/lower sprites, matching surrounding paving and no earth borders over stone.
+- `tests/browser-cliff-study.cjs`: actual click approach, ascent and descent on desktop/mobile; exports native and gameplay screenshots under `/tmp/cliff-study-*`.

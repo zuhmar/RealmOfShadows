@@ -1,3 +1,4 @@
+import {cliffStairFlight} from './cliff-stair-layout';
 import {paintVillageStair,paintCliffStudy} from './cliff-study';
 import {paintCliffContour,paintCliffTile} from './cliff-tiles';
 import type Phaser from 'phaser';
@@ -35,17 +36,17 @@ export function paintVillageCliffs(ctx:CanvasRenderingContext2D,atlas:CanvasImag
  }
  paintCliffStudy(ctx,atlas,upperFloor);
 }
-/** One complete flight occupies exactly the clickable transition cell. */
+/** Flights repeat native cells across the complete authored climb. */
 export function paintCliffStairs(ctx:CanvasRenderingContext2D,s:typeof elderwoodRimStairs[number],upper=false){
  paintVillageStair(ctx,s,upper);
 }
 export function drawVillageCliffStairs(scene:Phaser.Scene,region:string,click:(id:string)=>void){
  if(region!=='elderwood'&&region!=='elderwood-upper')return;
  for(const s of elderwoodRimStairs){const up=region==='elderwood',stair=stairsFor(region).find(r=>r.id===`elderwood-rim-${s.id}-${up?'up':'down'}`)!;
- const {x,y}=up?s:elderwoodStairTile(s);
- const zone=scene.add.zone(x*64,y*64,64,64).setInteractive({useHandCursor:true}).setDepth(10000).setData('stair',stair.id);
- zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===scene.game.canvas&&!p.rightButtonDown())click(stair.id)});
- scene.add.text(x*64,y*64-45,up?'↑ Cliff walk':'↓ Village',{fontSize:'11px',color:'#eee4c3',backgroundColor:'#243f32'}).setOrigin(.5).setDepth(10001);
+ const tiles=up?cliffStairFlight(s):[elderwoodStairTile(s)];
+ for(const {x,y} of tiles){const zone=scene.add.zone(x*64,y*64,64,64).setInteractive({useHandCursor:true}).setDepth(10000).setData('stair',stair.id);
+ zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===scene.game.canvas&&!p.rightButtonDown())click(stair.id)});}
+ const {x,y}=up?s:elderwoodStairTile(s);scene.add.text(x*64,y*64-45,up?'↑ Cliff walk':'↓ Village',{fontSize:'11px',color:'#eee4c3',backgroundColor:'#243f32'}).setOrigin(.5).setDepth(10001);
  }
 }
 
