@@ -7,9 +7,11 @@ export class SocialUI{
  private serial=0;private error='';private pending?:{channel:ChatChannel;text:string;at:number};private drafts=new Map<ChatChannel,string>();private unread=new Set<ChatChannel>();
  private dialog=el<HTMLDialogElement>('party-dialog');
  constructor(private stop:()=>void){
+  let collapsed=false;try{collapsed=localStorage.getItem('realm-chat-collapsed')==='true';}catch{}this.setCollapsed(collapsed);
+  el('chat-toggle').onclick=()=>this.setCollapsed(!document.body.classList.contains('chat-collapsed'));
   for(const [channel,name]of Object.entries(chatChannels)){
    const button=document.createElement('button');button.id=`social-${channel}-tab`;button.type='button';button.setAttribute('role','tab');button.textContent=name;
-   button.onclick=()=>{this.drafts.set(this.channel,el<HTMLInputElement>('chat-input').value);this.channel=channel as ChatChannel;this.unread.delete(this.channel);this.error='';el<HTMLInputElement>('chat-input').value=this.drafts.get(this.channel)??'';this.renderTabs();this.renderChat(true);};el('chat-tabs').append(button);
+   button.onclick=()=>{this.setCollapsed(false);this.drafts.set(this.channel,el<HTMLInputElement>('chat-input').value);this.channel=channel as ChatChannel;this.unread.delete(this.channel);this.error='';el<HTMLInputElement>('chat-input').value=this.drafts.get(this.channel)??'';this.renderTabs();this.renderChat(true);};el('chat-tabs').append(button);
   }
   el('social-open').onclick=()=>{stop();this.dialog.showModal();};el('social-close').onclick=()=>this.dialog.close();
   const form=el<HTMLFormElement>('chat-form');for(const type of ['keydown','keyup'])form.addEventListener(type,e=>e.stopPropagation());
@@ -17,6 +19,9 @@ export class SocialUI{
   el('chat-input').addEventListener('focus',()=>{stop();alignKeyboard();});el('chat-input').addEventListener('blur',alignKeyboard);window.visualViewport?.addEventListener('resize',alignKeyboard);window.visualViewport?.addEventListener('scroll',alignKeyboard);
   form.onsubmit=e=>{e.preventDefault();const input=el<HTMLInputElement>('chat-input');if(this.canSend()&&input.value.trim()&&!this.pending){this.error='';this.pending={channel:this.channel,text:input.value,at:Date.now()};this.room?.send('chat',{channel:this.channel,text:input.value});}};
   el('party-leave').onclick=()=>this.action({kind:'leave'});this.renderTabs();
+ }
+ private setCollapsed(collapsed:boolean){
+  document.body.classList.toggle('chat-collapsed',collapsed);const button=el<HTMLButtonElement>('chat-toggle');button.setAttribute('aria-expanded',String(!collapsed));button.setAttribute('aria-label',collapsed?'Expand chat':'Collapse chat');button.title=collapsed?'Expand chat':'Collapse chat';button.textContent=collapsed?'▴':'▾';if(collapsed)el<HTMLInputElement>('chat-input').blur();else this.renderChat(true);try{localStorage.setItem('realm-chat-collapsed',String(collapsed));}catch{}
  }
  typing(){return document.activeElement===el('chat-input')&&!el<HTMLInputElement>('chat-input').readOnly;}
  reset(){

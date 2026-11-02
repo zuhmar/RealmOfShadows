@@ -8,7 +8,7 @@
 <body><div id="app">
   <main id="game"></main>
   <section id="chat-panel" hidden aria-label="Game chat">
-    <div class="chat-header"><div id="chat-tabs" role="tablist" aria-label="Chat channels"></div><div id="social-controls" hidden><button id="social-open" aria-haspopup="dialog" aria-label="Open party management">Party ▾ <span id="social-badge" hidden></span></button></div></div>
+    <div class="chat-header"><div id="chat-tabs" role="tablist" aria-label="Chat channels"></div><div id="social-controls" hidden><button id="social-open" aria-haspopup="dialog" aria-label="Open party management">Party ▾ <span id="social-badge" hidden></span></button></div><button id="chat-toggle" type="button" aria-expanded="true" aria-controls="chat-messages chat-form chat-status" aria-label="Collapse chat" title="Collapse chat">▾</button></div>
     <div id="chat-messages" role="log" aria-live="polite" aria-relevant="additions" aria-label="World messages"></div>
     <form id="chat-form"><input id="chat-input" aria-label="Chat message" placeholder="Message World…" maxlength="240" autocomplete="off" enterkeyhint="send"><button id="chat-send" type="submit">Send</button></form>
     <p id="chat-status" role="status"></p>
@@ -22,10 +22,9 @@
     </section><p id="social-feedback" role="status"></p>
   </dialog>
   <aside id="minimap" hidden aria-label="World minimap">
-    <button id="minimap-toggle" aria-expanded="true" aria-controls="minimap-content" aria-label="Hide minimap"><span id="minimap-name">Elderwood</span><span class="minimap-chevron" aria-hidden="true">⌃</span></button>
     <div id="minimap-content">
       <div class="minimap-chart"><canvas id="minimap-canvas" width="360" height="270" role="img" aria-label="Current map"></canvas><span class="minimap-north" aria-hidden="true">N</span></div>
-      <div class="minimap-footer"><span id="minimap-coordinates"></span><span class="minimap-legend" title="Cream: you · Gold: NPC · Purple: portal · Cyan: stairs · Red: nearby monster · Blue: other player" aria-label="Cream: you. Gold: NPC. Purple: portal. Cyan: stairs. Red: nearby monster. Blue: other player.">● ◆ ▲</span></div>
+      <div class="minimap-footer"><span id="minimap-name">Elderwood</span><span class="minimap-legend" title="Cream: you · Gold: NPC · Purple: portal · Cyan: stairs · Red: nearby monster · Blue: other player" aria-label="Cream: you. Gold: NPC. Purple: portal. Cyan: stairs. Red: nearby monster. Blue: other player.">● ◆ ▲</span></div>
     </div>
   </aside>
 
