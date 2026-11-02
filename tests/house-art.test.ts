@@ -70,7 +70,7 @@ test('modular roof cores cover every building cell once without stretching its c
    const stories=region==='elderwood'&&(b.id==='depot'||b.id==='hall')?2:1,top=b.y-stories*townView.wallHeight;
    assert.equal(roof.filter(o=>o.roofPart==='ridge').length,b.width);assert.equal(roof.filter(o=>o.roofPart==='chimney').length,1);
    for(let y=0;y<b.height;y++)for(let x=0;x<b.width;x++){
-    const matches=roof.filter(o=>o.roofPart==='tile'&&Math.abs(o.x-(b.x+x-townView.roofOverhang-(b.id==='depot'?stories*depotView.storyShift:0))*48)<1e-6&&Math.abs(o.y-(top+y-townView.roofOverhang)*48)<1e-6);
+    const matches=roof.filter(o=>o.roofPart==='tile'&&Math.abs(o.x-(b.x+x-townView.roofOverhang-stories*depotView.storyShift)*48)<1e-6&&Math.abs(o.y-(top+y-townView.roofOverhang)*48)<1e-6);
     assert.equal(matches.length,1,b.id+' cell '+x+','+y);
     const tile=matches[0],png=readFileSync(new URL(`../assets/world/objects/${tile.key}.png`,import.meta.url));
     assert.equal(png.readUInt32BE(16),88);assert.equal(png.readUInt32BE(20),88);assert.equal(tile.w,66);assert.equal(tile.h,66);

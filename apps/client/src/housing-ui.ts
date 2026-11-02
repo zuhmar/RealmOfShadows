@@ -1,7 +1,7 @@
 import {playerHouses,houseById,houseFloorIndex,houseFloor,houseDisplayTiles,items,equipmentItems,weapons,gearName,gearSlot,type PublicHouse,type HouseItem} from '@realm/game-data';
 import type {EconomySnapshot} from '@realm/shared';
 import {itemSprite,itemImageUrl} from './item-assets';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 export const houseItemBase=(item:HouseItem)=>item.category==='gear'?item.gear.base:item.item;
 export const houseItemName=(item:HouseItem)=>item.category==='gear'?gearName(item.gear):item.category==='supply'?items[item.item].name:item.category==='weapon'?weapons[item.item].name:equipmentItems[item.item].name;
 export class HousingUI{
@@ -30,10 +30,10 @@ export class HousingUI{
 }
 export function drawHousingWorld(scene:Phaser.Scene,region:string,houses:PublicHouse[],click:(id:string,tile?:{floor:number;x:number;y:number})=>void){
  const floor=houseFloorIndex(region);if(floor<0)return;
- for(const h of playerHouses){if(houseFloor(h,region)!==floor)continue;const state=houses.find(s=>s.id===h.id);if(floor===0){const zone=scene.add.zone(h.door.x*64,h.door.y*64-8,64,64).setInteractive({useHandCursor:true}).setDepth((h.door.y+1)*64+3).setData('houseDoor',h.id);zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===scene.game.canvas&&!p.rightButtonDown())click(h.id)});}
+ for(const h of playerHouses){if(houseFloor(h,region)!==floor)continue;const state=houses.find(s=>s.id===h.id);if(floor===0){const zone=scene.add.zone(h.door.x*64-8,h.door.y*64-8,80,80).setInteractive({useHandCursor:true,hitArea:new Phaser.Geom.Polygon([6,30,70,30,80,80,16,80]),hitAreaCallback:Phaser.Geom.Polygon.Contains}).setDepth((h.door.y+1)*64+3).setData('houseDoor',h.id);zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===scene.game.canvas&&!p.rightButtonDown())click(h.id)});}
  for(const tile of houseDisplayTiles(h,floor)){
   const d=state?.displays.find(d=>d.floor===floor&&d.x===tile.x&&d.y===tile.y),x=tile.x*64,y=tile.y*64;
-  const plinth=scene.add.graphics();plinth.fillStyle(0x31483e,.8);plinth.fillRect(x-23,y-10,46,23);plinth.fillStyle(0x8c9678);plinth.fillRect(x-23,y-15,46,15);plinth.lineStyle(1,0xc8c7a5,.7);plinth.strokeRect(x-23,y-15,46,15);plinth.setDepth(y+1).setData('houseDisplay',h.id);
+  const plinth=scene.add.graphics();plinth.fillStyle(0x31483e,.95);plinth.fillPoints([{x:x-21,y:y-10},{x:x+23,y:y-10},{x:x+23,y:y+13},{x:x-21,y:y+13}],true);plinth.fillStyle(0x8c9678);plinth.fillPoints([{x:x-24,y:y-15},{x:x+20,y:y-15},{x:x+23,y:y-10},{x:x-21,y:y-10}],true);plinth.fillStyle(0x253a35);plinth.fillPoints([{x:x+20,y:y-15},{x:x+23,y:y-10},{x:x+23,y:y+13},{x:x+20,y:y+8}],true);plinth.lineStyle(1,0xc8c7a5,.7);plinth.lineBetween(x-24,y-15,x+20,y-15);plinth.setDepth(y+1).setData('houseDisplay',h.id);
   const container=scene.add.container(x,y).setDepth(y+2);if(d)void itemImageUrl(houseItemBase(d.item)).then(async url=>{if(!url||!container.active)return;const key=`house-item-${houseItemBase(d.item)}`;if(!scene.textures.exists(key)){const im=new Image();im.src=url;await im.decode();if(!container.active)return;if(!scene.textures.exists(key))scene.textures.addImage(key,im);}if(container.active)container.add(scene.add.image(0,-20,key).setDisplaySize(40,40));}).catch(()=>{});
   const zone=scene.add.zone(x,y-8,56,56).setInteractive({useHandCursor:true}).setDepth(y+4).setData('houseDisplayHit',h.id);zone.on('pointerdown',(p:Phaser.Input.Pointer)=>{if(p.event.target===scene.game.canvas&&!p.rightButtonDown())click(h.id,{floor,...tile})});
  }

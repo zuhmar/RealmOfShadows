@@ -44,7 +44,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
    const point=await page.evaluate(()=>{const o=s.worldObjects.find(o=>o.getData('townDoor')==='elderwood/smithy'),r=s.game.canvas.getBoundingClientRect(),c=s.cameras.main;return {x:r.x+(o.x+o.displayWidth/2-c.worldView.x)*c.zoom*r.width/s.game.canvas.width,y:r.y+(o.y+o.displayHeight*.65-c.worldView.y)*c.zoom*r.height/s.game.canvas.height}});
    if(mobile)await page.touchscreen.tap(point.x,point.y);else await page.mouse.click(point.x,point.y);
    await page.waitForFunction(closed=>s.doors.get('elderwood/smithy')===!closed,closed);
-   await page.waitForFunction(closed=>s.worldObjects.find(o=>o.getData('townDoor')==='elderwood/smithy').texture.key===`house-door-2-${closed?'closed':'open'}`,closed);
+   await page.waitForFunction(closed=>s.worldObjects.find(o=>o.getData('townDoor')==='elderwood/smithy').texture.key===`house-depot-door-2-${closed?'closed':'open'}`,closed);
   }
   for(const inside of [true,false]){
    await page.evaluate(inside=>s.applyTravel('elderwood',{x:testSmithy.x+testSmithy.door+testSmithy.doorWidth/2,y:testSmithy.y+testSmithy.height+(inside?-1.5:.5),stamina:100}),inside);await page.waitForTimeout(150);

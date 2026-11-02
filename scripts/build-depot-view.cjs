@@ -10,8 +10,8 @@ const fs=require('node:fs/promises'),path=require('node:path'),{chromium}=requir
   }else if(/^wall-w/.test(name)){svg=source;}
   else svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w+16}" height="${h}"><g transform="matrix(1 0 .2 1 0 0)">${body}</g></svg>`;
   await save('house-depot-'+name.replace('.svg',''),svg);
-  if(name==='wall-e.svg')await save('house-depot-wall-e-short',svg.replace('height="144"','height="132"').replace('V64L80 144V80','V52L80 132V80').replace('V64L66 74V10','V52L66 62V10').replace('M64 48L80 128V137L64 57','M64 36L80 116V125L64 45').replace('M64 46L80 126V134L64 54','M64 34L80 114V122L64 42').replace(`<g transform="translate(0 0)">${body}</g>`,`<svg width="64" height="52">${body}</svg>`));
-  if(name==='wall-w.svg')await save('house-depot-wall-w-short',source.replace('height="64"','height="52"'));
+  if(name==='wall-e.svg'||name==='wall-e-window.svg')await save(name.includes('window')?'house-depot-wall-e-short-window':'house-depot-wall-e-short',svg.replace('height="144"','height="132"').replace('V64L80 144V80','V52L80 132V80').replace('V64L66 74V10','V52L66 62V10').replace('M64 48L80 128V137L64 57','M64 36L80 116V125L64 45').replace('M64 46L80 126V134L64 54','M64 34L80 114V122L64 42').replace(`<g transform="translate(0 0)">${body}</g>`,`<svg width="64" height="52">${body}</svg>`));
+  if(name==='wall-w.svg'||name==='wall-w-window.svg')await save(name.includes('window')?'house-depot-wall-w-short-window':'house-depot-wall-w-short',source.replace('height="64"','height="52"').replace('viewBox="0 0 64 64"','viewBox="0 0 64 52"'));
 
  }
  const wood=(await fs.readFile(path.join(root,'assets/world/architecture/modular-walls/wood.png'))).toString('base64');
@@ -20,5 +20,12 @@ const fs=require('node:fs/promises'),path=require('node:path'),{chromium}=requir
   const legs=open?'<path d="M10 44H17V76H10ZM63 44H70V76H63Z" fill="#76502f" stroke="#453326" stroke-width="2"/>':'<path d="M8 40H72V76H8Z" fill="url(#wood)"/><path d="M8 48H72M8 74H72" stroke="#5b3c29" stroke-width="3"/>';
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><defs><pattern id="wood" width="64" height="64" patternUnits="userSpaceOnUse"><image href="data:image/png;base64,${wood}" width="64" height="64"/></pattern></defs>${legs}<path d="M0 8H64L72 40H8Z" fill="url(#wood)" stroke="#6c482c"/><path d="M2 16H66M4 24H68M6 32H70" stroke="#573d29" opacity=".45"/><path d="M0 8H64" stroke="#eac28b" stroke-width="2"/><path d="M8 40H72V46H8Z" fill="#805330"/><path d="M8 40H72" stroke="#e2b279"/>${right?'<path d="M64 8L72 40V76L64 44Z" fill="#65472f" stroke="#44372b"/><path d="M64 8L72 40V45L64 13Z" fill="#b48654"/>':''}${family==='shelf'?'<path d="M8 12H58L63 32H13Z" fill="#473b2e"/><path d="M17 16L20 29M27 16L30 29M38 16L41 29M49 16L52 29" stroke="#84968a" stroke-width="6"/>':''}</svg>`;
   await save(`house-depot-furniture-${family}-${end}`,svg);
+ }
+
+ // Project connected counter height without shearing the grid axes of their shared top surface.
+ for(let mask=0;mask<16;mask++){
+  const source=await fs.readFile(path.join(root,'assets/world/architecture/modular-furniture',`counter-connected-${mask}.svg`),'utf8'),body=source.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'');
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><defs><clipPath id="topClip"><rect width="80" height="64"/></clipPath><clipPath id="frontClip"><rect y="64" width="80" height="16"/></clipPath></defs><g clip-path="url(#topClip)"><g transform="translate(4.8 0)">${body}</g></g><g clip-path="url(#frontClip)"><g transform="matrix(1 0 .2 1 -8 0)">${body}</g></g></svg>`;
+  await save(`house-depot-counter-connected-${mask}`,svg);
  }
  }finally{await b.close()}})().catch(e=>{console.error(e);process.exitCode=1});

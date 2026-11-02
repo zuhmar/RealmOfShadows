@@ -5,7 +5,7 @@ import {gridMap,buildingVisuals,craftingStations,modularFurniture,furniturePiece
 test('three connected counter cells wrap each corner NPC without changing authored collision',()=>{
  for(const station of craftingStations){if(!('bench'in station))continue;
  const map=gridMap('elderwood'),before=[...map.blocked],visuals=buildingVisuals('elderwood',map.objects,false),pieces=visuals.filter(o=>o.sourceKey===station.bench.key);
- const bases=pieces.filter(p=>p.key.startsWith('counter-connected-'));assert.equal(bases.length,3);assert.equal(pieces.filter(p=>p.key.startsWith('counter-tools-')).length,1);assert.ok(pieces.some(p=>p.key===`counter-tools-${station.skills[0]}-${station.npc.facing}`));
+ const bases=pieces.filter(p=>p.key.startsWith('house-depot-counter-connected-'));assert.equal(bases.length,3);assert.equal(pieces.filter(p=>p.key.startsWith('counter-tools-')).length,1);assert.ok(pieces.some(p=>p.key===`counter-tools-${station.skills[0]}-${station.npc.facing}`));
  const occupiedCells:ReadonlySet<string>=new Set<string>(station.bench.cells.map(([cellX,cellY])=>`${cellX},${cellY}`));
  for(const [x,y]of station.bench.cells){const p=bases.find(p=>p.x===(x-.125)*48&&p.y===(y-.25)*48)!;assert.ok(p);assert.equal(p.w,60);assert.equal(p.h,60);assert.ok(map.blocked.has(`${x},${y}`));
  const mask=Number(p.key.split('-').at(-1));

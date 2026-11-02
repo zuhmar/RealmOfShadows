@@ -1,3 +1,4 @@
+import {architectureView,projectedWall} from './architecture-view';
 import {selectWindowPanels,type WindowAnchor,type WindowSide} from './building-windows';
 import {onElderwoodRim,elderwoodTown} from './elderwood-layout';
 import {houseCells,houseFloorIndex,houseFloor,playerHouses} from './housing';
@@ -6,7 +7,12 @@ import type {BuildingVisual} from './building-visuals';
 /** One-cell panels follow the exact union boundary, including recessed wings. */
 export function housingVisuals(region:string,roofs=true):BuildingVisual[]{
  const floor=houseFloorIndex(region);if(floor<0)return[];const out:BuildingVisual[]=[],height=1.25,pad=.1875;
- const put=(key:string,x:number,y:number,w:number,h:number,footY:number,id:string,upper=false,roof=false,windowAt?:WindowAnchor)=>out.push({...mapObject(key,x*48,y*48,w*48,h*48),footY:footY*48,houseFor:id,houseWallSide:key.startsWith('house-wall-')?key.split('-')[2]:undefined,houseUpper:upper,houseRoof:roof,...(windowAt?{windowAt}:{})});
+ const put=(key:string,x:number,y:number,w:number,h:number,footY:number,id:string,upper=false,roof=false,windowAt?:WindowAnchor,level=0)=>{
+  const side=key.startsWith('house-wall-')?key.split('-')[2]:undefined;
+  if(side)({key,x,y,w,h}=projectedWall(key,x,y,w,h,level));
+  if(roof)x-=(level+1)*architectureView.storyShift;
+  out.push({...mapObject(key,x*48,y*48,w*48,h*48),footY:footY*48,houseFor:id,houseWallSide:side,houseUpper:upper,houseRoof:roof,...(windowAt?{windowAt}:{})});
+ };
  for(const h of playerHouses){if(houseFloor(h,region)!==floor)continue;
   for(let level=floor;level<h.floors.length;level++){
    if(level>floor&&!roofs)break;const cells=houseCells(h,level),above=houseCells(h,level+1),lift=(level-floor)*height,upper=level>floor;
@@ -17,17 +23,17 @@ export function housingVisuals(region:string,roofs=true):BuildingVisual[]{
    for(const key of cells){const[x,y]=key.split(',').map(Number),has=(dx:number,dy:number)=>cells.has(`${x+dx},${y+dy}`);
     if(!upper)put('town-floor-stone',x,y,1,1,-10,h.id);
     const anchor=(side:WindowSide):WindowAnchor|undefined=>!upper&&windows[side].has(key)?{x:x+(side==='e'?1:side==='w'?0:.5),y:y+(side==='s'?1:side==='n'?0:.5),side,building:h.id,kind:'house',region}:undefined;
-    if(!has(0,-1))put(`house-wall-n-half${windows.n.has(key)?'-window':''}`,x,y-height-lift,1,height,y,h.id,upper,false,anchor('n'));
-    if(!has(0,1)&&!(level===0&&x===Math.floor(h.door.x)&&y===Math.floor(h.door.y)))put(`house-wall-s-half${windows.s.has(key)?'-window':''}`,x,y+1-height-lift,1,height,y+1,h.id,upper,false,anchor('s'));
-    if(!has(-1,0))put(`house-wall-w${windows.w.has(key)?'-window':''}`,x,y-height-lift+.1875,1,1,y+1,h.id,upper,false,anchor('w'));
-    if(!has(1,0))put(`house-wall-e${windows.e.has(key)?'-window':''}`,x,y-height-lift+.1875,1,1,y+1,h.id,upper,false,anchor('e'));
+    if(!has(0,-1))put(`house-wall-n-half${windows.n.has(key)?'-window':''}`,x,y-height-lift,1,height,y,h.id,upper,false,anchor('n'),level-floor);
+    if(!has(0,1)&&!(level===0&&x===Math.floor(h.door.x)&&y===Math.floor(h.door.y)))put(`house-wall-s-half${windows.s.has(key)?'-window':''}`,x,y+1-height-lift,1,height,y+1,h.id,upper,false,anchor('s'),level-floor);
+    if(!has(-1,0))put(`house-wall-w${windows.w.has(key)?'-window':''}`,x,y-height-lift+.1875,1,(has(0,1)&&!has(-1,1)?1:.8125),y+1,h.id,upper,false,anchor('w'),level-floor);
+    if(!has(1,0))put(`house-wall-e${windows.e.has(key)?'-window':''}`,x,y-height-lift+.1875,1,(has(0,1)&&!has(1,1)?1:.8125),y+1,h.id,upper,false,anchor('e'),level-floor);
     if(roofs&&!above.has(key)){
      const n=!has(0,-1),s=!has(0,1),w=!has(-1,0),e=!has(1,0),mid=(Math.min(...[...cells].map(k=>Number(k.split(',')[1])))+Math.max(...[...cells].map(k=>Number(k.split(',')[1]))))/2,slope=n?'back':s?'front':y<mid?'back':'front',edge=(n?'n':s?'s':'')+(w?'w':e?'e':'')||'field';
-     put(`roof-tile-${h.roof}-${slope}-${edge}`,x-pad,y-height-lift-pad,1+pad*2,1+pad*2,Math.max(...[...cells].map(k=>Number(k.split(',')[1])))+1.05,h.id,upper,true);
+     put(`roof-tile-${h.roof}-${slope}-${edge}`,x-pad,y-height-lift-pad,1+pad*2,1+pad*2,Math.max(...[...cells].map(k=>Number(k.split(',')[1])))+1.05,h.id,upper,true,undefined,level-floor);
     }
    }
   }
-  if(floor===0)out.push({...mapObject('house-door-1-closed',(h.door.x-.5)*48,(h.door.y+.5-height)*48,48,height*48),footY:(h.door.y+.5+1/32)*48,houseFor:h.id,houseDoor:h.id});
+  if(floor===0)out.push({...mapObject('house-depot-door-1-closed',(h.door.x-.5-architectureView.frontGutter)*48,(h.door.y+.5-height)*48,(1+architectureView.frontGutter)*48,height*48),footY:(h.door.y+.5+1/32)*48,houseFor:h.id,houseDoor:h.id});
  }
  return out;
 }
