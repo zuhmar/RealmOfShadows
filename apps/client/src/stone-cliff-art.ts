@@ -1,3 +1,4 @@
+import {paintCliffBoulder,cliffStone} from './cliff-rock-art';
 type Point=readonly[number,number];
 export function polygon(c:CanvasRenderingContext2D,points:readonly Point[],fill:string,stroke?:string){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=.7;c.stroke();}}
 /** Complete reference-inspired flight, with the cutout and side cheeks inside ONE tile. */
@@ -22,26 +23,7 @@ export function paintRecessedStair(c:CanvasRenderingContext2D,x:number,y:number)
 
 /** Approved fractured rock planes, rendered as a native cell with fixed upper-left light. */
 export function paintRockFace(c:CanvasRenderingContext2D,variant=0,facing='south',cap=false){
- const q=(variant%3-1)*2;
- c.save();c.translate(0,-32);
-  // Continuous full-height vertical plane; no horizontal mortar-like grid.
-  const face=c.createLinearGradient(0,30,0,64);face.addColorStop(0,'#888775');face.addColorStop(.3,'#777967');face.addColorStop(1,'#454c40');c.fillStyle=face;c.fillRect(0,32,32,32);
-  polygon(c,[[0,32],[12+q,33],[9+q,45],[4,50],[0,48]],'#97977d');
-  polygon(c,[[12+q,33],[24,30],[29,41+q],[22,52],[10+q,49],[9+q,45]],['#858775','#96947b','#8a8b72'][variant%3]);
-  polygon(c,[[24,32],[32,32],[32,57],[25,61],[22,52],[29,41+q]],'#5a6352');
-  polygon(c,[[0,48],[4,50],[10+q,49],[22,52],[25,61],[13,59],[6,62],[0,59]],'#6b725e');
-  polygon(c,[[0,59],[6,62],[13,59],[25,61],[32,57],[32,64],[0,64]],'#3b4639');
-  c.strokeStyle='#303c32';c.lineWidth=.8;c.beginPath();c.moveTo(12+q,33);c.lineTo(9+q,45);c.lineTo(10+q,49);c.lineTo(22,52);c.lineTo(25,61);c.stroke();
-  c.strokeStyle='#bec0a0';c.lineWidth=.7;c.beginPath();c.moveTo(1,33);c.lineTo(11+q,34);c.lineTo(8+q,43);c.stroke();
-  const shade=c.createLinearGradient(0,32,25,64);shade.addColorStop(0,'#fff1b31c');shade.addColorStop(.5,'#ffffff00');shade.addColorStop(1,'#172d284d');c.fillStyle=shade;c.fillRect(0,32,32,32);
-
- c.restore();
- c.fillStyle=facing==='west'?'#f6edc72b':facing==='east'?'#102c3445':facing==='north'?'#e9f2da0d':'#14251e18';c.fillRect(0,0,32,32);
- if(cap){
-  polygon(c,[[0,0],[32,0],[32,4],[26,7],[21,4],[15,6],[9,3],[4,5],[0,4]],'#677f46');
-  c.strokeStyle='#a5b27b';c.lineWidth=1;c.beginPath();c.moveTo(0,.5);c.lineTo(32,.5);c.stroke();
-  c.strokeStyle='#303e2d';c.beginPath();c.moveTo(0,5);c.lineTo(9,4);c.lineTo(15,7);c.lineTo(23,5);c.lineTo(32,6);c.stroke();
- }
+ paintJoinedRockSection(c,variant,facing,'middle',cap);
 }
 
 const rockFields=new Map<string,HTMLCanvasElement>();
@@ -52,19 +34,12 @@ export function paintJoinedRockSection(c:CanvasRenderingContext2D,variant:number
  let field=rockFields.get(key);
  if(!field){
   field=document.createElement('canvas');field.width=384;field.height=64;const g=field.getContext('2d')!;
-  g.fillStyle=ink('#777967');g.fillRect(0,0,384,64);
-  const point=(col:number,row:number):Point=>[col*22+(row%2)*9+(noise(col,row)-.5)*12,row*18-10+(noise(col+99,row)-.5)*12];
-  for(let row=0;row<5;row++)for(let col=-2;col<19;col++){
-   const a=point(col,row),b=point(col+1,row),d=point(col,row+1),e=point(col+1,row+1),n=noise(col+17,row+21);
-   const between=(p:Point,q:Point,t:number):Point=>[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t];
-   const tl=between(a,b,.1),tr=between(a,b,.85),right=between(b,e,.5),foot=between(e,d,.22),left=between(d,a,.6);
-   polygon(g,[a,b,e,d],ink('#535f4e'));
-   polygon(g,[tl,tr,right,foot,left],[ink('#92937b'),ink('#858b72'),ink('#97977d'),ink('#818a70')][Math.floor(n*4)]);
-   polygon(g,[tr,b,e,foot,right],n>.6?ink('#5a6352'):ink('#68715c'));
-   polygon(g,[left,foot,e,d],n>.3?ink('#6b725e'):ink('#77806a'));
-   polygon(g,[a,tl,left,d],n>.45?ink('#899077'):ink('#7f896e'));
-   g.strokeStyle=ink('#354333a6');g.lineWidth=.7;g.beginPath();g.moveTo(...a);g.lineTo(...d);g.lineTo(...e);g.stroke();
-   g.strokeStyle=ink('#bec0a04a');g.lineWidth=.65;g.beginPath();g.moveTo(a[0]+1,a[1]+1);g.lineTo(b[0]-2,b[1]+1);g.stroke();
+  g.fillStyle=ink('#354333');g.fillRect(0,0,384,64);
+  const colors=palette?{dark:ink('#354333'),shadow:ink('#535f4e'),base:ink('#858b72'),face:ink('#97977d'),light:ink('#bec0a0'),rim:ink('#647b45')}:cliffStone;
+  // Overlapping staggered boulders cross cell and face-section seams as one shared wall.
+  for(let row=-1;row<6;row++)for(let col=-2;col<25;col++){
+   const seed=col+row*37,n=noise(col+17,row+21),w=15+n*8,h=13+noise(col,row+9)*7;
+   paintCliffBoulder(g,col*18+(row%2)*9+(noise(col,row)-.5)*4,row*13-3+(noise(col+7,row)-.5)*5,w,h,seed,colors);
   }
   const shade=g.createLinearGradient(0,0,0,64);shade.addColorStop(0,ink('#e3dbaf18'));shade.addColorStop(.5,ink('#172d2810'));shade.addColorStop(1,ink('#172d2855'));g.fillStyle=shade;g.fillRect(0,0,384,64);
   g.fillStyle=facing==='west'?ink('#f6edc72b'):facing==='east'?ink('#102c3445'):facing==='north'?ink('#e9f2da0d'):ink('#14251e18');g.fillRect(0,0,384,64);rockFields.set(key,field);

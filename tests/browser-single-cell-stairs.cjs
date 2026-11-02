@@ -20,8 +20,8 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   for(const upper of [false,true]){paintLedge(ctx,atlas,false,undefined,upper);woods.push({last,expected:{x:96,y:upper?96:128}});}
   return {tiles,flights,woods,sheet:sheet.toDataURL().split(',')[1]};
  });
- for(const t of result.tiles){assert.ok(t.transparent>20,t.side+' has a staircase silhouette');assert.ok(t.light>100,t.side+' has broad bright treads');assert.ok(t.dark>80,t.side+' has dark risers and a solid side face');}
+ for(const t of result.tiles){assert.equal(t.transparent,0,t.side+' is a recessed opening with connected rock shoulders');assert.ok(t.light>100,t.side+' has broad bright treads');assert.ok(t.dark>80,t.side+' has dark risers and a solid side face');}
  for(const f of result.flights){assert.deepEqual(f.calls,f.expected,'one native tile per authored stair segment: '+f.id);assert.equal(f.calls.length,f.upper?1:3);}
  for(const w of result.woods)assert.deepEqual(w.last,{...w.expected,width:32,height:32,args:3});
- assert.deepEqual(errors,[]);fs.writeFileSync('/tmp/single-cell-stairs.png',Buffer.from(result.sheet,'base64'));console.log('PASS four transparent one-cell stair sprites, stacked Elderwood flights and fixed upper openings, native Woods transitions, matching both floor locations');
+ assert.deepEqual(errors,[]);fs.writeFileSync('/tmp/single-cell-stairs.png',Buffer.from(result.sheet,'base64'));console.log('PASS four recessed one-cell stair sprites, stacked Elderwood flights and fixed upper openings, native Woods transitions, matching both floor locations');
  }finally{await b.close()}})().catch(e=>{console.error(e);process.exitCode=1});

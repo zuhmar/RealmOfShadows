@@ -24,3 +24,8 @@ The ocean material change requires both Render and Vercel deployments. Subsequen
 - `tests/browser-cliff-study.cjs`: actual click approach, ascent and descent on desktop/mobile; exports native and gameplay screenshots under `/tmp/cliff-study-*`.
 
 Flight lengths are checked for one through six cells in all four directions. Woods ridge render textures include the lower approach tile, so taller flights are not clipped at the image boundary. Existing floor connections and collision stay unchanged.
+
+
+## Reference-based rock openings
+
+The shared cliff material uses overlapping irregular boulders, shaded side facets and chipped highlights instead of broad triangular panels. Faces are sampled from one joined stone field across native tiles; Elderwood uses the same field column in its upper and lower face sections. Rim and corner colours match the rock. Stair treads have slanted top planes and dark risers inside a recessed opening with boulder cheeks, using the same stone palette and fixed light. This follows the supplied Reme’s editor reference concept without copying its assets. Existing island layouts, collision, water, staircase lengths, floor arrivals and down-stair positions are unchanged.

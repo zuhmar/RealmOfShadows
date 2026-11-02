@@ -15,7 +15,7 @@ function paintVillageFace(c:CanvasRenderingContext2D,atlas:CanvasImageSource,x:n
  c.drawImage(atlas,(water?3:0)*36+2,2,32,32,0,0,32,32);
  const at=(t:number,d:number):[number,number]=>facing==='south'?[t,d]:facing==='north'?[t,32-d]:facing==='east'?[d,t]:[32-d,t];
  c.save();if(foot){c.beginPath();c.moveTo(...at(0,0));c.lineTo(...at(32,0));c.lineTo(...at(32,27));c.quadraticCurveTo(...at(28,32),...at(23,29));c.lineTo(...at(20,30));c.quadraticCurveTo(...at(15,32),...at(11,29));c.lineTo(...at(8,30));c.quadraticCurveTo(...at(3,31),...at(0,27));c.closePath();c.clip();}
- paintCliffTile(c,0,0,section==='top'?'face-top':'face-bottom',true,x+y*3,facing,section,false);c.restore();
+ paintCliffTile(c,0,0,section==='top'?'face-top':'face-bottom',true,x,facing,section,false);c.restore();
  if(foot){c.strokeStyle='#263c3199';c.lineWidth=1.3;c.beginPath();c.moveTo(...at(0,27));c.quadraticCurveTo(...at(3,31),...at(8,30));c.lineTo(...at(11,29));c.quadraticCurveTo(...at(15,32),...at(20,30));c.lineTo(...at(23,29));c.quadraticCurveTo(...at(28,32),...at(32,27));c.stroke();}
  c.restore();
 }
