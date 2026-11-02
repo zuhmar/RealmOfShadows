@@ -13,6 +13,6 @@ export function paintVillagePortal(ctx:CanvasRenderingContext2D,time=0,clear=tru
 }
 export function drawVillagePortal(scene:Phaser.Scene,x:number,y:number){
  const key='village-purple-static';const texture=(scene.textures.exists(key)?scene.textures.get(key):scene.textures.createCanvas(key,64,64)) as Phaser.Textures.CanvasTexture;
- paintVillagePortal(texture.getContext());texture.refresh();const image=scene.add.image(x*64,y*64,key).setDisplaySize(64,64).setDepth(y*64+.1).setData('villagePortal',true);
+ paintVillagePortal(texture.getContext());texture.refresh();const image=scene.add.image(x*64,y*64,key).setDisplaySize(64,64).setDepth(y*64+.1).setData('villagePortal',true).setData('travelPortalArt',true);
  const timer=scene.time.addEvent({delay:90,loop:true,callback:()=>{paintVillagePortal(texture.getContext(),scene.time.now);texture.refresh();}});image.once('destroy',()=>timer.remove());return image;
 }

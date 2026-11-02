@@ -295,7 +295,7 @@ class Elderwood extends Phaser.Scene {
  const grid=gridMap(this.region),mapConfig={width:grid.width*48,height:grid.height*48,worldWidth:grid.width,worldHeight:grid.height,offsetY:0},mapObjects=[...(this.region==='elderwood'?[...housingVisuals('elderwood-upper'),...buildingVisuals('elderwood-upper',gridMap('elderwood-upper').objects,false).filter(o=>!o.houseFor&&outsideVillageCenter(o))].map(o=>({...o,elevation:0})):[]),...(isVillageUpper(this.region)?buildingVisuals('elderwood',gridMap('elderwood').objects).filter(o=>!villageBuildings.filter(b=>b.id==='depot'||b.id==='hall').some(b=>[o.roofFor,o.wallFor,o.signFor,o.upperFor].includes(b.id)||insideBuilding({x:(o.x+o.w/2)/48,y:(o.y+o.h*.8)/48},b))).map(o=>({...o,elevation:0})):[]),...(this.region==='woods'?buildingVisuals('woods-upper',gridMap('woods-upper').objects).map(o=>({...o,elevation:floorDepth('woods-upper')})):[]),...(isRaisedFloor(this.region)?buildingVisuals('woods',gridMap('woods').objects).map(o=>({...o,elevation:0})):[]),...buildingVisuals(this.region,grid.objects).map(o=>({...o,elevation:floorDepth(this.region)}))];
  const illustratedMap=true;
  if(illustratedMap){
- for(const object of mapObjects){if((this.region==='elderwood'||isVillageUpper(this.region))&&object.key==='elderwood-portal')continue;const sx=mapConfig.worldWidth*64/mapConfig.width,sy=mapConfig.worldHeight*64/mapConfig.height;
+ for(const object of mapObjects){if(object.key.endsWith('-portal'))continue;const sx=mapConfig.worldWidth*64/mapConfig.width,sy=mapConfig.worldHeight*64/mapConfig.height;
  if((this.region==='caverns'||this.region==='caverns-depths')&&(object.key.includes('crystal')||object.key.includes('lantern')))this.add.ellipse((object.x+object.w/2)*sx,(object.y+object.h*.9)*sy+mapConfig.offsetY*64,object.w*sx*1.4,object.h*sy*.35,0x6ddcff,.09).setDepth(-2);
  this.add.image(object.x*sx,object.y*sy+mapConfig.offsetY*64,object.key).setOrigin(0).setDisplaySize(object.w*sx,object.h*sy).setDepth(isBuildingFloor(object.key)?-10:object.footY*sy+mapConfig.offsetY*64+object.elevation).setData('windowAt',object.windowAt).setData('houseFor',object.houseFor).setData('houseWallSide',object.houseWallSide).setData('houseUpper',object.houseUpper).setData('houseRoof',object.houseRoof).setData('houseDoorArt',object.houseDoor).setData('sourceKey',object.sourceKey).setData('buildingFront',object.wallFor?buildingsFor(this.region).find(b=>b.id===object.wallFor):undefined).setData('wallSide',object.wallSide).setData('upperFor',object.upperFor).setData('roofFor',object.roofFor).setData('signFor',object.signFor);}
  }else{
@@ -304,22 +304,13 @@ class Elderwood extends Phaser.Scene {
  }
  if(!illustratedMap)this.add.text(16.5*64,12.2*64,config.name.toUpperCase(),{fontFamily:'Georgia',fontSize:'18px',color:'#535d42',letterSpacing:3}).setOrigin(.5);
  for(const b of config.obstacles){const rock=this.add.graphics();rock.fillStyle(config.accent,.45);rock.fillRoundedRect(b.x*64,b.y*64,b.w*64,b.h*64,24);rock.lineStyle(3,config.accent,.6);rock.strokeRoundedRect(b.x*64,b.y*64,b.w*64,b.h*64,24);rock.setDepth((b.y+b.h)*64);}
- this.portalGlow=undefined;if(isVillageUpper(this.region))drawVillagePortal(this,portalFor('elderwood').x,portalFor('elderwood').y);
+ this.portalGlow=undefined;if(isVillageUpper(this.region))drawVillagePortal(this,portalFor('elderwood').x,portalFor('elderwood').y);else if(isRaisedFloor(this.region))drawVillagePortal(this,portalFor('woods').x,portalFor('woods').y);
  if(!isLowerFloor(this.region)&&!isHousingFloor(this.region)&&!isRaisedFloor(this.region)){
  const x=portalFor(this.region).x*64,y=portalFor(this.region).y*64;
- const illustratedPortal=this.textures.exists('elderwood-portal');
- const portal=this.add.graphics();
- if(illustratedPortal){portal.fillStyle(0xc576ff,.12);portal.fillEllipse(x,y,this.region==='elderwood'?56:160,this.region==='elderwood'?30:48);portal.setDepth(-1);}
- if(this.region==='elderwood')drawVillagePortal(this,x/64,y/64);
- this.portalGlow=portal;
- const portalArt=illustratedMap?mapObjects.find(object=>object.key.endsWith('-portal')):undefined;
- const portalScale=mapConfig.worldWidth*64/mapConfig.width;
- const portalWidth=(portalArt?.w??200)*portalScale,portalHeight=(portalArt?.h??179)*portalScale;
- const portalCenterX=portalArt?(portalArt.x+portalArt.w/2)*portalScale:x;
- const portalTop=portalArt?portalArt.y*portalScale+mapConfig.offsetY*64:y-portalHeight;
- if(!illustratedMap)this.add.image(portalCenterX,portalTop,'elderwood-portal').setOrigin(.5,0).setDisplaySize(portalWidth,portalHeight).setDepth(y);
- this.add.text(portalCenterX,portalTop-18,'WAYFARER PORTAL',{fontFamily:'Georgia',fontSize:'14px',color:'#e9e4cb',backgroundColor:'#193b36'}).setOrigin(.5).setDepth(y+1);
- const target=this.add.zone(portalCenterX,portalTop+portalHeight/2,portalWidth,portalHeight).setInteractive({useHandCursor:true}).setDepth(y+2);
+ const portal=this.add.graphics();portal.fillStyle(0xc576ff,.12);portal.fillEllipse(x,y,56,30);portal.setDepth(-1);this.portalGlow=portal;
+ drawVillagePortal(this,x/64,y/64);
+ this.add.text(x,y-50,'WAYFARER PORTAL',{fontFamily:'Georgia',fontSize:'14px',color:'#e9e4cb',backgroundColor:'#193b36'}).setOrigin(.5).setDepth(y+1);
+ const target=this.add.zone(x,y,64,64).setData('travelPortalTarget',true).setInteractive({useHandCursor:true}).setDepth(y+2);
  target.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{if(pointer.event.target!==this.game.canvas)return;this.approachInteraction('portal');});
  }
  drawHousingWorld(this,this.region,this.bag?.houses??[],(id,tile)=>this.approachHouse(id,tile));

@@ -117,7 +117,7 @@ export function gridMap(region:string,authored=false):GridMap{
   rect(30,21,9,10,2);rect(1,20,8,3,3);rect(1,21,8,1,4);rect(60,20,7,3,3);rect(60,21,7,1,4);rect(58,21,2,1,1);
   // Enclosed boss grove with one clearly marked south entrance.
   rect(49,30,14,1,5);rect(49,30,1,12,5);rect(62,30,1,12,5);rect(49,41,6,1,5);rect(58,41,5,1,5);path([[56,41],[56,36]]);path([[34,36],[34,43],[56,43],[56,41]]);
-  prop('woods-portal',33,22.5,3,3);prop('caverns-stairs-down',33,11,3,2);
+  prop('woods-portal',34,25,1,1);prop('caverns-stairs-down',33,11,3,2);
   path([[35,10],[40,10],[45,8]]);
   rect(woodsLedge.x,woodsLedge.y,woodsLedge.width,woodsLedge.height+woodsLedge.faceHeight,5);
   // Broad exploration loops connect the old forest to eastern and southern highlands.
@@ -187,10 +187,10 @@ export function gridMap(region:string,authored=false):GridMap{
    for(const [key,x,y,w,h]of details)prop(key,x,y,w,h);
   }
   const bx=lower?24:32,by=lower?21:28;rect(bx-3,by,7,2,3);rect(bx,by-1,1,4,4);
-  if(lower){prop('caverns-stairs-up',23,28,3,3);}else{prop('elderwood-portal',31,37.5,3,3);prop('caverns-stairs-down',31,21,3,2);}
+  if(lower){prop('caverns-stairs-up',23,28,3,3);}else{prop('elderwood-portal',32,40,1,1);prop('caverns-stairs-down',31,21,3,2);}
   for(const [x,y,w,h]of rooms){if(cave){prop('caverns-crystal-violet',x,y,2,2);prop('caverns-crystal-teal',x+w-2,y+h-2,2,2);prop('caverns-lantern-blue',x+w-1,y+1,.6,1.5);}else{prop('woods-stump',x,y,2,2);prop('woods-mushrooms',x+w-2,y+h-2,1,1);prop('woods-lamp',x+w-1,y+1,.6,1.5);}}
   if(!cave){for(const [x,y]of [[6,4],[14,9],[9,11]])prop('woods-web',x,y,2,2);prop('woods-den',4,20,3,2);prop('woods-ruin',40,3,1,2);}
- }else{path([[4,12],[27,12]]);path([[16,4],[16,20]]);rect(4,4,5,5,3);rect(23,16,5,5,3);prop('elderwood-portal',15,10.5,3,3);}
+ }else{path([[4,12],[27,12]]);path([[16,4],[16,20]]);rect(4,4,5,5,3);rect(23,16,5,5,3);prop('elderwood-portal',16,13,1,1);}
  // Translate the complete original town once, without resizing or rearranging its features.
  if(region==='elderwood'||region==='elderwood-upper'){
   const original=cells;cells=Array.from({length:height},()=>Array<number>(width).fill(5));
