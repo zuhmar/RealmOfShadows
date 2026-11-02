@@ -4,7 +4,7 @@ The approved north entrance has been extended to all four Elderwood cliff entran
 
 - A grass cap overhangs a joined vertical rock face with broad fractured planes, shaded recesses and a contact shadow.
 - The stone landing reaches the head of a recessed flight. Its grey stone side cheeks, six treads, risers and dark opening all fit inside one native 32×32 cell.
-- The north flight, both 64×64 gameplay click zones, the upper arrival and the descent trigger are centered at (52.5, 30.5). Clicking from below approaches the ground transition at (52.5, 31.5). A one-cell-wide upper stair recess connects the flight to the cliff walk at (52.5, 28.5). The other three entrances use the same shared geometry rule.
+- The north upper opening, upper arrival and descent trigger are centered at (52.5, 30.5). The lower flight and its 64×64 click zone sit one cell before it, at the ground transition (52.5, 31.5). A one-cell-wide upper stair recess connects the flight to the cliff walk at (52.5, 28.5). The other three entrances use the same shared geometry rule.
 - Upper-floor collision includes four short stair recesses; the ground village, houses, fences, items and saves are preserved.
 
 The stair and landing are drawn by `apps/client/src/cliff-study.ts`; surrounding rock uses the same shared fracture field and contour renderer as every other cliff. The former seven-cell scenery patch has been removed. `npm run test:cliff-study:browser` checks the one-cell footprint and real approach, climb and descent using mouse and touch, and exports native and gameplay screenshots to `/tmp/cliff-study-*`.
@@ -16,6 +16,8 @@ Landing rendering uses the same upper-surface material in both ground and upper 
 
 ## Fixed-camera cliffs and floor-specific stairs
 
-Elderwood now shows full rock faces only on drops projecting south, with rim caps on rear and side edges. The four stair openings retain their original shared physical transition coordinates. Each is exactly one native 32×32 cell, rotated toward its entrance. From the lower village the stone treads rise toward the upper plateau; from above a separate bordered stairwell shows treads fading down into shadow. Neighboring paving is no longer rotated with the flight.
+Elderwood now shows full rock faces only on drops projecting south, with rim caps on rear and side edges. The four upper stair openings retain their original physical transition coordinates. Each is exactly one native 32×32 cell, rotated toward its entrance. From the lower village the stone treads rise toward the upper plateau; from above a separate bordered stairwell shows treads fading down into shadow. Neighboring paving is no longer rotated with the flight.
 
 The sea uses the island water tiles outside the complete land silhouette on both outdoor floors. Those cells are blocked water in shared map data; a repeating ocean backdrop continues past the canvas bounds in gameplay. Deploy Vercel and Render together for this water-material update. No database migration is required.
+
+The lower ascending sprite and click zone now sit on the lower approach cell (`s.x`, `s.y`), one cell before the upper opening. Upper down sprites, arrival positions, return positions and transition rules are unchanged. Both sprites share the same axis and native one-cell footprint.

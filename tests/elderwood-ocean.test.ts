@@ -7,6 +7,6 @@ test('Elderwood ocean surrounds the complete island on both floors and stays blo
   assert.ok(water>500);
  }
 });
-test('all upper down stairs use the same physical cell as the ascending flight and remain walkable',()=>{
- const map=gridMap('elderwood-upper');for(const stair of elderwoodRimStairs){const p=elderwoodStairTile(stair),down=stairsFor('elderwood-upper').find(s=>s.id===`elderwood-rim-${stair.id}-down`)!;assert.equal(down.x,p.x);assert.equal(down.y,p.y);assert.ok(!map.blocked.has(`${Math.floor(p.x)},${Math.floor(p.y)}`));}
+test('upper down stairs stay fixed and align one cell beyond their lower approach',()=>{
+ const map=gridMap('elderwood-upper');for(const stair of elderwoodRimStairs){const p=elderwoodStairTile(stair),down=stairsFor('elderwood-upper').find(s=>s.id===`elderwood-rim-${stair.id}-down`)!;assert.equal(down.x,p.x);assert.equal(down.y,p.y);assert.equal(Math.abs(p.x-stair.x)+Math.abs(p.y-stair.y),1);assert.ok(!map.blocked.has(`${Math.floor(p.x)},${Math.floor(p.y)}`));}
 });

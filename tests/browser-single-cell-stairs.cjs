@@ -12,7 +12,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   }
   const flights=[];
   for(const s of elderwoodRimStairs)for(const upper of [false,true]){
-   const c=document.createElement('canvas');c.width=3328;c.height=3072;const ctx=c.getContext('2d'),calls=[];const draw=ctx.drawImage.bind(ctx);ctx.drawImage=(...a)=>{calls.push({x:a[1],y:a[2],width:a[0].width,height:a[0].height,args:a.length});draw(...a)};paintCliffStairs(ctx,s,upper);const point=elderwoodStairTile(s);flights.push({id:s.id,upper,calls,expected:{x:Math.floor(point.x)*32,y:Math.floor(point.y)*32}});
+   const c=document.createElement('canvas');c.width=3328;c.height=3072;const ctx=c.getContext('2d'),calls=[];const draw=ctx.drawImage.bind(ctx);ctx.drawImage=(...a)=>{calls.push({x:a[1],y:a[2],width:a[0].width,height:a[0].height,args:a.length});draw(...a)};paintCliffStairs(ctx,s,upper);const point=upper?elderwoodStairTile(s):s;flights.push({id:s.id,upper,calls,expected:{x:Math.floor(point.x)*32,y:Math.floor(point.y)*32}});
   }
   const c=document.createElement('canvas');c.width=3072;c.height=2304;const ctx=c.getContext('2d'),atlas=document.createElement('canvas');atlas.width=1024;atlas.height=32;
   const woods=[];let last;const draw=ctx.drawImage.bind(ctx);ctx.drawImage=(...a)=>{last={x:a[1],y:a[2],width:a[0].width,height:a[0].height,args:a.length};draw(...a)};
