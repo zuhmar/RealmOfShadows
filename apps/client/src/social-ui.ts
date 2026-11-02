@@ -3,7 +3,7 @@ import {regions} from '@realm/game-data';
 import {chatChannels,type ChatChannel,type SocialState,type ChatMessage} from '@realm/shared';
 const el=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
 export class SocialUI{
- private room?:Room;private state?:SocialState;private messages:ChatMessage[]=[];private channel:ChatChannel='world';private connected=false;private signature='';private wasActive=false;
+ private room?:Room;private state?:SocialState;private messages:ChatMessage[]=[];private channel:ChatChannel='world';private connected=false;private signature='';private wasActive=false;private uiKey='';
  private serial=0;private error='';private pending?:{channel:ChatChannel;text:string;at:number};private drafts=new Map<ChatChannel,string>();private unread=new Set<ChatChannel>();
  private dialog=el<HTMLDialogElement>('party-dialog');
  constructor(private stop:()=>void){
@@ -25,7 +25,7 @@ export class SocialUI{
  }
  typing(){return document.activeElement===el('chat-input')&&!el<HTMLInputElement>('chat-input').readOnly;}
  reset(){
-  el('chat-panel').hidden=true;el('social-controls').hidden=true;if(this.dialog.open)this.dialog.close();this.room=undefined;this.state=undefined;this.messages=[];this.signature='';this.error='';this.pending=undefined;this.drafts.clear();this.unread.clear();this.channel='world';this.renderTabs();el<HTMLInputElement>('chat-input').value='';
+  el('chat-panel').hidden=true;el('social-controls').hidden=true;if(this.dialog.open)this.dialog.close();this.room=undefined;this.state=undefined;this.messages=[];this.signature='';this.uiKey='';this.error='';this.pending=undefined;this.drafts.clear();this.unread.clear();this.channel='world';this.renderTabs();el<HTMLInputElement>('chat-input').value='';
   for(const id of ['party-members','party-invites','party-online'])el(id).replaceChildren();el('party-status').textContent='Connect to multiplayer to form a party.';el('party-leave').hidden=true;el('social-feedback').textContent='';this.badge();this.renderChat();
  }
  bind(room:Room){
@@ -51,8 +51,9 @@ export class SocialUI{
  update(active:boolean,connected:boolean){
   if(!active&&this.wasActive)this.reset();this.wasActive=active;el('chat-panel').hidden=!active;el('social-controls').hidden=!active;this.connected=connected;if(!active&&this.dialog.open)this.dialog.close();
   if(this.pending&&Date.now()-this.pending.at>8000){this.pending=undefined;this.error='Message not confirmed. Your draft is kept.';}
+  const status=this.error||(this.channel==='server'?'Server Log · Read-only':!connected?'Offline · You can type a draft. Connect to multiplayer to send.':this.channel==='party'&&!this.state?.party?'Join a party to send party messages.':this.pending?'Sending…':`${chatChannels[this.channel]} · Enter to send`),key=JSON.stringify([active,connected,this.channel,!!this.state?.party,!!this.pending,status]);if(key===this.uiKey)return;this.uiKey=key;
   const input=el<HTMLInputElement>('chat-input');input.disabled=false;input.readOnly=this.channel==='server';el<HTMLButtonElement>('chat-send').disabled=!this.canSend()||!!this.pending;
-  el('chat-status').textContent=this.error||(this.channel==='server'?'Server Log · Read-only':!connected?'Offline · You can type a draft. Connect to multiplayer to send.':this.channel==='party'&&!this.state?.party?'Join a party to send party messages.':this.pending?'Sending…':`${chatChannels[this.channel]} · Enter to send`);
+  if(el('chat-status').textContent!==status)el('chat-status').textContent=status;
  }
  private store(message:ChatMessage){if(this.messages.some(m=>m.id===message.id))return;this.messages.push(message);const same=this.messages.filter(m=>m.channel===message.channel);if(same.length>100)this.messages=this.messages.filter(m=>m!==same[0]);}
  private badge(){const count=this.state?.invites.length??0;el('social-badge').textContent=count?String(count):'';el('social-badge').hidden=!count;}

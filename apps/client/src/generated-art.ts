@@ -13,8 +13,8 @@ export function installGeneratedArt(scene:Phaser.Scene){
    paintFrame(texture.getContext(),source,frame,scale);
    texture.refresh();
   }
-  // Extracted poses own their textures; release duplicate equipment atlases.
-  if(sheet.key.startsWith('equipment-'))scene.textures.remove(sheet.key);
+  // Extracted poses own their textures; release duplicate source atlases.
+  scene.textures.remove(sheet.key);
  }
 }
 function paintFrame(context:CanvasRenderingContext2D,source:CanvasImageSource,frame:GeneratedFrame,scale=1){

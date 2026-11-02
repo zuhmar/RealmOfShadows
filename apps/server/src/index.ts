@@ -1,3 +1,4 @@
+import {SnapshotStream} from './snapshot-stream';
 import {worldChat} from './world-chat';
 import type {SocialState} from '@realm/shared';
 import {CosmeticStore} from './cosmetic-store';
@@ -21,6 +22,7 @@ defineTypes(WolfState,{stepX:'number',stepY:'number',kind:'string',region:'strin
 class State extends Schema {doors=new MapSchema<boolean>();players=new MapSchema<Player>();wolves=new MapSchema<WolfState>();}
 defineTypes(State,{doors:{map:'boolean'},players:{map:Player},wolves:{map:WolfState}});
 class Elderwood extends Room<State>{
+ private snapshots=new SnapshotStream();
  saves=new Map<string,SaveSession>();saving=new Set<string>();saveFailed=new Set<string>();
  economy=new Economy();economyReceived=new Map<string,{tokens:number;time:number}>();rewardTicks=0;combatReceived=new Map<string,number>();simulation=new CombatSimulation();maxClients=WORLD.capacity;inputs=new Map<string,Input>();received=new Map<string,number>();
  houses=new Map<string,HouseRecord>(playerHouses.map(h=>[h.id,emptyHouse(h.id)]));housingReady=false;housingLoading?:Promise<void>;housingBusy=new Map<string,Promise<void>>();
@@ -116,13 +118,13 @@ class Elderwood extends Room<State>{
  p.name=this.saves.get(client.sessionId)?.characterName||`Guest-${client.sessionId.slice(-5)}`;worldChat.connect(client.sessionId,p.name,message=>client.send('chat-message',message));this.syncSocial();
  }catch(err){this.economy.leave(client.sessionId);throw err;}
  }
- sendSnapshot(client:Client){if(!this.economy.profiles.has(client.sessionId)||!this.state.players.has(client.sessionId))return;const save=this.saves.get(client.sessionId);client.send('economy-state',{...this.economy.snapshot(client.sessionId,this.simulation.time),houses:[...this.houses.values()].map(h=>publicHouse(h,save?.identity.id)),housingAvailable:this.housingReady,housingBusy:this.housingBusy.has(client.sessionId),shopEnabled:shop.enabled,cosmeticOwned:shop.cached(save?.identity.id),account:save?{email:save.identity.email,characterSlot:save.slot,characterName:save.characterName,savedAt:save.savedAt,state:this.saveFailed.has(client.sessionId)?'error':(this.saving.has(client.sessionId)||this.housingBusy.has(client.sessionId))?'saving':'ready'}:null});}
+ sendSnapshot(client:Client){if(!this.economy.profiles.has(client.sessionId)||!this.state.players.has(client.sessionId))return;const save=this.saves.get(client.sessionId);this.snapshots.send(client,{...this.economy.snapshot(client.sessionId,this.simulation.time),houses:[...this.houses.values()].map(h=>publicHouse(h,save?.identity.id)),housingAvailable:this.housingReady,housingBusy:this.housingBusy.has(client.sessionId),shopEnabled:shop.enabled,cosmeticOwned:shop.cached(save?.identity.id),account:save?{email:save.identity.email,characterSlot:save.slot,characterName:save.characterName,savedAt:save.savedAt,state:this.saveFailed.has(client.sessionId)?'error':(this.saving.has(client.sessionId)||this.housingBusy.has(client.sessionId))?'saving':'ready'}:null});}
  async savePlayer(client:Client){const id=client.sessionId,save=this.saves.get(id),profile=this.economy.profiles.get(id);if(!save||!profile||this.saving.has(id)||this.saveFailed.has(id)||this.housingBusy.has(id))return;this.saving.add(id);
  try{await save.save(writeProgress(profile,this.simulation.time,this.simulation.spellCooldowns.get(id)));}
  catch{this.saveFailed.add(id);client.send('save-error','Saving failed. Reconnect before continuing; your last confirmed save is safe.');client.leave(4005);}
  finally{this.saving.delete(id);}
  }
- async onLeave(client:Client){await this.housingBusy.get(client.sessionId);const id=client.sessionId,save=this.saves.get(id),profile=this.economy.profiles.get(id);const final=save&&profile?writeProgress(profile,this.simulation.time,this.simulation.spellCooldowns.get(id)):undefined;
+ async onLeave(client:Client){await this.housingBusy.get(client.sessionId);this.snapshots.forget(client.sessionId);const id=client.sessionId,save=this.saves.get(id),profile=this.economy.profiles.get(id);const final=save&&profile?writeProgress(profile,this.simulation.time,this.simulation.spellCooldowns.get(id)):undefined;
  worldChat.disconnect(id);this.socialReceived.delete(id);this.socialSyncReceived.delete(id);this.state.players.delete(id);this.economy.leave(id);this.syncSocial();this.simulation.spellCooldowns.delete(id);this.economyReceived.delete(id);this.inputs.delete(id);this.received.delete(id);this.doorReceived.delete(id);this.houseReceived.delete(id);this.combatReceived.delete(id);this.saves.delete(id);this.saveFailed.delete(id);
  if(save&&final)try{await save.save(final,true);}catch{console.error('Final character save failed; database session will expire.');}
  }

@@ -1,0 +1,62 @@
+{
+  "playableMs": 17960,
+  "imageRequests": 152,
+  "imageTransferMiB": 0.13,
+  "results": [
+    {
+      "region": "elderwood",
+      "frames": 150,
+      "updateMedianMs": 0.10000002384185791,
+      "updateP95Ms": 1.4000000357627869,
+      "componentMs": {
+        "rewards": {
+          "ms": 23.900000035762787,
+          "calls": 150
+        },
+        "combat": {
+          "ms": 2.3999997973442078,
+          "calls": 150
+        },
+        "simulation": {
+          "ms": 6.400000095367432,
+          "calls": 150
+        }
+      },
+      "domMutations": 2676,
+      "objects": 4398,
+      "visibleObjects": 4394,
+      "renderedObjects": 447,
+      "textureCount": 1043,
+      "decodedTextureMiB": 227,
+      "heapMiB": 260
+    },
+    {
+      "region": "woods",
+      "frames": 150,
+      "updateMedianMs": 0.5999999642372131,
+      "updateP95Ms": 2.900000035762787,
+      "componentMs": {
+        "rewards": {
+          "ms": 9.000000059604645,
+          "calls": 150
+        },
+        "combat": {
+          "ms": 49.30000042915344,
+          "calls": 150
+        },
+        "simulation": {
+          "ms": 58.59999966621399,
+          "calls": 150
+        }
+      },
+      "domMutations": 2725,
+      "objects": 380,
+      "visibleObjects": 380,
+      "renderedObjects": 29,
+      "textureCount": 1134,
+      "decodedTextureMiB": 219,
+      "heapMiB": 152
+    }
+  ],
+  "errors": []
+}
