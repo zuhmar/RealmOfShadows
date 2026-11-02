@@ -1,0 +1,7 @@
+{
+  "projection": "fixed-oblique",
+  "nativeTile": 32,
+  "light": "upper-left",
+  "depth": {"front": 8, "right": 4},
+  "artwork": {"topHighlight": "#fff0c7", "frontShadow": "#26312e", "rightShadow": "#17272c"}
+}

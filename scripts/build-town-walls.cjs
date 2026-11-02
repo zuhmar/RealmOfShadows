@@ -1,3 +1,4 @@
+const {view}=require('./lib/world-view.cjs');
 /** Code-native modular wall geometry. One unit, one cap thickness, no per-piece fitting. */
 const sync=require('node:fs'),fs=require('node:fs/promises'),path=require('node:path'),{chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
@@ -27,8 +28,10 @@ function svg(side,windows=false){
  }
  if(vertical&&windows){const x=side==='e'?52:0;art+=`<rect x="${x+1}" y="20" width="10" height="26" rx="1" fill="#694828" stroke="#483522"/><rect x="${x+3}" y="23" width="6" height="20" fill="#527989"/><path d="M${x+4} 24V31" stroke="#b5d5d5" opacity=".7"/><path d="M${x+2} 33H${x+10}" stroke="#694828" stroke-width="2"/><path d="M${x} 46H${x+12}" stroke="#bd8b4c" stroke-width="2"/>`;}
  // One fixed elevated view: bright cap, occluded join, darker east-facing timber.
+ if(vertical&&side==='e')art+=`<path d="M56 0H64V64H56Z" fill="${view.artwork.rightShadow}" opacity=".28"/><path d="M52 0H56V64H52Z" fill="${view.artwork.topHighlight}" opacity=".16"/>`;
  if(vertical){const x=side==='e'?52:0;art+=`<rect x="${x}" y="0" width="12" height="64" fill="${side==='e'?'#172d3440':'#f4ddb919'}"/><path d="M${x+1} 0V64" stroke="#efd1a0" stroke-width="1" opacity=".55"/>`;}
  else art+=`<path d="M0 12H${width}V16H0Z" fill="#332b2440"/><path d="M0 1H${width}" stroke="#f3d5a0" stroke-width="2"/><path d="M0 77H${width}V80H0Z" fill="#272e2b55"/>`;
+ if(!vertical&&(side==='ne'||side==='se'))art+=`<path d="M58 12L64 8V78L58 80Z" fill="${view.artwork.rightShadow}" opacity=".4"/>`;
  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${vertical?64:80}" viewBox="0 0 ${width} ${vertical?64:80}">${defs}${art}</svg>`;
 }
 

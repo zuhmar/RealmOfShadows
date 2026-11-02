@@ -1,3 +1,4 @@
+const {view}=require('./lib/world-view.cjs');
 /** Modular, code-native roof tiles. 64px core; 12px matching overhang; no whole-roof scaling. */
 const fs=require('node:fs/promises'),sync=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 const root=path.resolve(__dirname,'..'),folder=path.join(root,'assets/world/architecture/modular-roofs');
@@ -25,7 +26,7 @@ function tile(palette,slope,edge){
  if(sides.includes('s'))fascia+=`<path d="M${left} 80H${right}V82H${left}Z" fill="#e0b87f" opacity=".7"/><path d="M${left} 84H${right}V88H${left}Z" fill="#332b28" opacity=".65"/>`;
  if(sides.includes('n'))fascia+=`<path d="M${left} 1H${right}" stroke="#e0b87f" stroke-width="2" opacity=".7"/>`;
  if(sides.includes('w'))fascia+=`<path d="M1 ${top}V${bottom}" stroke="#e0b87f" stroke-width="2" opacity=".65"/>`;
- if(sides.includes('e'))fascia+=`<path d="M84 ${top}H88V${bottom}H84Z" fill="#332b28" opacity=".55"/>`;
+ if(sides.includes('e'))fascia+=`<path d="M82 ${top}H88V${bottom}H82Z" fill="${view.artwork.rightShadow}" opacity=".65"/>`;
  return `<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88"><defs>${material}${shingles('back',palette,true)}${shingles('front',palette,false)}</defs>${plane}<g fill="url(#wood)" stroke="#654528" stroke-width="1">${beams}</g>${fascia}</svg>`;
 }
 function ridge(palette,end){
