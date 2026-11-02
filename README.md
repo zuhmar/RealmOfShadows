@@ -2,7 +2,7 @@
 
 A multiplayer fantasy RPG with accounts, saved progression, equipment, island travel and layered maps. Current maps use individually authored grid cells, distinct 32×32 island terrain and standalone painted object sprites. Players and monsters use eight-direction grid movement with occupied cells and surrounding combat. See [Grid world](docs/grid-world.md) for current map authoring, artwork, controls and deployment.
 
-Players can form four-player [parties with shared rewards and world/party chat](docs/parties-and-chat.md) through the Party button in the persistent chat panel above the dock.
+Players can form four-player [parties with shared rewards and world/party chat](docs/parties-and-chat.md) through the Party button in the persistent chat panel below the dock.
 
 The village [Depot](docs/depot.md) is a visible walk-in tiled building with private, saved item storage.
 

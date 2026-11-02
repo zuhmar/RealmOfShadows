@@ -1,6 +1,6 @@
 # Parties, fair rewards and world chat
 
-Chat stays open across the width of the screen above the bottom dock while playing. The **Party** button opens a separate popup for invitations and members. Online players in your hunting room can be invited; another player's name cannot be entered to impersonate them.
+Chat stays open across the width of the screen below the action dock while playing. The **Party** button opens a separate popup for invitations and members. Online players in your hunting room can be invited; another player's name cannot be entered to impersonate them.
 
 The scrollable channel bar contains **World**, **Server Log**, **Broadcast**, **Trade**, **Help**, **LFG**, and **Party**. The public channels reach every island and room on the current world server. Party chat reaches only current members. Server Log is private and read-only, showing connection messages, travel, action results, reward gains and errors.
 

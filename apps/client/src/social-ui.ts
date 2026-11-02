@@ -13,7 +13,7 @@ export class SocialUI{
   }
   el('social-open').onclick=()=>{stop();this.dialog.showModal();};el('social-close').onclick=()=>this.dialog.close();
   const form=el<HTMLFormElement>('chat-form');for(const type of ['keydown','keyup'])form.addEventListener(type,e=>e.stopPropagation());
-  const alignKeyboard=()=>{const viewport=window.visualViewport,inset=viewport?Math.max(0,window.innerHeight-viewport.height-viewport.offsetTop):0;el('chat-panel').style.bottom=this.typing()&&inset>80?`${inset+8}px`:'';};
+  const alignKeyboard=()=>{const viewport=window.visualViewport,inset=viewport?Math.max(0,window.innerHeight-viewport.height-viewport.offsetTop):0;if(this.typing()&&inset>80)document.documentElement.style.setProperty('--chat-bottom',`${inset+8}px`);else document.documentElement.style.removeProperty('--chat-bottom');};
   el('chat-input').addEventListener('focus',()=>{stop();alignKeyboard();});el('chat-input').addEventListener('blur',alignKeyboard);window.visualViewport?.addEventListener('resize',alignKeyboard);window.visualViewport?.addEventListener('scroll',alignKeyboard);
   form.onsubmit=e=>{e.preventDefault();const input=el<HTMLInputElement>('chat-input');if(this.canSend()&&input.value.trim()&&!this.pending){this.error='';this.pending={channel:this.channel,text:input.value,at:Date.now()};this.room?.send('chat',{channel:this.channel,text:input.value});}};
   el('party-leave').onclick=()=>this.action({kind:'leave'});this.renderTabs();
