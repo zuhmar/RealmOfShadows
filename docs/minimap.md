@@ -10,7 +10,7 @@ Markers:
 - Red circle: living monsters within 12 tiles on the current floor.
 - Blue circle: other living players on the current floor.
 
-The bottom caption shows the map name. Coordinates and floor remain available in the caption tooltip and the canvas accessibility label. The map stays open and matches the profile button’s height on desktop, mobile and landscape. Its canvas resizes to the available space without stretching terrain. The panel stays clear of the profile down to a 320px viewport and hides on login/character selection.
+The bottom caption shows the map name. Coordinates and floor remain available in the caption tooltip and the canvas accessibility label. Click or tap the minimap (or focus it and press Enter/Space) to open a full-screen overview of the entire current map and floor, with live position and markers. Close it with × or Escape. The small map stays open and matches the profile button’s height on desktop, mobile and landscape. Its canvas resizes to the available space without stretching terrain. The panel stays clear of the profile down to a 320px viewport and hides on login/character selection.
 
 `apps/client/src/minimap.ts` caches terrain canvases and redraws live markers at most ten times per second. It consumes the existing local simulation or multiplayer state and requires no server or database changes. Client camera zoom does not alter minimap scale.
 

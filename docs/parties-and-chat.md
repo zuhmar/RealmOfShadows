@@ -1,6 +1,6 @@
 # Parties, fair rewards and world chat
 
-Chat opens across the width of the screen below the action dock while playing. Use the arrow at the right of the channel bar to collapse chat to the bar or reopen it. Drafts remain intact, incoming messages do not reopen chat, and the dock follows its height. The choice is remembered on this device; selecting a channel also reopens it. The **Party** button opens a separate popup for invitations and members. Online players in your hunting room can be invited; another player's name cannot be entered to impersonate them.
+Chat opens across the width of the screen below the action dock while playing. Use the arrow at the right of the channel bar to collapse chat to the bar or reopen it. Drafts remain intact, incoming messages do not reopen chat, and the dock follows its measured layout height, sitting 4px above the collapsed bar or 10px above expanded chat. The choice is remembered on this device; selecting a channel also reopens it. The **Party** button opens a separate popup for invitations and members. Online players in your hunting room can be invited; another player's name cannot be entered to impersonate them.
 
 The scrollable channel bar contains **World**, **Server Log**, **Broadcast**, **Trade**, **Help**, **LFG**, and **Party**. The public channels reach every island and room on the current world server. Party chat reaches only current members. Server Log is private and read-only, showing connection messages, travel, action results, reward gains and errors.
 

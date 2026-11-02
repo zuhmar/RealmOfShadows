@@ -21,13 +21,18 @@
       <details class="party-help"><summary>How rewards are shared</summary><p>Stay alive within 16 tiles of a kill on the same floor to share EXP, gold, materials and quest/task kill credit. Equipment and leftover shares rotate between members. The group dealing the most damage earns the kill. If your bag is full, your assigned bundle stays at the kill spot for 90 seconds.</p></details>
     </section><p id="social-feedback" role="status"></p>
   </dialog>
-  <aside id="minimap" hidden aria-label="World minimap">
+  <aside id="minimap" hidden role="button" tabindex="0" aria-haspopup="dialog" aria-label="Open full-screen map">
     <div id="minimap-content">
       <div class="minimap-chart"><canvas id="minimap-canvas" width="360" height="270" role="img" aria-label="Current map"></canvas><span class="minimap-north" aria-hidden="true">N</span></div>
       <div class="minimap-footer"><span id="minimap-name">Elderwood</span><span class="minimap-legend" title="Cream: you · Gold: NPC · Purple: portal · Cyan: stairs · Red: nearby monster · Blue: other player" aria-label="Cream: you. Gold: NPC. Purple: portal. Cyan: stairs. Red: nearby monster. Blue: other player.">● ◆ ▲</span></div>
     </div>
   </aside>
 
+  <dialog id="world-map-dialog" aria-labelledby="world-map-title">
+    <div class="portal-heading"><h2 id="world-map-title">Map</h2><button id="world-map-close" aria-label="Close full-screen map">×</button></div>
+    <div id="world-map-chart"><canvas id="world-map-canvas" role="img" aria-label="Full map"></canvas><span class="minimap-north" aria-hidden="true">N</span></div>
+    <div class="world-map-footer"><span id="world-map-position"></span><span>You ● · Portal ◆ · Stairs ▲ · NPC ■ · Nearby monsters ● · Players ●</span></div>
+  </dialog>
   <button id="character-panel" class="hud-panel" aria-label="Open character profile" aria-haspopup="dialog">
     <canvas id="profile-portrait" width="180" height="220" aria-hidden="true"></canvas>
     <span class="profile-bars"><span id="profile-level">Level 1 · Citizen</span><span class="vital">HP <meter id="health" aria-label="Health" value="100" max="100"></meter></span><span class="vital">MP <meter id="mana" aria-label="Mana" value="100" max="100"></meter></span><span class="vital">XP <progress id="experience" aria-label="Character experience" max="100" value="0"></progress></span></span>

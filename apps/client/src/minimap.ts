@@ -24,19 +24,33 @@ export class Minimap{
  private canvas=document.querySelector<HTMLCanvasElement>('#minimap-canvas')!;
  private title=document.querySelector<HTMLElement>('#minimap-name')!;
  private footer=document.querySelector<HTMLElement>('.minimap-footer')!;
+ private full=document.querySelector<HTMLDialogElement>('#world-map-dialog')!;
+ private fullCanvas=document.querySelector<HTMLCanvasElement>('#world-map-canvas')!;
+ private latest?:{region:RegionId;player:Point;monsters:MinimapActor[];peers:MinimapActor[]};
  private terrain=new Map<RegionId,HTMLCanvasElement>();
  private region?:RegionId;private nextAt=0;
- constructor(){
+ constructor(private stop:()=>void=()=>{}){
   const profile=document.querySelector<HTMLElement>('#character-panel')!,chart=document.querySelector<HTMLElement>('.minimap-chart')!;
   const resize=()=>{const height=profile.getBoundingClientRect().height;if(height>0)this.root.style.height=`${height}px`;const width=Math.max(32,Math.round(chart.clientWidth*2)),pixels=Math.max(32,Math.round(chart.clientHeight*2));if(this.canvas.width!==width||this.canvas.height!==pixels){this.canvas.width=width;this.canvas.height=pixels;this.nextAt=0;}};
   const observer=new ResizeObserver(resize);observer.observe(profile);observer.observe(chart);resize();
+  this.root.addEventListener('click',()=>this.open());this.root.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();this.open();}});
+  document.querySelector('#world-map-close')!.addEventListener('click',()=>this.full.close());
+  const fullObserver=new ResizeObserver(()=>{if(this.full.open){this.resizeFull();this.renderFull();}});fullObserver.observe(document.querySelector('#world-map-chart')!);
  }
- hide(){this.root.hidden=true;}
+ private resizeFull(){const chart=document.querySelector<HTMLElement>('#world-map-chart')!;this.fullCanvas.width=Math.max(32,Math.round(chart.clientWidth*2));this.fullCanvas.height=Math.max(32,Math.round(chart.clientHeight*2));}
+ private open(){if(!this.latest||this.root.hidden||this.full.open)return;this.stop();this.full.showModal();this.resizeFull();this.renderFull();}
+ private renderFull(){if(!this.full.open||!this.latest)return;const{region,player,monsters,peers}=this.latest;this.paint(this.fullCanvas,region,player,monsters,peers,true);document.querySelector('#world-map-title')!.textContent=regions[region].name;document.querySelector('#world-map-position')!.textContent=`${minimapFloor(region)} · ${Math.floor(player.x)}, ${Math.floor(player.y)}`;}
+ hide(){this.root.hidden=true;if(this.full.open)this.full.close();}
  update(now:number,region:RegionId,player:Point,monsters:Iterable<MinimapActor>=[],peers:Iterable<MinimapActor>=[]){
   this.root.hidden=false;
   if(this.region!==region){this.region=region;this.nextAt=0;this.root.dataset.region=region;this.title.textContent=regions[region].name;}
   if(now<this.nextAt)return;this.nextAt=now+100;
-  const {width,height}=this.canvas,layout=minimapLayout(region,width,height,player),c=this.canvas.getContext('2d')!;
+  const list=[...monsters],others=[...peers];this.latest={region,player:{...player},monsters:list,peers:others};
+  this.paint(this.canvas,region,player,list,others);this.renderFull();
+  this.footer.title=`${regions[region].name} · ${minimapFloor(region)} · ${Math.floor(player.x)}, ${Math.floor(player.y)}`;
+ }
+ private paint(canvas:HTMLCanvasElement,region:RegionId,player:Point,monsters:MinimapActor[],peers:MinimapActor[],full=false){
+  const {width,height}=canvas,layout=minimapLayout(region,width,height,full?undefined:player),c=canvas.getContext('2d')!;
   let base=this.terrain.get(region);
   if(!base){
    const map=gridMap(region),colors=palette(region);base=document.createElement('canvas');base.width=map.width*4;base.height=map.height*4;const b=base.getContext('2d')!;
@@ -47,7 +61,7 @@ export class Minimap{
    this.terrain.set(region,base);
   }
   c.fillStyle='#0e1720';c.fillRect(0,0,width,height);c.save();c.beginPath();c.rect(8,8,width-16,height-16);c.clip();c.imageSmoothingEnabled=false;c.drawImage(base,layout.left,layout.top,layout.width,layout.height);
-  const unit=width/(this.canvas.clientWidth||180);
+  const unit=width/(canvas.clientWidth||180);
   const point=(p:Point)=>({x:layout.left+p.x*layout.scale,y:layout.top+p.y*layout.scale});
   const dot=(p:Point,color:string,radius:number)=>{const{x,y}=point(p);c.beginPath();c.arc(x,y,radius,0,Math.PI*2);c.fillStyle=color;c.fill();c.strokeStyle='#10131d';c.lineWidth=1.5;c.stroke();};
   for(const marker of minimapMarkers(region)){
@@ -59,8 +73,7 @@ export class Minimap{
   }
   for(const m of monsters)if(m.region===region&&(m.hp??0)>0&&Math.hypot(m.x-player.x,m.y-player.y)<=12)dot(m,'#ee867c',unit*1.5);
   for(const p of peers)if(p.region===region&&(p.hp??1)>0)dot(p,'#86bbff',unit*1.8);
-  dot(player,'#fff3c4',unit*3);c.restore();const p=point(player);this.canvas.dataset.playerX=String(p.x);this.canvas.dataset.playerY=String(p.y);
-  this.footer.title=`${regions[region].name} · ${minimapFloor(region)} · ${Math.floor(player.x)}, ${Math.floor(player.y)}`;
-  this.canvas.setAttribute('aria-label',`${regions[region].name} minimap. Your position: ${Math.floor(player.x)}, ${Math.floor(player.y)}. North is up.`);
+  dot(player,'#fff3c4',unit*3);c.restore();const p=point(player);canvas.dataset.playerX=String(p.x);canvas.dataset.playerY=String(p.y);
+  canvas.setAttribute('aria-label',`${regions[region].name} ${full?'full map':'minimap'}. Your position: ${Math.floor(player.x)}, ${Math.floor(player.y)}. North is up.`);
  }
 }

@@ -47,7 +47,7 @@ let noticeTimer:ReturnType<typeof setTimeout>;
 const notice=(s:string)=>{const element=document.querySelector('#notice')!;element.textContent=s;element.classList.remove('is-quiet');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>element.classList.add('is-quiet'),5500);};
 class Elderwood extends Phaser.Scene {
  social=new SocialUI(()=>{this.bot.stop();this.route=[];this.input.keyboard?.resetKeys();});
- minimap=new Minimap();
+ minimap=new Minimap(()=>{this.bot.stop();this.route=[];this.input.keyboard?.resetKeys();});
  terrainCleanup?:()=>void;
  viewZoom=.85;
  region:RegionId='elderwood';worldObjects:Phaser.GameObjects.GameObject[]=[];portalGlow?:Phaser.GameObjects.Graphics;traveling=false;travelTimer?:ReturnType<typeof setTimeout>;
