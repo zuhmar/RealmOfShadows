@@ -1,3 +1,5 @@
+import {worldChat} from './world-chat';
+import type {SocialState} from '@realm/shared';
 import {CosmeticStore} from './cosmetic-store';
 import {SupabaseStore} from './persistence';
 import {earnedCosmetics,ownsCosmetics,accessibleCosmetics,migrateCosmetics,validCosmetics} from '@realm/game-data';
@@ -12,8 +14,8 @@ import {Schema,MapSchema,defineTypes} from '@colyseus/schema';
 import {villageDoors,closedVillageDoors,cosmeticLook,availableStair,newAttributes,maxHealth,maxMana,equipmentItems,WORLD,portalFor,equipmentArmor,canTravel,type RegionId,type WeaponId} from '@realm/game-data';
 import {toggleVillageDoor,applyEquipment,move,occupiedCells,freeLanding,CombatSimulation,Economy,type Input,type Fighter} from '@realm/shared';
 const shop=new CosmeticStore(progressStore instanceof SupabaseStore?progressStore:undefined);
-class Player extends Schema {attributes=newAttributes();weaponBonus=0;shieldArmor=0;shieldingXp=0;appearance='';look='';armor=0;weapon:WeaponId='wand';meleeXp=0;distanceXp=0;magicXp=0;x=WORLD.spawn.x;y=WORLD.spawn.y;stepX=WORLD.spawn.x;stepY=WORLD.spawn.y;stamina=100;seq=0;region:RegionId='elderwood';hp=100;mana=100;deadUntil=0;shotAt=0;spellAt=0;target='';auto=false;}
-defineTypes(Player,{look:'string',stepX:'number',stepY:'number',weaponBonus:'number',shieldArmor:'number',shieldingXp:'number',appearance:'string',armor:'number',weapon:'string',meleeXp:'number',distanceXp:'number',magicXp:'number',x:'number',y:'number',stamina:'number',seq:'number',region:'string',hp:'number',mana:'number',deadUntil:'number',shotAt:'number',spellAt:'number',target:'string',auto:'boolean'});
+class Player extends Schema {name='Adventurer';attributes=newAttributes();weaponBonus=0;shieldArmor=0;shieldingXp=0;appearance='';look='';armor=0;weapon:WeaponId='wand';meleeXp=0;distanceXp=0;magicXp=0;x=WORLD.spawn.x;y=WORLD.spawn.y;stepX=WORLD.spawn.x;stepY=WORLD.spawn.y;stamina=100;seq=0;region:RegionId='elderwood';hp=100;mana=100;deadUntil=0;shotAt=0;spellAt=0;target='';auto=false;}
+defineTypes(Player,{name:'string',look:'string',stepX:'number',stepY:'number',weaponBonus:'number',shieldArmor:'number',shieldingXp:'number',appearance:'string',armor:'number',weapon:'string',meleeXp:'number',distanceXp:'number',magicXp:'number',x:'number',y:'number',stamina:'number',seq:'number',region:'string',hp:'number',mana:'number',deadUntil:'number',shotAt:'number',spellAt:'number',target:'string',auto:'boolean'});
 class WolfState extends Schema{stepX=0;stepY=0;kind='wolf';region='woods';x=0;y=0;hp=65;mode='idle';facing='down';aimX=0;aimY=0;}
 defineTypes(WolfState,{stepX:'number',stepY:'number',kind:'string',region:'string',x:'number',y:'number',hp:'number',mode:'string',facing:'string',aimX:'number',aimY:'number'});
 class State extends Schema {doors=new MapSchema<boolean>();players=new MapSchema<Player>();wolves=new MapSchema<WolfState>();}
@@ -22,6 +24,7 @@ class Elderwood extends Room<State>{
  saves=new Map<string,SaveSession>();saving=new Set<string>();saveFailed=new Set<string>();
  economy=new Economy();economyReceived=new Map<string,{tokens:number;time:number}>();rewardTicks=0;combatReceived=new Map<string,number>();simulation=new CombatSimulation();maxClients=WORLD.capacity;inputs=new Map<string,Input>();received=new Map<string,number>();
  houses=new Map<string,HouseRecord>(playerHouses.map(h=>[h.id,emptyHouse(h.id)]));housingReady=false;housingLoading?:Promise<void>;housingBusy=new Map<string,Promise<void>>();
+ socialReceived=new Map<string,number>();socialSyncReceived=new Map<string,number>();
  houseReceived=new Map<string,number>();doorReceived=new Map<string,number>();
  occupied(region:RegionId,except?:Fighter){const cells=occupiedCells([...this.state.players.values(),...this.simulation.wolves.values()],region,except);for(const cell of closedVillageDoors(this.state.doors,region))cells.add(cell);if(region===housingRegions[0])for(const h of playerHouses)if(!this.houses.get(h.id)?.ownerId)cells.add(`${Math.floor(h.door.x)},${Math.floor(h.door.y)}`);return cells;}
  async refreshHouses(){if(this.housingLoading)return this.housingLoading;if(!progressStore?.houses)return;this.housingLoading=(async()=>{try{const rows=await progressStore.houses!();for(const h of rows)if(houseById(h.id)){const old=this.houses.get(h.id);if(!old||h.revision>=old.revision)this.houses.set(h.id,h);}this.housingReady=playerHouses.every(h=>rows.some(r=>r.id===h.id));}catch{this.housingReady=false;}finally{this.housingLoading=undefined;}})();return this.housingLoading;}
@@ -57,7 +60,21 @@ class Elderwood extends Room<State>{
   catch{this.saveFailed.add(id);client.send('save-error','Token transaction could not be confirmed. Reconnect to reload your saved character and token balance safely.');client.leave(4005);}
  })();this.housingBusy.set(id,work);try{await work}finally{this.housingBusy.delete(id);this.sendSnapshot(client)}
  }
- onCreate(){this.onMessage('character-service',(client:Client,raw:unknown)=>void this.characterService(client,raw));this.economy.automaticLoot=true;this.setState(new State());this.setPatchRate(50);void this.refreshHouses();this.clock.setInterval(()=>void this.refreshHouses(),5000);this.onMessage('house',(client:Client,raw:unknown)=>{const now=this.simulation.time;if(now-(this.houseReceived.get(client.sessionId)??-Infinity)<.25){client.send('house-result','Please wait a moment before another house action.');return;}this.houseReceived.set(client.sessionId,now);void this.houseAction(client,raw)});for(const door of villageDoors('elderwood'))this.state.doors.set(door.id,true);
+ partyBusy(id:string){const members=this.economy.parties.get(id)?.members??[id];return members.some(member=>{const p=this.state.players.get(member);return !!p&&(this.simulation.hasContribution(member)||p.auto||!!p.target||[...this.simulation.wolves.values()].some(w=>w.hp>0&&w.mode!=='return'&&w.target===member));});}
+ sendSocial(client:Client){
+  if(!this.state.players.has(client.sessionId))return;
+  const party=this.economy.parties.get(client.sessionId),state:SocialState={self:client.sessionId,players:[...this.state.players].map(([id,p])=>({id,name:p.name,region:p.region,hp:p.hp,level:this.economy.profiles.get(id)?.level??1})),party:party?{id:party.id,leader:party.leader,members:[...party.members]}:null,invites:this.economy.parties.invites(client.sessionId,this.simulation.time)};
+  client.send('social-state',state);
+ }
+ syncSocial(){for(const client of this.clients)this.sendSocial(client);}
+ onCreate(){
+ this.onMessage('social-sync',(client:Client)=>{const now=this.simulation.time;if(now-(this.socialSyncReceived.get(client.sessionId)??-Infinity)<1)return;this.socialSyncReceived.set(client.sessionId,now);this.sendSocial(client);client.send('chat-history',worldChat.history());});
+ this.onMessage('party',(client:Client,request:unknown)=>{const now=this.simulation.time;if(now-(this.socialReceived.get(client.sessionId)??-Infinity)<.3)return;this.socialReceived.set(client.sessionId,now);
+ const requestData=request as {kind?:unknown;partyId?:unknown}|null;
+ if(requestData&&['accept','kick','leave'].includes(String(requestData.kind))){const invite=requestData.kind==='accept'?this.economy.parties.invites(client.sessionId,now).find(i=>i.partyId===requestData.partyId):undefined;if(this.partyBusy(client.sessionId)||(invite&&this.partyBusy(invite.leader))){client.send('social-result','Finish combat before joining, leaving, or changing party members.');return;}}
+ client.send('social-result',this.economy.parties.act(client.sessionId,request,id=>this.state.players.has(id),now));this.syncSocial();});
+ this.onMessage('chat',(client:Client,request:unknown)=>{if(!this.state.players.has(client.sessionId))return;const error=worldChat.send(client.sessionId,request,this.economy.parties.get(client.sessionId)?.members);if(error)client.send('social-result',error);});
+ this.onMessage('character-service',(client:Client,raw:unknown)=>void this.characterService(client,raw));this.economy.automaticLoot=true;this.setState(new State());this.setPatchRate(50);void this.refreshHouses();this.clock.setInterval(()=>void this.refreshHouses(),5000);this.onMessage('house',(client:Client,raw:unknown)=>{const now=this.simulation.time;if(now-(this.houseReceived.get(client.sessionId)??-Infinity)<.25){client.send('house-result','Please wait a moment before another house action.');return;}this.houseReceived.set(client.sessionId,now);void this.houseAction(client,raw)});for(const door of villageDoors('elderwood'))this.state.doors.set(door.id,true);
  this.onMessage('door',(client:Client,id:unknown)=>{const p=this.state.players.get(client.sessionId),time=this.simulation.time;if(!p||(this.saveFailed.has(client.sessionId)||this.housingBusy.has(client.sessionId))||time-(this.doorReceived.get(client.sessionId)??-Infinity)<.25)return;this.doorReceived.set(client.sessionId,time);client.send('door-result',toggleVillageDoor(this.state.doors,p,id,this.state.players.values()));});
  this.onMessage('travel',(client:Client,destination:unknown)=>{
  const p=this.state.players.get(client.sessionId);
@@ -80,6 +97,7 @@ class Elderwood extends Room<State>{
  this.simulation.tick(.05,this.state.players as Iterable<[string,Fighter]>);
  for(const [id,p] of this.state.players)this.economy.sync(id,p);
  this.economy.process(this.simulation.kills.splice(0),this.state.players,this.simulation.time);for(const id of this.economy.collected){const client=this.clients.find(c=>c.sessionId===id);if(client)void this.savePlayer(client);}this.economy.collected.clear();for(const result of this.economy.professions.results.splice(0)){const client=this.clients.find(c=>c.sessionId===result.id);if(client){client.send('economy-result',result.message);void this.savePlayer(client);}}if(++this.rewardTicks%4===0)for(const client of this.clients)this.sendSnapshot(client);
+ if(this.rewardTicks%20===0)this.syncSocial();
  if(this.rewardTicks%100===0)for(const client of this.clients){void this.savePlayer(client);if(shop.enabled){const save=this.saves.get(client.sessionId);if(save)void shop.owned(save.identity.id).then(()=>{const profile=this.economy.profiles.get(client.sessionId),p=this.state.players.get(client.sessionId);if(profile&&p){profile.cosmetics=accessibleCosmetics(profile.cosmetics,[...earnedCosmetics(profile),...shop.cached(save.identity.id)]);p.look=JSON.stringify(cosmeticLook(profile.cosmetics,profile.classId,profile.sex));}}).catch(()=>{});}}
  for(const [id,w] of this.simulation.wolves){if(!this.state.wolves.has(id))this.state.wolves.set(id,new WolfState());const state=this.state.wolves.get(id)!;state.stepX=w.stepX??w.x;state.stepY=w.stepY??w.y;state.kind=w.kind;state.region=w.region??'woods';state.x=w.x;state.y=w.y;state.hp=w.hp;state.mode=w.mode;state.facing=w.facing;state.aimX=w.aimX;state.aimY=w.aimY;}
  for(const event of this.simulation.events.splice(0))for(const client of this.clients)if(this.state.players.get(client.sessionId)?.region===event.region)client.send('combat-event',event);
@@ -95,6 +113,7 @@ class Elderwood extends Room<State>{
  data.profile.potionReadyAt=this.simulation.time+data.potionRemaining;this.simulation.spellCooldowns.set(client.sessionId,Object.fromEntries(Object.entries(data.cooldowns).map(([id,remaining])=>[id,this.simulation.time+remaining!])));
  }
  Object.assign(p,freeLanding(p,p.region,this.occupied(p.region)));p.stepX=p.x;p.stepY=p.y;p.appearance=JSON.stringify(this.economy.profiles.get(client.sessionId)!.equipment);p.look=JSON.stringify(cosmeticLook(this.economy.profiles.get(client.sessionId)!.cosmetics,this.economy.profiles.get(client.sessionId)!.classId,this.economy.profiles.get(client.sessionId)!.sex));this.state.players.set(client.sessionId,p);
+ p.name=this.saves.get(client.sessionId)?.characterName||`Guest-${client.sessionId.slice(-5)}`;worldChat.connect(client.sessionId,p.name,message=>client.send('chat-message',message));this.syncSocial();
  }catch(err){this.economy.leave(client.sessionId);throw err;}
  }
  sendSnapshot(client:Client){if(!this.economy.profiles.has(client.sessionId)||!this.state.players.has(client.sessionId))return;const save=this.saves.get(client.sessionId);client.send('economy-state',{...this.economy.snapshot(client.sessionId,this.simulation.time),houses:[...this.houses.values()].map(h=>publicHouse(h,save?.identity.id)),housingAvailable:this.housingReady,housingBusy:this.housingBusy.has(client.sessionId),shopEnabled:shop.enabled,cosmeticOwned:shop.cached(save?.identity.id),account:save?{email:save.identity.email,characterSlot:save.slot,characterName:save.characterName,savedAt:save.savedAt,state:this.saveFailed.has(client.sessionId)?'error':(this.saving.has(client.sessionId)||this.housingBusy.has(client.sessionId))?'saving':'ready'}:null});}
@@ -104,7 +123,7 @@ class Elderwood extends Room<State>{
  finally{this.saving.delete(id);}
  }
  async onLeave(client:Client){await this.housingBusy.get(client.sessionId);const id=client.sessionId,save=this.saves.get(id),profile=this.economy.profiles.get(id);const final=save&&profile?writeProgress(profile,this.simulation.time,this.simulation.spellCooldowns.get(id)):undefined;
- this.state.players.delete(id);this.economy.leave(id);this.simulation.spellCooldowns.delete(id);this.economyReceived.delete(id);this.inputs.delete(id);this.received.delete(id);this.doorReceived.delete(id);this.houseReceived.delete(id);this.combatReceived.delete(id);this.saves.delete(id);this.saveFailed.delete(id);
+ worldChat.disconnect(id);this.socialReceived.delete(id);this.socialSyncReceived.delete(id);this.state.players.delete(id);this.economy.leave(id);this.syncSocial();this.simulation.spellCooldowns.delete(id);this.economyReceived.delete(id);this.inputs.delete(id);this.received.delete(id);this.doorReceived.delete(id);this.houseReceived.delete(id);this.combatReceived.delete(id);this.saves.delete(id);this.saveFailed.delete(id);
  if(save&&final)try{await save.save(final,true);}catch{console.error('Final character save failed; database session will expire.');}
  }
 

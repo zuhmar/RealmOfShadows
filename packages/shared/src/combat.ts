@@ -4,7 +4,7 @@ export interface Fighter extends Point{stepX?:number;stepY?:number;attributes:At
 // Retain the existing Wolf/wolves API and wire collection for compatibility;
 // kind and region select the definition and its encounter island.
 export interface Wolf extends Point{stepX?:number;stepY?:number;region?:RegionId;kind:MonsterKind;id:string;hp:number;mode:string;facing:Facing;target:string;attackAt:number;respawnAt:number;spawnX:number;spawnY:number;windupUntil:number;aimX:number;aimY:number}
-export interface Kill {region?:RegionId;kind?:MonsterKind;id:number;owner:string;x:number;y:number}
+export interface Kill {contributors?:{id:string;damage:number}[];region?:RegionId;kind?:MonsterKind;id:number;owner:string;x:number;y:number}
 export interface Projectile extends Point{id:string;owner:string;target:string;region:RegionId;expires:number;weapon:WeaponId;damage:number;speed:number;skill:SkillId}
 export interface CombatEvent{kind:'bolt'|'arrow'|'melee'|'nova'|'hit'|'death'|'respawn'|'heal'|'warning'|'venom'|'charge'|'shard'|'block';region:RegionId;x:number;y:number;toX?:number;toY?:number;damage?:number;speed?:number;radius?:number}
 export function newFighter():Fighter{return {attributes:newAttributes(),weaponBonus:0,shieldArmor:0,shieldingXp:0,armor:0,weapon:'wand',meleeXp:0,distanceXp:0,magicXp:0,x:WORLD.spawn.x,y:WORLD.spawn.y,region:'elderwood',hp:C.playerHp,mana:C.mana,deadUntil:0,shotAt:0,spellAt:0,target:'',auto:false};}
@@ -20,13 +20,15 @@ export function sight(a:Point & {region?:RegionId},b:Point & {region?:RegionId},
 export class CombatSimulation{
  enemyShots:{region:RegionId;radius:number;x:number;y:number;toX:number;toY:number;remaining:number;damage:number}[]=[];
  private actors=new Map<string,Fighter>();
+ private contributions=new Map<string,Map<string,number>>();
  private wandering=new Map<string,{nextAt:number;turn:number;goal?:Point}>();
  spellCooldowns=new Map<string,Partial<Record<SpellId,number>>>();
  kills:Kill[]=[];time=0;serial=0;wolves=new Map<string,Wolf>();projectiles=new Map<string,Projectile>();events:CombatEvent[]=[];
  constructor(){for(const s of allMonsterSpawns)this.wolves.set(s.id,{...s,hp:monsters[s.kind].hp,mode:'idle',facing:'down',target:'',attackAt:0,respawnAt:0,spawnX:s.x,spawnY:s.y,windupUntil:0,aimX:s.x,aimY:s.y});}
+ hasContribution(id:string){for(const [key,damage]of this.contributions){const w=this.wolves.get(key);if(damage.has(id)&&w&&w.hp>0&&w.mode!=='return')return true;}return false;}
  safe(p:Point & {region?:RegionId}){if(p.region==='woods-upper')return false;return distance(p,portalFor(p.region??'woods'))<C.portalSafeRadius;}
  clear(p:Fighter){p.target='';p.auto=false;}
- damage(w:Wolf,amount:number,attacker?:string){const stats=monsters[monsterKind(w.kind)];if(w.hp<=0||w.mode==='return')return;w.hp=Math.max(0,w.hp-amount);if(w.hp>0&&attacker){w.target=attacker;if(w.mode==='idle'||w.mode==='wander')w.mode='chase';}this.events.push({kind:'hit',region:monsterRegion(w),x:w.x,y:w.y,damage:amount});if(!w.hp){if(attacker)this.kills.push({id:++this.serial,owner:attacker,region:monsterRegion(w),kind:w.kind,x:w.x,y:w.y});this.wandering.delete(w.id);w.mode='dead';w.target='';w.windupUntil=0;w.respawnAt=this.time+stats.respawn;this.events.push({kind:'death',region:monsterRegion(w),x:w.x,y:w.y});}}
+ damage(w:Wolf,amount:number,attacker?:string){const stats=monsters[monsterKind(w.kind)];if(w.hp<=0||w.mode==='return')return;const actual=Math.max(0,Math.min(w.hp,amount));if(attacker&&actual){const damage=this.contributions.get(w.id)??new Map<string,number>();damage.set(attacker,(damage.get(attacker)??0)+actual);this.contributions.set(w.id,damage);}w.hp=Math.max(0,w.hp-amount);if(w.hp>0&&attacker){w.target=attacker;if(w.mode==='idle'||w.mode==='wander')w.mode='chase';}this.events.push({kind:'hit',region:monsterRegion(w),x:w.x,y:w.y,damage:amount});if(!w.hp){if(attacker){const contributors=[...(this.contributions.get(w.id)??new Map<string,number>())].map(([id,damage])=>({id,damage}));const owner=contributors.reduce((best,c)=>c.damage>best.damage?c:best,contributors[0]??{id:attacker,damage:0}).id;this.kills.push({id:++this.serial,owner,contributors,region:monsterRegion(w),kind:w.kind,x:w.x,y:w.y});}this.contributions.delete(w.id);this.wandering.delete(w.id);w.mode='dead';w.target='';w.windupUntil=0;w.respawnAt=this.time+stats.respawn;this.events.push({kind:'death',region:monsterRegion(w),x:w.x,y:w.y});}}
  action(id:string,p:Fighter,kind:unknown,target:unknown):boolean{
  if(kind==='stop'){this.clear(p);return true;}
  if(p.hp<=0||!combatRegion(p.region))return false;
@@ -62,7 +64,7 @@ export class CombatSimulation{
  if(w.hp<=0){if(this.time>=w.respawnAt&&!occupiedCells([...actors.values(),...this.wolves.values()],monsterRegion(w),w).has(gridKey({x:w.spawnX,y:w.spawnY}))){w.stepX=w.spawnX;w.stepY=w.spawnY;w.hp=stats.hp;w.x=w.spawnX;w.y=w.spawnY;w.mode='idle';w.target='';w.windupUntil=0;}continue;}
  const spawn={x:w.spawnX,y:w.spawnY};let victim=actors.get(w.target);
  if(distance(w,spawn)>stats.leash||(w.target&&(!victim||victim.hp<=0||victim.region!==monsterRegion(w)||this.safe(victim)||distance(victim,spawn)>stats.leash))) {w.mode='return';w.target='';w.windupUntil=0;victim=undefined;}
- if(w.mode==='return'){if(distance(w,spawn)<.15){w.x=spawn.x;w.y=spawn.y;w.hp=stats.hp;w.mode='idle';}else this.step(w,spawn,dt);continue;}
+ if(w.mode==='return'){this.contributions.delete(w.id);if(distance(w,spawn)<.15){w.x=spawn.x;w.y=spawn.y;w.hp=stats.hp;w.mode='idle';}else this.step(w,spawn,dt);continue;}
  if(!victim&&monsterAggressive(monsterKind(w.kind))){let best:number=stats.detect;for(const [id,p] of actors){const d=distance(w,p);if(p.hp>0&&p.region===monsterRegion(w)&&!this.safe(p)&&d<best&&sight(w,p)){best=d;w.target=id;victim=p;}}}
  if(victim){
  this.wandering.delete(w.id);

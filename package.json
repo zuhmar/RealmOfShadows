@@ -12,6 +12,8 @@
     "build": "tsc --noEmit && npm run build -w @realm/client",
     "test": "tsx --test tests/*.test.ts",
     "test:integration": "tsx tests/multiplayer.ts && tsx tests/combat.integration.ts && tsx tests/classes.integration.ts && tsx tests/water.integration.ts && tsx tests/monsters.integration.ts && tsx tests/passive.integration.ts && tsx tests/caverns.integration.ts && tsx tests/shielding.integration.ts",
+    "test:party:integration": "tsx tests/party-chat.integration.ts",
+    "test:party:browser": "node tests/browser-party-chat.cjs",
     "test:minimap:browser": "node tests/browser-minimap.cjs",
     "test:browser": "node tests/browser-movement.cjs && node tests/browser-combat.cjs && node tests/browser-classes.cjs && node tests/browser-spells.cjs && node tests/browser-profile.cjs && node tests/browser-login.cjs",
     "test:accounts": "tsx tests/accounts.integration.ts",

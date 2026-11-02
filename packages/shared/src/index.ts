@@ -54,3 +54,5 @@ export {toggleVillageDoor} from './village-doors';
 export * from './housing';
 
 export * from "./character-services";
+
+export * from './social';

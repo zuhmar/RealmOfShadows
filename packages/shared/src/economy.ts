@@ -1,4 +1,5 @@
 import {emptyTasks,tasksUnlocked,taskChoice,taskReward,recordTaskKill,type TaskState} from '@realm/game-data';
+import {PartySystem,partyRules} from './social';
 import {ProfessionSystem,type FishingCast} from './professions';
 import {transferDepot} from './depot';
 import {newProfessions,type ProfessionXp,questContact,atStoryNpc,storyNpc,recordQuestFacts,questById,questComplete,recordQuestEvent,type QuestJournal,equipmentDropChance,defaultCosmetics,validCosmetics,migrateCosmetics,type Cosmetics,emptyDepot,type DepotContents,islandForRegion,inventoryUsage,inventoryFits,inventoryRules,supplySellPrice,catalogueSellPrice,droppedSellPrice,emptyGearLoadout,gearDefinition,gearSlot,gearName,gearStats,rollRarity,islandEquipmentTiers,lootEquipmentRules,type GearInstance,type GearLoadout,newAttributes,attributePoints,attributeRules,isAttribute,maxHealth,type Attributes,type SkillId,monsters,monsterKind,equipmentItems,equipmentSlots,emptyEquipment,starterEquipment,isEquipment,isEquipmentSlot,equipmentArmor,type RegionId,type Equipment,type EquipmentId,type EquipmentSlot,items,rewards,merchant,combat as C,totalXp,levelForXp,type ItemId,classes,weapons,classRules,isClassChoice,isWeapon,skillLevel,spells,isSpell,canLearnSpell,type SpellId,type ClassId,type WeaponId} from '@realm/game-data';
@@ -10,15 +11,38 @@ export interface Drop{id:string;owner:string;region?:RegionId;x:number;y:number;
 export interface EconomySnapshot extends Profile{shopEnabled?:boolean;cosmeticOwned?:string[];houses?:import('@realm/game-data').PublicHouse[];housingAvailable?:boolean;housingBusy?:boolean;fishing:FishingCast|null;nodeReadyAt:Record<string,number>;effectiveAttributes:Attributes;usedSlots:number;gearCapacity:number;weaponAttack:number;attributePoints:number;armor:number;account?:{characterSlot?:number;characterName?:string;email:string;savedAt:string;state:'ready'|'saving'|'error'}|null;drops:Drop[];capacity:number;nextXp:number;levelXp:number;time:number}
 export class Economy{
  constructor(private random:()=>number=()=>globalThis.crypto.getRandomValues(new Uint32Array(1))[0]/4294967296){}
+ parties=new PartySystem();
  automaticLoot=false;collected=new Set<string>();private lootRetry=new Map<string,number>();
  professions=new ProfessionSystem();
  profiles=new Map<string,Profile>();drops=new Map<string,Drop>();lastKill=0;serial=0;
  join(id:string){if(!this.profiles.has(id))this.profiles.set(id,{sex:'male',professions:newProfessions(),tasks:emptyTasks(),quests:{},cosmetics:defaultCosmetics(),depot:emptyDepot(),gear:[],equippedGear:emptyGearLoadout(),attributes:newAttributes(),equipment:emptyEquipment(),ownedEquipment:[...starterEquipment],learnedSpells:[],classId:'citizen',weapon:'wand',ownedWeapons:[...classRules.starterWeapons],skills:{melee:1,distance:1,magic:1,shielding:1},skillXp:{melee:0,distance:0,magic:0,shielding:0},gold:0,xp:0,level:1,inventory:[],potionReadyAt:0});}
  sync(id:string,p:Fighter){const profile=this.profiles.get(id);if(!profile)return;profile.skillXp={melee:p.meleeXp,distance:p.distanceXp,magic:p.magicXp,shielding:p.shieldingXp};profile.skills={melee:skillLevel(p.meleeXp),distance:skillLevel(p.distanceXp),magic:skillLevel(p.magicXp),shielding:skillLevel(p.shieldingXp)};recordQuestFacts(profile);}
- leave(id:string){this.professions.leave(id);this.profiles.delete(id);this.collected.delete(id);for(const [key,d] of this.drops)if(d.owner===id)this.drops.delete(key);}
+ leave(id:string){this.parties.remove(id);this.professions.leave(id);this.profiles.delete(id);this.collected.delete(id);for(const [key,d] of this.drops)if(d.owner===id)this.drops.delete(key);}
  process(kills:Kill[],players:Map<string,Fighter>|{get(id:string):Fighter|undefined},time:number){
  this.professions.tick(time,players,this.profiles,this.add.bind(this),this.random);
- for(const kill of kills){if(kill.id<=this.lastKill)continue;this.lastKill=kill.id;const p=players.get(kill.owner),profile=this.profiles.get(kill.owner);if(!p||!profile)continue;const reward=kill.kind?monsters[monsterKind(kill.kind)]:{xp:rewards.wolfXp,gold:rewards.wolfGold,pelts:rewards.wolfPelts};profile.xp=Math.min(totalXp(rewards.levelCap),profile.xp+reward.xp);profile.level=levelForXp(profile.xp);recordQuestEvent(profile.quests,'kill',monsterKind(kill.kind),islandForRegion(kill.region??'woods'));recordTaskKill(profile.tasks,monsterKind(kill.kind),islandForRegion(kill.region??'woods'));const id=`spoils-${kill.id}`,region=kill.region??'woods',tier=islandEquipmentTiers[islandForRegion(region)],pool=Object.keys({...equipmentItems,...weapons}).filter(base=>gearDefinition(base as EquipmentId|WeaponId).tier===tier);const gear=tier&&pool.length&&this.random()<equipmentDropChance(monsterKind(kill.kind))?{id:globalThis.crypto.randomUUID(),base:pool[Math.floor(this.random()*pool.length)] as EquipmentId|WeaponId,rarity:null}:undefined;this.drops.set(id,{id,owner:kill.owner,region:kill.region??'woods',shards:'shards' in reward?reward.shards:0,x:kill.x,y:kill.y,gold:reward.gold,pelts:reward.pelts,...(gear?{gear}:{}),expires:time+rewards.dropLifetime});if(this.automaticLoot&&p.hp>0&&p.region===(kill.region??'woods'))this.collectDrop(this.drops.get(id)!,profile);}
+ for(const kill of kills){
+ if(kill.id<=this.lastKill)continue;this.lastKill=kill.id;
+ const region=kill.region??'woods',eligible=(id:string)=>{const p=players.get(id);return !!p&&this.profiles.has(id)&&p.hp>0&&p.region===region&&Math.hypot(p.x-kill.x,p.y-kill.y)<=partyRules.rewardRange;};
+ let owner=kill.owner;
+ if(kill.contributors?.length){
+  const groups=new Map<string,{owner:string;damage:number}>();
+  for(const c of kill.contributors){const party=this.parties.get(c.id);if(!this.profiles.has(c.id)||!players.get(c.id)||(party?!party.members.some(eligible):!eligible(c.id)))continue;const key=party?.id??`solo:${c.id}`,group=groups.get(key)??{owner:c.id,damage:0};group.damage+=c.damage;groups.set(key,group);}
+  const winner=[...groups.values()].reduce<{owner:string;damage:number}|undefined>((best,g)=>!best||g.damage>best.damage?g:best,undefined);if(!winner)continue;owner=winner.owner;
+ }
+ const party=this.parties.get(owner),recipients=party?party.members.filter(eligible):this.profiles.has(owner)&&players.get(owner)?[owner]:[];if(!recipients.length)continue;
+ const turn=party?party.turn++%recipients.length:0;const members=[...recipients.slice(turn),...recipients.slice(0,turn)];
+ const reward=kill.kind?monsters[monsterKind(kill.kind)]:{xp:rewards.wolfXp,gold:rewards.wolfGold,pelts:rewards.wolfPelts};
+ const tier=islandEquipmentTiers[islandForRegion(region)],pool=Object.keys({...equipmentItems,...weapons}).filter(base=>gearDefinition(base as EquipmentId|WeaponId).tier===tier);
+ const gear=tier&&pool.length&&this.random()<equipmentDropChance(monsterKind(kill.kind))?{id:globalThis.crypto.randomUUID(),base:pool[Math.floor(this.random()*pool.length)] as EquipmentId|WeaponId,rarity:null}:undefined;
+ const share=(amount:number,i:number)=>Math.floor(amount/members.length)+(i<amount%members.length?1:0);
+ for(const [i,member]of members.entries()){
+  const p=players.get(member)!,profile=this.profiles.get(member)!;
+  profile.xp=Math.min(totalXp(rewards.levelCap),profile.xp+share(reward.xp,i));profile.level=levelForXp(profile.xp);
+  recordQuestEvent(profile.quests,'kill',monsterKind(kill.kind),islandForRegion(region));recordTaskKill(profile.tasks,monsterKind(kill.kind),islandForRegion(region));
+  const id=members.length===1?`spoils-${kill.id}`:`spoils-${kill.id}-${member}`,drop:Drop={id,owner:member,region,x:kill.x,y:kill.y,gold:share(reward.gold,i),pelts:share(reward.pelts,i),shards:share('shards'in reward?reward.shards:0,i),...(gear&&i===0?{gear}:{}),expires:time+rewards.dropLifetime};
+  this.drops.set(id,drop);if(this.automaticLoot&&p.hp>0&&p.region===region)this.collectDrop(drop,profile);
+ }
+ }
  for(const [id,d] of this.drops){if(time>=d.expires){this.drops.delete(id);this.lootRetry.delete(id);continue;}if(!this.automaticLoot||time<(this.lootRetry.get(id)??0))continue;const p=players.get(d.owner),profile=this.profiles.get(d.owner);if(p&&profile&&p.hp>0&&p.region===(d.region??'woods')&&Math.hypot(p.x-d.x,p.y-d.y)<=rewards.pickupRange&&sight(p,d,p.region)){this.lootRetry.set(id,time+1);this.collectDrop(d,profile);}}
  for(const id of this.lootRetry.keys())if(!this.drops.has(id))this.lootRetry.delete(id);
  }

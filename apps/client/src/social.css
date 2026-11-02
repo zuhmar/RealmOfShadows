@@ -1,0 +1,13 @@
+#social-controls{position:fixed;left:max(12px,env(safe-area-inset-left));bottom:max(114px,calc(env(safe-area-inset-bottom) + 104px));z-index:4}
+#social-controls[hidden],#party-controls[hidden],#party-leave[hidden],#social-badge[hidden]{display:none}
+#social-open{min-height:44px;border:1px solid #b99b66;border-radius:5px;background:linear-gradient(#383644,#192332);color:#efd9ad;box-shadow:0 3px 12px #0006}
+#social-badge{display:inline-block;min-width:20px;padding:2px 5px;border-radius:10px;background:#795188;color:#fff3d8;margin-left:4px;font-size:11px}
+#social-dialog{width:min(440px,calc(100vw - 24px));max-height:min(720px,calc(100dvh - 36px));overflow-y:auto}
+#social-connection,.party-help,#social-feedback{font-size:11px;line-height:1.5}#social-feedback{min-height:18px;margin-bottom:0;color:#ecd6a9}
+#chat-messages{height:220px;min-height:100px;overflow-y:auto;overscroll-behavior:contain;background:#0e1720;border:1px solid #a88b5955;border-radius:4px;padding:8px;touch-action:pan-y}
+.chat-line{font-size:12px;line-height:1.55;margin:0 0 6px;overflow-wrap:anywhere;white-space:pre-wrap}.chat-line time{font-size:9px;color:#929fba;margin-right:7px}.chat-line strong{color:#e5c78f}.chat-line span{color:#e0dfdf}.chat-empty{font-size:12px;color:#98a7a6}
+#chat-form{display:flex;gap:6px;margin-top:8px}#chat-input{min-width:0;flex:1;font-size:16px;padding:9px;border:1px solid #a88b5966;border-radius:4px;background:#111a25;color:#eee4d5;touch-action:manipulation}#chat-send{flex-shrink:0}
+.party-row{display:flex;align-items:center;gap:6px;margin:7px 0;font-size:11px}.party-row>span{flex:1;min-width:0;overflow-wrap:anywhere}.party-row>button{padding:5px 8px;min-height:44px;flex-shrink:0}#party-status{font-size:12px;color:#e6d3a7}#party-controls details{margin:10px 0}#party-controls summary{cursor:pointer;font-size:12px}#party-online{max-height:180px;overflow:auto;overscroll-behavior:contain}#party-invites:empty{display:none}
+@media(max-width:600px){#chat-messages{height:180px}#social-controls{bottom:max(110px,calc(env(safe-area-inset-bottom) + 100px))}#social-open{padding:8px 10px;font-size:11px}#social-dialog{max-height:calc(100dvh - 20px)}}
+@media(max-height:450px){#chat-messages{height:100px}#social-dialog{max-height:calc(100dvh - 12px)}#social-connection{margin:4px 0}.party-help{display:none}}
+#social-dialog>.portal-heading{position:sticky;z-index:2}
