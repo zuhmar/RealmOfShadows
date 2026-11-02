@@ -1,5 +1,4 @@
 import {SocialUI} from './social-ui';
-import './social.css';
 import {Minimap} from './minimap';
 import './minimap.css';
 import {CosmeticShopUI} from './cosmetic-store';
@@ -36,6 +35,7 @@ import {toggleVillageDoor,inAttackRange,attackPath,sight,move,occupiedCells,path
 import './style.css';
 import './hud.css';
 import './entry.css';
+import './social.css';
 import {renderSkillProgress} from './skill-progress';
 import {renderWayfarer} from './wayfarer';
 import {hudIcons} from './hud-assets';
@@ -98,7 +98,7 @@ class Elderwood extends Phaser.Scene {
  this.input.mouse?.disableContextMenu();this.input.on('pointerdown',(p:Phaser.Input.Pointer,objects:Phaser.GameObjects.GameObject[])=>{if(p.event.target!==this.game.canvas||!this.entryReady||document.querySelector('dialog[open]'))return;if(!p.rightButtonDown()&&!objects.some(o=>!o.getData('resourceHit'))&&gridMap(this.region).cells[Math.floor(p.worldY/64)]?.[Math.floor(p.worldX/64)]===3){const water=resolveFishingWater(this.region,Math.floor(p.worldX/64),Math.floor(p.worldY/64));if(water)this.approachResource(water.id);else notice('No reachable fishing shore here.');return;}if(objects.length)return;if(!p.rightButtonDown()&&Array.from(this.dropViews.values()).some(v=>Phaser.Math.Distance.Between(p.worldX,p.worldY,v.x,v.y)<32))return;if(combatRegion(this.region)&&!p.rightButtonDown()&&Array.from(this.wolfViews.values()).some(v=>Math.abs(p.worldX-v.x)<(v.getData('hitWidth')??110)/2&&p.worldY>=v.y-(v.getData('hitHeight')??100)&&p.worldY<=v.y+12))return;if(!p.middleButtonDown()){this.pendingStory=undefined;this.pendingHouse=undefined;this.pendingInteraction=undefined;this.pendingStair=undefined;this.pendingDoor=undefined;this.pendingDepot=undefined;this.pendingLoot=undefined;this.pendingResource=undefined;this.pendingWorkbench=false;this.selected='';this.cast('stop');this.route=pathfind(this.local,{x:p.worldX/64,y:p.worldY/64},this.region,this.occupied());if(!this.route.length)notice('Choose a clear path through town.');}});
  this.input.keyboard!.removeCapture([Phaser.Input.Keyboard.KeyCodes.SPACE,Phaser.Input.Keyboard.KeyCodes.ESC]);
  const accountForm=document.querySelector<HTMLFormElement>('#account-form')!;accountForm.addEventListener('focusin',()=>{this.input.keyboard!.enabled=false;this.input.keyboard!.resetKeys();});accountForm.addEventListener('focusout',()=>{this.input.keyboard!.enabled=this.entryReady;});
- const chatForm=document.querySelector<HTMLFormElement>('#chat-form')!;chatForm.addEventListener('focusin',()=>{this.input.keyboard!.enabled=false;this.input.keyboard!.resetKeys();});chatForm.addEventListener('focusout',()=>{this.input.keyboard!.enabled=this.entryReady;});document.querySelector('#social-dialog')!.addEventListener('close',()=>{this.input.keyboard!.resetKeys();this.input.keyboard!.enabled=this.entryReady;});
+ const chatForm=document.querySelector<HTMLFormElement>('#chat-form')!;chatForm.addEventListener('focusin',()=>{this.input.keyboard!.enabled=false;this.input.keyboard!.resetKeys();});chatForm.addEventListener('focusout',()=>{this.input.keyboard!.enabled=this.entryReady;});document.querySelector('#party-dialog')!.addEventListener('close',()=>{this.input.keyboard!.resetKeys();this.input.keyboard!.enabled=this.entryReady;});
  this.keys.SPACE.on('down',()=>{if(document.activeElement?.matches('button,summary'))return;if(this.selected&&combatRegion(this.region))this.cast('bolt');else this.interact();});
  for(const [id,definition]of Object.entries(attributeDefinitions)){const row=document.createElement('div'),label=document.createElement('span'),button=document.createElement('button');row.className='attribute-row';label.id=`attribute-${id}`;button.type='button';button.dataset.attribute=id;button.disabled=true;button.textContent='+';button.setAttribute('aria-label',`Increase ${definition.name}`);button.title=definition.description;button.addEventListener('click',()=>this.economyAction({kind:'attribute',attribute:id}));row.append(label,button);document.querySelector('#attribute-list')!.append(row);}
  document.querySelector('#choose-class')!.addEventListener('click',()=>this.openClasses());document.querySelector('#close-class')!.addEventListener('click',()=>document.querySelector<HTMLDialogElement>('#class-dialog')!.close());document.querySelector('#weapon-select')!.addEventListener('change',event=>{const value=(event.target as HTMLSelectElement).value;this.economyAction(value.startsWith('gear:')?{kind:'equip-gear',item:value.slice(5)}:{kind:'equip',weapon:value});});
@@ -451,7 +451,7 @@ class Elderwood extends Phaser.Scene {
  }
  }
  const followingRoute=!x&&!y&&this.route.length>0;
- if(this.fighter.hp<=0||document.querySelector('dialog[open]')!==null||this.traveling||this.bag?.housingBusy||this.housing?.pending){x=0;y=0;this.route=[];}
+ if(this.fighter.hp<=0||this.social.typing()||document.querySelector('dialog[open]')!==null||this.traveling||this.bag?.housingBusy||this.housing?.pending){x=0;y=0;this.route=[];}
  if(this.portalGlow)this.portalGlow.alpha=.85+Math.sin(_time/450)*.15;
  const previous={...this.local};
  const simulated=this.acc+Math.min(delta,100)>=50;

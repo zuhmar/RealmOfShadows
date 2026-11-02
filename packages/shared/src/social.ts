@@ -4,7 +4,11 @@ export interface Party{ id:string;leader:string;members:string[];turn:number }
 export interface PartyInvite{partyId:string;leader:string;expiresAt:number}
 export interface SocialPlayer{id:string;name:string;region:RegionId;level:number;hp:number}
 export interface SocialState{self:string;players:SocialPlayer[];party:{id:string;leader:string;members:string[]}|null;invites:PartyInvite[]}
-export interface ChatMessage{id:number;channel:'world'|'party';sender:string;name:string;text:string;at:number}
+export const chatChannels={world:'World',server:'Server Log',broadcast:'Broadcast',trade:'Trade',help:'Help',lfg:'LFG',party:'Party'} as const;
+export type ChatChannel=keyof typeof chatChannels;
+export const publicChatChannels=['world','broadcast','trade','help','lfg'] as const;
+export function isPublicChatChannel(channel:unknown):channel is typeof publicChatChannels[number]{return typeof channel==='string'&&(publicChatChannels as readonly string[]).includes(channel);}
+export interface ChatMessage{id:number;channel:ChatChannel;sender:string;name:string;text:string;at:number}
 /** Session-only membership. All IDs are server session IDs, never names supplied in messages. */
 export class PartySystem{
  private parties=new Map<string,Party>();private membership=new Map<string,string>();private invitations=new Map<string,PartyInvite[]>();private serial=0;

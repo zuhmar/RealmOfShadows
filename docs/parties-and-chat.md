@@ -1,6 +1,10 @@
 # Parties, fair rewards and world chat
 
-Open **Chat & Party** above the bottom dock. World messages reach every island and room on the current world server. The Party tab contains invitations, the member list, party chat, and an expandable explanation of reward sharing. Online players in your hunting room can be invited; another player's name cannot be entered to impersonate them.
+Chat stays open across the width of the screen above the bottom dock while playing. The **Party** button opens a separate popup for invitations and members. Online players in your hunting room can be invited; another player's name cannot be entered to impersonate them.
+
+The scrollable channel bar contains **World**, **Server Log**, **Broadcast**, **Trade**, **Help**, **LFG**, and **Party**. The public channels reach every island and room on the current world server. Party chat reaches only current members. Server Log is private and read-only, showing connection messages, travel, action results, reward gains and errors.
+
+The text field remains editable in public channels even while disconnected, so players can compose a draft. Sending requires multiplayer; messages remain in the field until the server confirms delivery. Errors/timeouts retain the draft. Drafts are kept separately for each channel and cleared on logout. Server Log alone has a read-only field. Chat keyboard events stay inside the form, and focusing chat stops queued walking/bot controls so typing cannot trigger game hotkeys. The panel moves above the onscreen keyboard when the mobile visual viewport shrinks. The panel and party controls hide on the login/character screens.
 
 ## Party rules
 
@@ -22,14 +26,14 @@ Automatic collection uses the existing private bundle system. Full bags retain t
 
 ## Chat and identity
 
-World chat uses server-issued guest labels or saved character names. Client-supplied names, sender IDs, reward amounts and membership claims have no authority. Party messages go only to current party members and never enter public history. Departing a party clears its local conversation. Signing out/switching characters clears social UI state.
+World chat uses server-issued guest labels or saved character names. Client-supplied names, sender IDs, Server Log posts, reward amounts and membership claims have no authority. Party messages go only to current party members and never enter public history. Departing a party clears its local conversation. Signing out/switching characters clears social UI state.
 
-Messages are plain text, up to 240 characters, with control characters removed. A per-connection token bucket permits three messages initially and replenishes one every 1.5 seconds. The server retains at most 80 world messages; the client keeps a bounded session history. History is transient, not stored in Supabase. World delivery spans rooms on this one Node world server; a future multi-process deployment needs a shared chat transport.
+Messages are plain text, up to 240 characters, with control characters removed. A per-connection token bucket permits three messages initially and replenishes one every 1.5 seconds. The server retains at most 80 messages per public channel; the client keeps at most 100 entries per channel. History is transient, not stored in Supabase. World delivery spans rooms on this one Node world server; a future multi-process deployment needs a shared chat transport.
 
 ## Validation and deployment
 
-- `npm test`: party permissions/invites/capacity/expiry/leadership, damage ownership and reset, conserved rotating shares, full bags, quest/task credit, fallen/other-floor/distant members, private delivery, identity, text validation, rate and history limits.
+- `npm test`: party permissions/invites/capacity/expiry/leadership, damage ownership and reset, conserved rotating shares, full bags, quest/task credit, fallen/other-floor/distant members, private delivery, all public channel IDs, rejected Server Log posts, identity, text validation, shared spam budgets and history limits.
 - `TEST_SERVER_URL=ws://localhost:2575 npm run test:party:integration`: real clients, invitations, a shared wolf kill, world delivery across rooms, private party chat and disconnect leadership.
-- With Vite pointed at the same server, `TEST_CLIENT_URL=http://localhost:5367 npm run test:party:browser`: desktop plus 390px/320px mobile, invitations, typed keyboard input, safe text rendering, cross-island messages, leave/logout cleanup and offline preview.
+- With Vite pointed at the same server, `TEST_CLIENT_URL=http://localhost:5367 npm run test:party:browser`: desktop plus 390px/320px mobile, permanent panel/dock bounds, separate invitations popup, actual typed keyboard input, all channels, safe text rendering, retained drafts, travel, leave/logout cleanup and editable offline drafts.
 
 Deploy Render and Vercel together. No database migration or new environment variables are required. Existing saved EXP, gold and inventory use their existing save format.

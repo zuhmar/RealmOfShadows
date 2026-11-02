@@ -7,19 +7,19 @@
 </head>
 <body><div id="app">
   <main id="game"></main>
-  <div id="social-controls" hidden><button id="social-open" aria-haspopup="dialog" aria-label="Open world chat and party">Chat &amp; Party <span id="social-badge" hidden></span></button></div>
-  <dialog id="social-dialog" aria-labelledby="social-title">
-    <div class="portal-heading"><h2 id="social-title">Chat &amp; Party</h2><button id="social-close" aria-label="Close chat">×</button></div>
-    <div class="profile-tabs" role="tablist" aria-label="Chat channel"><button id="social-world-tab" role="tab" aria-selected="true">World</button><button id="social-party-tab" role="tab" aria-selected="false">Party</button></div>
-    <p id="social-connection"></p>
-    <section id="party-controls" hidden aria-label="Party management">
+  <section id="chat-panel" hidden aria-label="Game chat">
+    <div class="chat-header"><div id="chat-tabs" role="tablist" aria-label="Chat channels"></div><div id="social-controls" hidden><button id="social-open" aria-haspopup="dialog" aria-label="Open party management">Party ▾ <span id="social-badge" hidden></span></button></div></div>
+    <div id="chat-messages" role="log" aria-live="polite" aria-relevant="additions" aria-label="World messages"></div>
+    <form id="chat-form"><input id="chat-input" aria-label="Chat message" placeholder="Message World…" maxlength="240" autocomplete="off" enterkeyhint="send"><button id="chat-send" type="submit">Send</button></form>
+    <p id="chat-status" role="status"></p>
+  </section>
+  <dialog id="party-dialog" aria-labelledby="party-title">
+    <div class="portal-heading"><h2 id="party-title">Your party</h2><button id="social-close" aria-label="Close party">×</button></div>
+    <section id="party-controls" aria-label="Party management">
       <div id="party-invites"></div><p id="party-status">Connect to multiplayer to form a party.</p><div id="party-members"></div><button id="party-leave" hidden>Leave party</button>
       <details id="party-online-section"><summary>Invite players</summary><div id="party-online"></div></details>
       <details class="party-help"><summary>How rewards are shared</summary><p>Stay alive within 16 tiles of a kill on the same floor to share EXP, gold, materials and quest/task kill credit. Equipment and leftover shares rotate between members. The group dealing the most damage earns the kill. If your bag is full, your assigned bundle stays at the kill spot for 90 seconds.</p></details>
-    </section>
-    <div id="chat-messages" role="log" aria-live="polite" aria-relevant="additions" aria-label="World messages"></div>
-    <form id="chat-form"><input id="chat-input" aria-label="Chat message" placeholder="Message the world…" maxlength="240" autocomplete="off" enterkeyhint="send"><button id="chat-send" type="submit">Send</button></form>
-    <p id="social-feedback" role="status"></p>
+    </section><p id="social-feedback" role="status"></p>
   </dialog>
   <aside id="minimap" hidden aria-label="World minimap">
     <button id="minimap-toggle" aria-expanded="true" aria-controls="minimap-content" aria-label="Hide minimap"><span id="minimap-name">Elderwood</span><span class="minimap-chevron" aria-hidden="true">⌃</span></button>

@@ -15,3 +15,11 @@ test('chat validates input, retains plain text and limits spam/history growth',(
  c.send('a',{channel:'world',text:'2'},undefined,0);c.send('a',{channel:'world',text:'3'},undefined,0);assert.match(c.send('a',{channel:'world',text:'4'},undefined,0)!,/wait/);
  for(let i=1;i<=100;i++)assert.equal(c.send('a',{channel:'world',text:String(i)},undefined,i*2000),undefined);assert.equal(c.history().length,80);
 });
+test('Broadcast, Trade, Help and LFG are distinct public channels with bounded history; Server Log cannot be forged',()=>{
+ const c=new WorldChat(),received:ChatMessage[]=[];c.connect('a','Alice',m=>received.push(m));c.connect('b','Bob',m=>received.push(m));
+ for(const [i,channel]of ['broadcast','trade','help','lfg'].entries())assert.equal(c.send('a',{channel,text:`Message ${channel}`},undefined,i*2000),undefined);
+ assert.deepEqual(c.history().map(m=>m.channel),['broadcast','trade','help','lfg']);assert.equal(received.length,8);
+ assert.match(c.send('a',{channel:'server',text:'Fake server reward'},undefined,10000)!,/read-only/);assert.equal(c.history().some(m=>m.channel==='server'),false);
+ // Switching channels does not evade the shared spam budget.
+ const spam=new WorldChat();spam.connect('p','P',()=>{});for(const channel of ['world','trade','help'])assert.equal(spam.send('p',{channel,text:'Hi'},undefined,0),undefined);assert.match(spam.send('p',{channel:'lfg',text:'Hi'},undefined,0)!,/wait/);
+});
