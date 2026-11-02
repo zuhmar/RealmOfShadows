@@ -1,3 +1,4 @@
+import {paintSideStairRecess} from './cliff-side-stairs';
 import worldView from '../../../packages/game-data/src/world-view.json';
 import {paintCliffBoulder,cliffStone} from './cliff-rock-art';
 import {polygon} from './stone-cliff-art';
@@ -8,7 +9,8 @@ const sprites=new Map<string,HTMLCanvasElement>();
 export function cliffStairSprite(side:StairFacing,part:StairPart){
  const key=`${side}:${part}`;let sprite=sprites.get(key);if(sprite)return sprite;
  sprite=document.createElement('canvas');sprite.width=sprite.height=worldView.nativeTile;const c=sprite.getContext('2d')!,drop=worldView.depth.front/3,sideDepth=worldView.depth.right/3;
- const at=(u:number,v:number):readonly[number,number]=>side==='north'?[u,v]:side==='south'?[32-u,32-v]:side==='east'?[32-v,u]:[v,32-u];
+ if(side==='east'||side==='west'){paintSideStairRecess(c,side,part);sprites.set(key,sprite);return sprite;}
+ const at=(u:number,v:number):readonly[number,number]=>side==='north'?[u,v]:[32-u,32-v];
  const shape=(points:readonly (readonly[number,number])[],ink:string)=>polygon(c,points.map(([u,v])=>at(u,v)),ink);
  shape([[0,0],[32,0],[32,32],[0,32]],cliffStone.dark);
  // A deep recess joins directly to the boulder shoulders, rather than sitting over them.
@@ -28,8 +30,7 @@ export function cliffStairSprite(side:StairFacing,part:StairPart){
  for(const u of [0,26])for(let i=0;i<4;i++){
   const p=at(u,i*9-2);c.save();
   // Keep lighting fixed even on east/west views; no rotated rock texture.
-  const horizontal=side==='east'||side==='west';
-  paintCliffBoulder(c,horizontal?p[0]-7:p[0]-1,horizontal?p[1]-1:p[1]-2,horizontal?12:8,horizontal?8:13,i+u);
+  paintCliffBoulder(c,p[0]-1,p[1]-2,8,13,i+u);
   c.restore();
  }
  const light=c.createLinearGradient(0,0,32,32);light.addColorStop(0,'#fff1b32a');light.addColorStop(1,'#172d2838');c.save();c.globalCompositeOperation='source-atop';c.fillStyle=light;c.fillRect(0,0,32,32);c.restore();

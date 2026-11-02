@@ -28,7 +28,7 @@ export function buildingVisuals(region:string,objects:readonly IslandObject[],ro
  for(const object of objects){
   if(isMapFence(object.key))continue;
   if(buildings.length&&(/^(depot|village)-wall-/.test(object.key)||object.key==='town-window'))continue;
-  const pieces=region.startsWith('elderwood')&&/^furn-bench-/.test(object.key)?undefined:modularFurniture(object);if(pieces){
+  const pieces=region.startsWith('elderwood')&&/^furn-(bench|table)-/.test(object.key)?undefined:modularFurniture(object);if(pieces){
    result.push(...pieces.map(p=>region.startsWith('elderwood')?{...p,key:p.key.replace('map-furniture-','house-depot-furniture-').replace(/^counter-connected-/,'house-depot-counter-connected-')}:p));continue;}
   const copy:BuildingVisual={...object};
   const native=(nativeSizes as Record<string,readonly number[]>)[object.key];

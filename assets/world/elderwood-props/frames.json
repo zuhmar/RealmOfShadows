@@ -286,5 +286,149 @@
       96
     ],
     "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-table-down",
+    "family": "table",
+    "facing": "down",
+    "sourceFile": "masters/table-armor.png",
+    "source": {
+      "x": 36,
+      "y": 102,
+      "w": 388,
+      "h": 263
+    },
+    "scale": 0.2262210796915167,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-table-left",
+    "family": "table",
+    "facing": "left",
+    "sourceFile": "masters/table-armor.png",
+    "source": {
+      "x": 581,
+      "y": 75,
+      "w": 184,
+      "h": 295
+    },
+    "scale": 0.2262210796915167,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-table-right",
+    "family": "table",
+    "facing": "right",
+    "sourceFile": "masters/table-armor.png",
+    "source": {
+      "x": 1009,
+      "y": 76,
+      "w": 181,
+      "h": 294
+    },
+    "scale": 0.2262210796915167,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-table-up",
+    "family": "table",
+    "facing": "up",
+    "sourceFile": "masters/table-armor.png",
+    "source": {
+      "x": 1347,
+      "y": 102,
+      "w": 389,
+      "h": 263
+    },
+    "scale": 0.2262210796915167,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-armor-down",
+    "family": "armor",
+    "facing": "down",
+    "sourceFile": "masters/table-armor.png",
+    "source": {
+      "x": 82,
+      "y": 474,
+      "w": 281,
+      "h": 369
+    },
+    "scale": 0.23848238482384823,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-armor-left",
+    "family": "armor",
+    "facing": "left",
+    "sourceFile": "masters/table-armor.png",
+    "source": {
+      "x": 596,
+      "y": 474,
+      "w": 149,
+      "h": 369
+    },
+    "scale": 0.23848238482384823,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-armor-right",
+    "family": "armor",
+    "facing": "right",
+    "sourceFile": "masters/table-armor.png",
+    "source": {
+      "x": 1027,
+      "y": 474,
+      "w": 151,
+      "h": 369
+    },
+    "scale": 0.23848238482384823,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
+  },
+  {
+    "key": "elderwood-prop-armor-up",
+    "family": "armor",
+    "facing": "up",
+    "sourceFile": "masters/table-armor.png",
+    "source": {
+      "x": 1409,
+      "y": 475,
+      "w": 283,
+      "h": 368
+    },
+    "scale": 0.23848238482384823,
+    "frame": [
+      96,
+      96
+    ],
+    "baseline": 92
   }
 ]

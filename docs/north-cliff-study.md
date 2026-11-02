@@ -29,3 +29,10 @@ Flight lengths are checked for one through six cells in all four directions. Woo
 ## Reference-based rock openings
 
 The shared cliff material uses overlapping irregular boulders, shaded side facets and chipped highlights instead of broad triangular panels. Faces are sampled from one joined stone field across native tiles; Elderwood uses the same field column in its upper and lower face sections. Rim and corner colours match the rock. Stair treads have slanted top planes and dark risers inside a recessed opening with boulder cheeks, using the same stone palette and fixed light. This follows the supplied Reme’s editor reference concept without copying its assets. Existing island layouts, collision, water, staircase lengths, floor arrivals and down-stair positions are unchanged.
+
+
+## East/west recess depth
+
+Side-facing stair tiles now draw a fixed-camera rock channel: visible north inner wall, contact shadow, tread side faces and a low near-edge rock lip that occludes the tread edges. The shadowed inner wall remains north-facing in both east/west views rather than rotating with the stair direction. Upper down openings darken toward the descending end. Every part remains inside its native 32×32 cell, and repeated parts still join across the complete flight. North/south flights, collision, destinations and the positions of all upper openings are preserved.
+
+`tests/browser-elderwood-stair-recesses.cjs` measures contact-shadow contrast and verifies actual mouse/touch ascent and descent at all four entrances, including the unchanged upper arrivals. The existing native-footprint and landing tests also cover the rebuilt pieces.

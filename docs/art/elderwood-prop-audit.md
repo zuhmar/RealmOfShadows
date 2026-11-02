@@ -4,7 +4,7 @@ The standalone props placed on Elderwood's village, cliff walk and house floors 
 
 ## Corrected
 
-Chest, bed, bench and tool-rack families now have sixteen purpose-drawn cardinal views. Chest backs show hinges without a front lock. Bed side profiles run horizontally with opposite headboard positions; the rear bed shows the blank headboard nearest the camera. Bench and tool-rack sides are true end profiles. Their backs are distinct from their fronts. All frames have true alpha, 96×96 canvases and a shared ground baseline. The separate rear-bed master corrects the atlas's rear orientation.
+Chest, bed, bench, tool-rack, dining-table and armor-stand families now have twenty-four purpose-drawn cardinal views. Chest backs show hinges without a front lock. Bed side profiles run horizontally with opposite headboard positions; the rear bed shows the blank headboard nearest the camera. Bench and tool-rack sides are true end profiles. Their backs are distinct from their fronts. All frames have true alpha, 96×96 canvases and a shared ground baseline. The separate rear-bed master corrects the atlas's rear orientation. The additional table/armor master fixes the two legacy diagonal props found during the follow-up review.
 
 The generated masters and extraction metadata are under `assets/world/elderwood-props`. Run `npm run art:elderwood-props` to prepare native PNGs in `assets/world/objects`; this crops/normalizes the generated art without rotating or mirroring views. The contact sheet is `docs/art/elderwood-cardinal-props.png`.
 
@@ -19,7 +19,7 @@ The public crafting station now displays an actual table with woodworking tools 
 - Flower patches and planters: elevated flowers with readable pot/stone fronts.
 - Lamps: top cap, lantern volume, visible base and fixed light.
 - Wells and barrels: visible openings/lids and shaded cylindrical fronts.
-- Forge, armor stand, side-facing chair/table and interior stairs: existing purpose-drawn depth and directional geometry.
+- Forge, side-facing chair and interior stairs: existing purpose-drawn depth and directional geometry.
 - Crafting tools, connected fences and approved modular furnishings: existing top/front/side planes and connected joins.
 - Purple portal and fishing effect: floor-plane artwork remains aligned with the grid.
 
@@ -27,4 +27,6 @@ No mining, chopping or herb nodes were added. Elderwood remains fishing-only, so
 
 ## Verification
 
-Unit checks cover all sixteen unique RGBA frames, region isolation, source identity, native scale, grounding and unchanged collision. Browser checks inspect alpha and profile silhouettes, the rear bed, missing textures across four floors, and actual mouse/touch clicks on the public workbench and a storage chest. Deploy Vercel; no SQL or server change is required.
+Unit checks cover all twenty-four unique RGBA frames, region isolation, source identity, native scale, grounding and unchanged collision. Browser checks inspect alpha and profile silhouettes, the rear bed, missing textures across four floors, and actual mouse/touch clicks on the public workbench and a storage chest. Deploy Vercel; no SQL or server change is required.
+
+The table and armor stand now use their complete cardinal families in Elderwood; their original images remain available to other islands. Native frame sizes, collision and floor anchors remain unchanged.

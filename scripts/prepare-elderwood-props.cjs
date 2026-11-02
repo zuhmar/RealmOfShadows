@@ -1,6 +1,36 @@
-/** Normal game atlas preparation: regular cell crops, shared family scale and grounded native frames. */
+/** Prepare cardinal raster artwork at native size without rotating or mirroring views. */
 const fs=require('node:fs/promises'),path=require('node:path'),{chromium}=require('playwright');
-(async()=>{const root=path.resolve(__dirname,'..'),folder=path.join(root,'assets/world/elderwood-props'),source=(await fs.readFile(path.join(folder,'masters/directional-props.png'))).toString('base64'),b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});try{const p=await b.newPage();const rear=(await fs.readFile(path.join(folder,'masters/bed-up.png'))).toString('base64');const frames=await p.evaluate(async({source,rear})=>{const im=new Image();im.src='data:image/png;base64,'+source;await im.decode();const out=[];for(const[row,family]of ['chest','bed','bench','tools'].entries()){
- const crops=[];for(let col=0;col<4;col++){const x=Math.floor(col*im.width/4),y=Math.floor(row*im.height/4),right=Math.floor((col+1)*im.width/4),bottom=Math.floor((row+1)*im.height/4),c=document.createElement('canvas');c.width=right-x;c.height=bottom-y;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(im,-x,-y);const pixels=g.getImageData(0,0,c.width,c.height).data;let left=c.width,top=c.height,r=0,b=0;for(let yy=0;yy<c.height;yy++)for(let xx=0;xx<c.width;xx++)if(pixels[(yy*c.width+xx)*4+3]>16){left=Math.min(left,xx);top=Math.min(top,yy);r=Math.max(r,xx+1);b=Math.max(b,yy+1)}crops.push({c,left,top,w:r-left,h:b-top,source:{x:x+left,y:y+top,w:r-left,h:b-top}});}
- const familyScale=88/Math.max(...crops.flatMap(c=>[c.w,c.h]));for(const[col,original]of crops.entries()){let crop=original,scale=familyScale,sourceFile='masters/directional-props.png';if(family==='bed'&&col===3){const image=new Image();image.src='data:image/png;base64,'+rear;await image.decode();const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(image,0,0);const d=ctx.getImageData(0,0,canvas.width,canvas.height).data;let left=canvas.width,top=canvas.height,right=0,bottom=0;for(let y=0;y<canvas.height;y++)for(let x=0;x<canvas.width;x++)if(d[(y*canvas.width+x)*4+3]>16){left=Math.min(left,x);top=Math.min(top,y);right=Math.max(right,x+1);bottom=Math.max(bottom,y+1)}crop={c:canvas,left,top,w:right-left,h:bottom-top,source:{x:left,y:top,w:right-left,h:bottom-top}};scale=88/Math.max(crop.w,crop.h);sourceFile='masters/bed-up.png';}const c=document.createElement('canvas');c.width=c.height=96;const g=c.getContext('2d',{willReadFrequently:true}),w=crop.w*scale,h=crop.h*scale;g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(crop.c,crop.left,crop.top,crop.w,crop.h,(96-w)/2,92-h,w,h);out.push({key:`elderwood-prop-${family}-${['down','left','right','up'][col]}`,family,facing:['down','left','right','up'][col],sourceFile,source:crop.source,scale,frame:[96,96],baseline:92,png:c.toDataURL().split(',')[1]});}
- }return out},{source,rear});for(const f of frames)await fs.writeFile(path.join(root,'assets/world/objects',f.key+'.png'),Buffer.from(f.png,'base64'));await fs.writeFile(path.join(folder,'frames.json'),JSON.stringify(frames.map(({png,...f})=>f),null,2)+'\n');console.log('Prepared 16 native 96px prop frames with shared family scale and 92px baseline.');}finally{await b.close()}})().catch(e=>{console.error(e);process.exitCode=1});
+(async()=>{
+ const root=path.resolve(__dirname,'..'),folder=path.join(root,'assets/world/elderwood-props');
+ const sheets=[{sourceFile:'masters/directional-props.png',families:['chest','bed','bench','tools']},{sourceFile:'masters/table-armor.png',families:['table','armor']}];
+ for(const sheet of sheets)sheet.data=(await fs.readFile(path.join(folder,sheet.sourceFile))).toString('base64');
+ const rear=(await fs.readFile(path.join(folder,'masters/bed-up.png'))).toString('base64');
+ const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
+ try{
+  const page=await browser.newPage();
+  const frames=await page.evaluate(async({sheets,rear})=>{
+   const load=async data=>{const image=new Image();image.src='data:image/png;base64,'+data;await image.decode();return image};
+   const crop=(image,x,y,width,height)=>{
+    const c=document.createElement('canvas');c.width=width;c.height=height;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(image,-x,-y);
+    const d=g.getImageData(0,0,width,height).data;let left=width,top=height,right=0,bottom=0;
+    for(let yy=0;yy<height;yy++)for(let xx=0;xx<width;xx++)if(d[(yy*width+xx)*4+3]>16){left=Math.min(left,xx);top=Math.min(top,yy);right=Math.max(right,xx+1);bottom=Math.max(bottom,yy+1)}
+    if(right<=left||bottom<=top)throw Error('Empty atlas cell');
+    return{c,left,top,w:right-left,h:bottom-top,source:{x:x+left,y:y+top,w:right-left,h:bottom-top}};
+   };
+   const rearImage=await load(rear),out=[];
+   for(const sheet of sheets){const image=await load(sheet.data);for(const[row,family]of sheet.families.entries()){
+    const crops=Array.from({length:4},(_,col)=>{const x=Math.floor(col*image.width/4),y=Math.floor(row*image.height/sheet.families.length),right=Math.floor((col+1)*image.width/4),bottom=Math.floor((row+1)*image.height/sheet.families.length);return crop(image,x,y,right-x,bottom-y)});
+    const familyScale=88/Math.max(...crops.flatMap(c=>[c.w,c.h]));
+    for(const[col,original]of crops.entries()){
+     const rearBed=family==='bed'&&col===3,part=rearBed?crop(rearImage,0,0,rearImage.width,rearImage.height):original,scale=rearBed?88/Math.max(part.w,part.h):familyScale;
+     const c=document.createElement('canvas');c.width=c.height=96;const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
+     g.drawImage(part.c,part.left,part.top,part.w,part.h,(96-part.w*scale)/2,92-part.h*scale,part.w*scale,part.h*scale);
+     const facing=['down','left','right','up'][col];out.push({key:`elderwood-prop-${family}-${facing}`,family,facing,sourceFile:rearBed?'masters/bed-up.png':sheet.sourceFile,source:part.source,scale,frame:[96,96],baseline:92,png:c.toDataURL().split(',')[1]});
+    }
+   }}return out;
+  },{sheets,rear});
+  for(const frame of frames)await fs.writeFile(path.join(root,'assets/world/objects',frame.key+'.png'),Buffer.from(frame.png,'base64'));
+  await fs.writeFile(path.join(folder,'frames.json'),JSON.stringify(frames.map(({png,...frame})=>frame),null,2)+'\n');
+  console.log(`Prepared ${frames.length} cardinal prop frames at 96px with a 92px ground baseline.`);
+ }finally{await browser.close()}
+})().catch(error=>{console.error(error);process.exitCode=1});
